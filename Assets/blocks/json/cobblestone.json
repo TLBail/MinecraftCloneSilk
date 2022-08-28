@@ -1,0 +1,29 @@
+{
+    "name": "cobblestone",
+    "texture": {
+        "TOP": [
+            2,
+            7
+        ],
+        "BOTTOM": [
+            2,
+            7
+        ],
+        "LEFT": [
+            2,
+            7
+        ],
+        "RIGHT": [
+            2,
+            7
+        ],
+        "FRONT": [
+            2,
+            7
+        ],
+        "BACK": [
+            2,
+            7
+        ]
+    }
+}

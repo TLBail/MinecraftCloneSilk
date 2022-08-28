@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "MinecraftCloneSilk": {
+      "commandName": "Project",
+      "workingDirectory": "C:\\Users\\theol\\source\\C#\\MinecraftCloneSilk"
+    }
+  }
+}
