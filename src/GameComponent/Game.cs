@@ -6,11 +6,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Silk.NET.OpenGL;
+using MinecraftCloneSilk.src.GameComponent;
+using MinecraftCloneSilk.src.Core;
 
 namespace MinecraftCloneSilk.src
 {
     public delegate void Update(double deltaTime);
-    public delegate void Draw(GL gl,Camera camera, double deltaTime);
+    public delegate void Draw(GL gl,double deltaTime);
     public delegate void Dispose();
 
     public sealed class Game
@@ -23,7 +25,7 @@ namespace MinecraftCloneSilk.src
         public Draw drawables;
         public Dispose disposables;
         public Camera mainCamera { get; set; }
-        private Cube cube;
+        private World world;
 
         private Game()
         {
@@ -39,8 +41,11 @@ namespace MinecraftCloneSilk.src
         public void start(GL Gl)
         {
             player = new Player();
-            cube = new Cube(Gl);
+            world = new World(player);
+
+            TextureBlock texture = new TextureBlock("./Assets/blocks/json/dirt.json");
         }
+
 
         public void update(double deltaTime)
         {
@@ -48,9 +53,27 @@ namespace MinecraftCloneSilk.src
         }
 
 
-        public void draw(GL gl, double deltaTime)
+        public unsafe void draw(GL gl, double deltaTime)
         {
-           drawables?.Invoke(gl, mainCamera, deltaTime);
+
+            gl.BindBuffer(BufferTargetARB.UniformBuffer, openGl.uboWorld);
+            System.Numerics.Matrix4x4 projectionMatrix = mainCamera.GetProjectionMatrix();
+            gl.BufferSubData(BufferTargetARB.UniformBuffer, 0, (uint)sizeof(System.Numerics.Matrix4x4), projectionMatrix);
+            gl.BindBuffer(BufferTargetARB.UniformBuffer, 0);
+
+
+            gl.BindBuffer(BufferTargetARB.UniformBuffer, openGl.uboWorld);
+            System.Numerics.Matrix4x4 viewMatrix = mainCamera.GetViewMatrix();
+            gl.BufferSubData(BufferTargetARB.UniformBuffer, sizeof(System.Numerics.Matrix4x4), (uint)sizeof(System.Numerics.Matrix4x4), viewMatrix);
+            gl.BindBuffer(BufferTargetARB.UniformBuffer, 0);
+
+
+            drawables?.Invoke(gl, deltaTime);
+        }
+
+        public void drawUI()
+        {
+            ImGuiNET.ImGui.ShowDemoWindow();
         }
 
         public void dispose()

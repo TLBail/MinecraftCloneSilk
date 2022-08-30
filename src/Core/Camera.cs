@@ -1,6 +1,9 @@
 ﻿using Silk.NET.Input;
 using System;
 using System.Numerics;
+using Silk.NET.Windowing;
+using Silk.NET.Maths;
+using MinecraftCloneSilk.src.Core;
 
 namespace MinecraftCloneSilk.src
 {
@@ -23,9 +26,15 @@ namespace MinecraftCloneSilk.src
         public Camera() : this(Vector3.UnitZ * 6, Vector3.UnitZ * -1, Vector3.UnitY, 800 / 600)
         {
             Game game = Game.getInstance();
+            IWindow window = game.getWindow();
+            Vector2D<int> size = window.GetFullSize();
+            AspectRatio = (float)size.X / (float)size.Y;
+            Console.WriteLine("aspect ration " + AspectRatio);
+
+            window.FramebufferResize += FrameBufferResize;
             game.mainCamera = this;
             IMouse mouse = game.getMouse();
-            mouse.Cursor.CursorMode = CursorMode.Raw;
+            mouse.Cursor.CursorMode = CursorMode.Normal;
             mouse.MouseMove += OnMouseMove;
             mouse.Scroll += OnMouseWheel;
 
@@ -88,6 +97,12 @@ namespace MinecraftCloneSilk.src
         private unsafe void OnMouseWheel(IMouse mouse, ScrollWheel scrollWheel)
         {
             ModifyZoom(scrollWheel.Y);
+        }
+
+        private void FrameBufferResize(Vector2D<int> size)
+        {
+            AspectRatio = (float)size.X / (float)size.Y;
+            Console.WriteLine("aspect ration " + AspectRatio);
         }
 
     }

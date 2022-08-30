@@ -11,6 +11,8 @@ namespace MinecraftCloneSilk.src
         private uint _handle;
         private GL _gl;
 
+        public VertexArrayObject(GL gl, BufferObject<TVertexType> vbo) : this(gl, vbo, null){ }
+
         public VertexArrayObject(GL gl, BufferObject<TVertexType> vbo, BufferObject<TIndexType> ebo)
         {
             Game.getInstance().disposables += Dispose;
@@ -19,12 +21,12 @@ namespace MinecraftCloneSilk.src
             _handle = _gl.GenVertexArray();
             Bind();
             vbo.Bind();
-            ebo.Bind();
+            ebo?.Bind();
         }
 
         public unsafe void VertexAttributePointer(uint index, int count, VertexAttribPointerType type, uint vertexSize, int offSet)
         {
-            _gl.VertexAttribPointer(index, count, type, false, vertexSize * (uint)sizeof(TVertexType), (void*)(offSet * sizeof(TVertexType)));
+            _gl.VertexAttribPointer(index, count, type, false, vertexSize * (uint)sizeof(TVertexType), (void*)offSet);
             _gl.EnableVertexAttribArray(index);
         }
 
