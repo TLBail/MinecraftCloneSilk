@@ -1,9 +1,9 @@
 ﻿using System.Numerics;
-namespace MinecraftCloneSilk.src
+namespace MinecraftCloneSilk.src.Core
 {
     public class Transform
     {
-        
+
         public Vector3 Position { get; set; } = new Vector3(0, 0, 0);
 
         public float Scale { get; set; } = 1f;

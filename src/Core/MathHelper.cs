@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MinecraftCloneSilk.src
+namespace MinecraftCloneSilk.src.Core
 {
     public static class MathHelper
     {
