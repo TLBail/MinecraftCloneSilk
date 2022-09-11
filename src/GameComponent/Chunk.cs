@@ -18,12 +18,42 @@ namespace MinecraftCloneSilk.src.GameComponent
         {
             this.position = position;
             blocks = new Block[16, 16, 16];
-            addBlock(0, 0, 0, "dirt");
+            generateTerrain();
+            generateBlock();
+        }
+
+        private void generateTerrain()
+        {
+            for (int x = 0; x < 5; x++)
+            {
+                for (int y = 0; y < 1; y++)
+                {
+                    for (int z = 0; z < 5; z++)
+                    {
+                        blocks[x, y, z] = new Block(new Vector3(x, y, z), "dirt", false);
+                    }
+                }
+            }
+        }
+
+        private void generateBlock()
+        {
+            blocks = new Block[16, 16, 16];
+            for(int x = 0; x < 5; x++){
+                for (int y = 0; y < 1; y++){
+                    for (int z = 0; z < 5; z++){
+                        addBlock(x, y, z, "dirt");
+                    }
+                }
+            }
+
         }
 
         public void addBlock(int x, int y , int z, string name)
         {
             blocks[x, y, z] = new Block(new Vector3(x, y, z), name, false);
+            
+            //only if the cube is visible => faces not empty
             blocks[x, y, z].cube = new Cube(Game.getInstance().getGL(), blocks[x,y,z].name, getFaces(blocks[x, y, z]));
             
         }
@@ -46,7 +76,7 @@ namespace MinecraftCloneSilk.src.GameComponent
             foreach (Block block in blocks)
             {
                 if (!block.airBlock) {
-                    block.cube?.Draw(gl, deltaTime);
+                    block.cube?.Draw(gl, deltaTime, block.position);
                 }
             }
         }
