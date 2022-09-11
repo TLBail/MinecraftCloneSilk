@@ -106,8 +106,8 @@ namespace MinecraftCloneSilk.src.GameComponent
 
         private static Shader cubeShader;
 
-        //private BufferObject<CubeVertex> Vbo;
-        //private VertexArrayObject<CubeVertex, uint> VaoCube;
+        private BufferObject<float> Vbo;
+        private VertexArrayObject<float, uint> VaoCube;
         private uint vbo;
         private uint vao;
         private Texture cubeTexture;
@@ -120,20 +120,21 @@ namespace MinecraftCloneSilk.src.GameComponent
             game.disposables += Dispose;
 
 
-            //Vbo = new BufferObject<CubeVertex>(Gl, CubeVertices, BufferTargetARB.ArrayBuffer);
-            //VaoCube = new VertexArrayObject<CubeVertex, uint>(Gl, Vbo);
+            Vbo = new BufferObject<float>(Gl, Vertices, BufferTargetARB.ArrayBuffer);
+            VaoCube = new VertexArrayObject<float, uint>(Gl, Vbo);
 
+            /*
             vbo = Gl.GenBuffer();
             vao = Gl.GenBuffer();
-
+            
             Gl.BindVertexArray(vao);
             Gl.BindBuffer(GLEnum.ArrayBuffer, vbo);
 
             Gl.BufferData(BufferTargetARB.ArrayBuffer, (nuint)(6 * sizeof(CubeVertex)), null, GLEnum.DynamicDraw);
-
-            //VaoCube.VertexAttributePointer(0, 3, VertexAttribPointerType.Float, 1, 0);
-            //VaoCube.VertexAttributePointer(1, 2, VertexAttribPointerType.Float, 1, Marshal.OffsetOf(typeof(CubeVertex), "texCoords").ToInt32());
-
+            */
+            VaoCube.VertexAttributePointer(0, 3, VertexAttribPointerType.Float, 5, 0);
+            VaoCube.VertexAttributePointer(1, 2, VertexAttribPointerType.Float, 5, sizeof(float) * 3);
+            /*
             Gl.EnableVertexAttribArray(0);
             Gl.VertexAttribPointer(0, 3, GLEnum.Float, false, (uint)sizeof(CubeVertex), (void*)0);
             Gl.EnableVertexAttribArray(1);
@@ -142,7 +143,7 @@ namespace MinecraftCloneSilk.src.GameComponent
             
 
             Gl.BindVertexArray(0);
-
+            */
 
 
 
@@ -168,16 +169,19 @@ namespace MinecraftCloneSilk.src.GameComponent
 
         public unsafe void Draw(GL Gl, double deltaTime)
         {
-            Gl.BindVertexArray(vao);
+            //Gl.BindVertexArray(vao);
+            VaoCube.Bind();
             cubeShader.Use();
             cubeTexture.Bind();
 
+            /*
             Gl.BindBuffer(GLEnum.ArrayBuffer, vbo);
             Span<CubeVertex> data = new Span<CubeVertex>(CubeVertices);
             fixed (void* d = data)
             {
                 Gl.BufferSubData(GLEnum.ArrayBuffer, 0, (uint)(36 * sizeof(CubeVertex)), d);
             }
+            */
 
 
             cubeShader.SetUniform("model", Matrix4x4.CreateRotationY(MathHelper.DegreesToRadians(25f)));
