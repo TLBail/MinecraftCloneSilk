@@ -116,7 +116,6 @@ namespace MinecraftCloneSilk.src.GameComponent
         public unsafe Cube(GL Gl, string name, Face[] faces)
         {
             Game game = Game.getInstance();
-            game.drawables += Draw;
             game.disposables += Dispose;
 
 
@@ -167,7 +166,7 @@ namespace MinecraftCloneSilk.src.GameComponent
 
         }
 
-        public unsafe void Draw(GL Gl, double deltaTime)
+        public unsafe void Draw(GL Gl, double deltaTime, Vector3 position)
         {
             //Gl.BindVertexArray(vao);
             VaoCube.Bind();
@@ -183,8 +182,9 @@ namespace MinecraftCloneSilk.src.GameComponent
             }
             */
 
-
-            cubeShader.SetUniform("model", Matrix4x4.CreateRotationY(MathHelper.DegreesToRadians(25f)));
+            Matrix4x4 model = Matrix4x4.Identity;
+            model = Matrix4x4.CreateTranslation(position);
+            cubeShader.SetUniform("model", model);
 
 
             Gl.DrawArrays(PrimitiveType.Triangles, 0, 36);
