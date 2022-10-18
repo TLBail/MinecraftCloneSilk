@@ -23,6 +23,7 @@ namespace MinecraftCloneSilk.src.GameComponent
             this.transparent = transparent;
             cube = null;
         }
+        
 
     }
 }
