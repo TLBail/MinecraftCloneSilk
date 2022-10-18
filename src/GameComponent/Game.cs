@@ -43,7 +43,6 @@ namespace MinecraftCloneSilk.src
             player = new Player();
             world = new World(player);
 
-            TextureBlock texture = new TextureBlock("./Assets/blocks/json/dirt.json");
         }
 
 

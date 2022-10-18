@@ -110,15 +110,17 @@ namespace MinecraftCloneSilk.src.GameComponent
         private VertexArrayObject<float, uint> VaoCube;
         private uint vbo;
         private uint vao;
-        private Texture cubeTexture;
-
+        private static Texture cubeTexture;
+        private TextureBlock textureBlock;
 
         public unsafe Cube(GL Gl, string name, Face[] faces)
         {
             Game game = Game.getInstance();
             game.disposables += Dispose;
 
+            textureBlock = new TextureBlock("./Assets/blocks/json/dirt.json");
 
+            
             Vbo = new BufferObject<float>(Gl, Vertices, BufferTargetARB.ArrayBuffer);
             VaoCube = new VertexArrayObject<float, uint>(Gl, Vbo);
 
@@ -156,8 +158,9 @@ namespace MinecraftCloneSilk.src.GameComponent
             if (cubeTexture == null)
             {
                 cubeTexture = new Texture(Gl, "./Assets/spriteSheet.png");
-
             }
+            
+            
 
 
             cubeShader.Use();
