@@ -59,55 +59,55 @@ namespace MinecraftCloneSilk.src.GameComponent
 
         private static readonly CubeVertex[] CubeVertices =
         {
-            new CubeVertex(new Vector3D<float>(0.5f, -0.5f, -0.5f),new Vector2D<float>(0.0f, 0.0f)),
-            new CubeVertex(new Vector3D<float>(0.5f, -0.5f, -0.5f),new Vector2D<float>(1.0f, 0.0f)  ),
-            new CubeVertex(new Vector3D<float>(0.5f,  0.5f, -0.5f),new Vector2D<float>(1.0f, 1.0f)),
-            new CubeVertex(new Vector3D<float>(0.5f,  0.5f, -0.5f),new Vector2D<float>(1.0f, 1.0f)),
-            new CubeVertex(new Vector3D<float>(0.5f,  0.5f, -0.5f),new Vector2D<float>(0.0f, 1.0f)),
-            new CubeVertex(new Vector3D<float>(0.5f, -0.5f, -0.5f),new Vector2D<float>(0.0f, 0.0f)),
-         
-            new CubeVertex(new Vector3D<float>(0.5f, -0.5f,  0.5f),new Vector2D<float>(0.0f, 0.0f)),
-            new CubeVertex(new Vector3D<float>(0.5f, -0.5f,  0.5f),new Vector2D<float>(1.0f, 0.0f)),
-            new CubeVertex(new Vector3D<float>(0.5f,  0.5f,  0.5f),new Vector2D<float>(1.0f, 1.0f)),
-            new CubeVertex(new Vector3D<float>(0.5f,  0.5f,  0.5f),new Vector2D<float>(1.0f, 1.0f)),
-            new CubeVertex(new Vector3D<float>(0.5f,  0.5f,  0.5f),new Vector2D<float>(0.0f, 1.0f)),
-            new CubeVertex(new Vector3D<float>(0.5f, -0.5f,  0.5f),new Vector2D<float>(0.0f, 0.0f)),
-            
-            new CubeVertex(new Vector3D<float>(0.5f,  0.5f,  0.5f),new Vector2D<float>(1.0f, 0.0f)),
-            new CubeVertex(new Vector3D<float>(0.5f,  0.5f, -0.5f),new Vector2D<float>(1.0f, 1.0f)),
-            new CubeVertex(new Vector3D<float>(0.5f, -0.5f, -0.5f),new Vector2D<float>(0.0f, 1.0f)),
-            new CubeVertex(new Vector3D<float>(0.5f, -0.5f, -0.5f),new Vector2D<float>(0.0f, 1.0f)),
-            new CubeVertex(new Vector3D<float>(0.5f, -0.5f,  0.5f),new Vector2D<float>(0.0f, 0.0f)),
-            new CubeVertex(new Vector3D<float>(0.5f,  0.5f,  0.5f),new Vector2D<float>(1.0f, 0.0f)),
-            
-            new CubeVertex(new Vector3D<float>(0.5f,  0.5f,  0.5f),new Vector2D<float>(1.0f, 0.0f)),
-            new CubeVertex(new Vector3D<float>(0.5f,  0.5f, -0.5f),new Vector2D<float>(1.0f, 1.0f)),
-            new CubeVertex(new Vector3D<float>(0.5f, -0.5f, -0.5f),new Vector2D<float>(0.0f, 1.0f)),
-            new CubeVertex(new Vector3D<float>(0.5f, -0.5f, -0.5f),new Vector2D<float>(0.0f, 1.0f)),
-            new CubeVertex(new Vector3D<float>(0.5f, -0.5f,  0.5f),new Vector2D<float>(0.0f, 0.0f)),
-            new CubeVertex(new Vector3D<float>(0.5f,  0.5f,  0.5f),new Vector2D<float>(1.0f, 0.0f)),
-            
-            new CubeVertex(new Vector3D<float>(0.5f, -0.5f, -0.5f),new Vector2D<float>(0.0f, 1.0f)),
-            new CubeVertex(new Vector3D<float>(0.5f, -0.5f, -0.5f),new Vector2D<float>(1.0f, 1.0f)),
-            new CubeVertex(new Vector3D<float>(0.5f, -0.5f,  0.5f),new Vector2D<float>(1.0f, 0.0f)),
-            new CubeVertex(new Vector3D<float>(0.5f, -0.5f,  0.5f),new Vector2D<float>(1.0f, 0.0f)),
-            new CubeVertex(new Vector3D<float>(0.5f, -0.5f,  0.5f),new Vector2D<float>(0.0f, 0.0f)),
-            new CubeVertex(new Vector3D<float>(0.5f, -0.5f, -0.5f),new Vector2D<float>(0.0f, 1.0f)),
-            
-            new CubeVertex(new Vector3D<float>(0.5f,  0.5f, -0.5f),new Vector2D<float>(0.0f, 1.0f)),
-            new CubeVertex(new Vector3D<float>(0.5f,  0.5f, -0.5f),new Vector2D<float>(1.0f, 1.0f)),
-            new CubeVertex(new Vector3D<float>(0.5f,  0.5f,  0.5f),new Vector2D<float>(1.0f, 0.0f)),
-            new CubeVertex(new Vector3D<float>(0.5f,  0.5f,  0.5f),new Vector2D<float>(1.0f, 0.0f)),
-            new CubeVertex(new Vector3D<float>(0.5f,  0.5f,  0.5f),new Vector2D<float>(0.0f, 0.0f)),
-            new CubeVertex(new Vector3D<float>(0.5f,  0.5f, -0.5f),new Vector2D<float>(0.0f, 1.0f)),
+            new CubeVertex(new Vector3D<float>(-0.5f, -0.5f, -0.5f),  new Vector2D<float>(0.0f, 0.0f)),
+            new CubeVertex(new Vector3D<float>( 0.5f, -0.5f, -0.5f),  new Vector2D<float>(1.0f, 0.0f)),
+            new CubeVertex(new Vector3D<float>( 0.5f,  0.5f, -0.5f),  new Vector2D<float>(1.0f, 1.0f)),
+            new CubeVertex(new Vector3D<float>( 0.5f,  0.5f, -0.5f),  new Vector2D<float>(1.0f, 1.0f)),
+            new CubeVertex(new Vector3D<float>(-0.5f,  0.5f, -0.5f),  new Vector2D<float>(0.0f, 1.0f)),
+            new CubeVertex(new Vector3D<float>(-0.5f, -0.5f, -0.5f),  new Vector2D<float>(0.0f, 0.0f)),
+
+            new CubeVertex(new Vector3D<float>(-0.5f, -0.5f,  0.5f),  new Vector2D<float>(0.0f, 0.0f)),
+            new CubeVertex(new Vector3D<float>( 0.5f, -0.5f,  0.5f),  new Vector2D<float>(1.0f, 0.0f)),
+            new CubeVertex(new Vector3D<float>( 0.5f,  0.5f,  0.5f),  new Vector2D<float>(1.0f, 1.0f)),
+            new CubeVertex(new Vector3D<float>( 0.5f,  0.5f,  0.5f),  new Vector2D<float>(1.0f, 1.0f)),
+            new CubeVertex(new Vector3D<float>(-0.5f,  0.5f,  0.5f),  new Vector2D<float>(0.0f, 1.0f)),
+            new CubeVertex(new Vector3D<float>(-0.5f, -0.5f,  0.5f),  new Vector2D<float>(0.0f, 0.0f)),
+
+            new CubeVertex(new Vector3D<float>(-0.5f,  0.5f,  0.5f),  new Vector2D<float>(1.0f, 0.0f)),
+            new CubeVertex(new Vector3D<float>(-0.5f,  0.5f, -0.5f),  new Vector2D<float>(1.0f, 1.0f)),
+            new CubeVertex(new Vector3D<float>(-0.5f, -0.5f, -0.5f),  new Vector2D<float>(0.0f, 1.0f)),
+            new CubeVertex(new Vector3D<float>(-0.5f, -0.5f, -0.5f),  new Vector2D<float>(0.0f, 1.0f)),
+            new CubeVertex(new Vector3D<float>(-0.5f, -0.5f,  0.5f),  new Vector2D<float>(0.0f, 0.0f)),
+            new CubeVertex(new Vector3D<float>(-0.5f,  0.5f,  0.5f),  new Vector2D<float>(1.0f, 0.0f)),
+
+            new CubeVertex(new Vector3D<float>(0.5f,  0.5f,  0.5f),  new Vector2D<float>(1.0f, 0.0f)),
+            new CubeVertex(new Vector3D<float>(0.5f,  0.5f, -0.5f),  new Vector2D<float>(1.0f, 1.0f)),
+            new CubeVertex(new Vector3D<float>(0.5f, -0.5f, -0.5f),  new Vector2D<float>(0.0f, 1.0f)),
+            new CubeVertex(new Vector3D<float>(0.5f, -0.5f, -0.5f),  new Vector2D<float>(0.0f, 1.0f)),
+            new CubeVertex(new Vector3D<float>(0.5f, -0.5f,  0.5f),  new Vector2D<float>(0.0f, 0.0f)),
+            new CubeVertex(new Vector3D<float>(0.5f,  0.5f,  0.5f),  new Vector2D<float>(1.0f, 0.0f)),
+
+            new CubeVertex(new Vector3D<float>(-0.5f, -0.5f, -0.5f),  new Vector2D<float>(0.0f, 1.0f)),
+            new CubeVertex(new Vector3D<float>( 0.5f, -0.5f, -0.5f),  new Vector2D<float>(1.0f, 1.0f)),
+            new CubeVertex(new Vector3D<float>( 0.5f, -0.5f,  0.5f),  new Vector2D<float>(1.0f, 0.0f)),
+            new CubeVertex(new Vector3D<float>( 0.5f, -0.5f,  0.5f),  new Vector2D<float>(1.0f, 0.0f)),
+            new CubeVertex(new Vector3D<float>(-0.5f, -0.5f,  0.5f),  new Vector2D<float>(0.0f, 0.0f)),
+            new CubeVertex(new Vector3D<float>(-0.5f, -0.5f, -0.5f),  new Vector2D<float>(0.0f, 1.0f)),
+
+            new CubeVertex(new Vector3D<float>(-0.5f,  0.5f, -0.5f),  new Vector2D<float>(0.0f, 1.0f)),
+            new CubeVertex(new Vector3D<float>( 0.5f,  0.5f, -0.5f),  new Vector2D<float>(1.0f, 1.0f)),
+            new CubeVertex(new Vector3D<float>( 0.5f,  0.5f,  0.5f),  new Vector2D<float>(1.0f, 0.0f)),
+            new CubeVertex(new Vector3D<float>( 0.5f,  0.5f,  0.5f),  new Vector2D<float>(1.0f, 0.0f)),
+            new CubeVertex(new Vector3D<float>(-0.5f,  0.5f,  0.5f),  new Vector2D<float>(0.0f, 0.0f)),
+            new CubeVertex(new Vector3D<float>(-0.5f,  0.5f, -0.5f),  new Vector2D<float>(0.0f, 1.0f))
         };
 
 
 
         private static Shader cubeShader;
 
-        private BufferObject<float> Vbo;
-        private VertexArrayObject<float, uint> VaoCube;
+        private BufferObject<CubeVertex> Vbo;
+        private VertexArrayObject<CubeVertex, uint> VaoCube;
         private uint vbo;
         private uint vao;
         private static Texture cubeTexture;
@@ -121,30 +121,11 @@ namespace MinecraftCloneSilk.src.GameComponent
             textureBlock = new TextureBlock("./Assets/blocks/json/dirt.json");
 
             
-            Vbo = new BufferObject<float>(Gl, Vertices, BufferTargetARB.ArrayBuffer);
-            VaoCube = new VertexArrayObject<float, uint>(Gl, Vbo);
+            Vbo = new BufferObject<CubeVertex>(Gl, CubeVertices, BufferTargetARB.ArrayBuffer);
+            VaoCube = new VertexArrayObject<CubeVertex, uint>(Gl, Vbo);
 
-            /*
-            vbo = Gl.GenBuffer();
-            vao = Gl.GenBuffer();
-            
-            Gl.BindVertexArray(vao);
-            Gl.BindBuffer(GLEnum.ArrayBuffer, vbo);
-
-            Gl.BufferData(BufferTargetARB.ArrayBuffer, (nuint)(6 * sizeof(CubeVertex)), null, GLEnum.DynamicDraw);
-            */
-            VaoCube.VertexAttributePointer(0, 3, VertexAttribPointerType.Float, 5, 0);
-            VaoCube.VertexAttributePointer(1, 2, VertexAttribPointerType.Float, 5, sizeof(float) * 3);
-            /*
-            Gl.EnableVertexAttribArray(0);
-            Gl.VertexAttribPointer(0, 3, GLEnum.Float, false, (uint)sizeof(CubeVertex), (void*)0);
-            Gl.EnableVertexAttribArray(1);
-            Gl.VertexAttribPointer(1, 2, GLEnum.Float, false, (uint)sizeof(CubeVertex), (void*)Marshal.OffsetOf<CubeVertex>("texCoords"));
-
-            
-
-            Gl.BindVertexArray(0);
-            */
+            VaoCube.VertexAttributePointer(0, 3, VertexAttribPointerType.Float, "position");
+            VaoCube.VertexAttributePointer(1, 2, VertexAttribPointerType.Float, "texCoords");
 
 
 
@@ -160,9 +141,6 @@ namespace MinecraftCloneSilk.src.GameComponent
                 cubeTexture = new Texture(Gl, "./Assets/spriteSheet.png");
             }
             
-            
-
-
             cubeShader.Use();
             cubeShader.SetUniform("texture1", 0);
 
@@ -175,15 +153,6 @@ namespace MinecraftCloneSilk.src.GameComponent
             VaoCube.Bind();
             cubeShader.Use();
             cubeTexture.Bind();
-
-            /*
-            Gl.BindBuffer(GLEnum.ArrayBuffer, vbo);
-            Span<CubeVertex> data = new Span<CubeVertex>(CubeVertices);
-            fixed (void* d = data)
-            {
-                Gl.BufferSubData(GLEnum.ArrayBuffer, 0, (uint)(36 * sizeof(CubeVertex)), d);
-            }
-            */
 
             Matrix4x4 model = Matrix4x4.Identity;
             model = Matrix4x4.CreateTranslation(position);
