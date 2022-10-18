@@ -12,98 +12,7 @@ namespace MinecraftCloneSilk.src.GameComponent
 {
     public class Cube
     {
-        private static readonly float[] Vertices =
-        {
-            -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-             0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-             0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-             0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-            -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-            -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-
-            -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-             0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-             0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-             0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-            -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
-            -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-
-            -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-            -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-            -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-            -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-            -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-            -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-
-             0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-             0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-             0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-             0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-             0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-             0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-
-            -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-             0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
-             0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-             0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-            -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-            -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-
-            -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-             0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-             0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-             0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-            -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
-            -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
-        };
-
-        private static readonly CubeVertex[] CubeVertices =
-        {
-            new CubeVertex(new Vector3D<float>(-0.5f, -0.5f, -0.5f),  new Vector2D<float>(0.0f, 0.0f)),
-            new CubeVertex(new Vector3D<float>( 0.5f, -0.5f, -0.5f),  new Vector2D<float>(1.0f, 0.0f)),
-            new CubeVertex(new Vector3D<float>( 0.5f,  0.5f, -0.5f),  new Vector2D<float>(1.0f, 1.0f)),
-            new CubeVertex(new Vector3D<float>( 0.5f,  0.5f, -0.5f),  new Vector2D<float>(1.0f, 1.0f)),
-            new CubeVertex(new Vector3D<float>(-0.5f,  0.5f, -0.5f),  new Vector2D<float>(0.0f, 1.0f)),
-            new CubeVertex(new Vector3D<float>(-0.5f, -0.5f, -0.5f),  new Vector2D<float>(0.0f, 0.0f)),
-
-            new CubeVertex(new Vector3D<float>(-0.5f, -0.5f,  0.5f),  new Vector2D<float>(0.0f, 0.0f)),
-            new CubeVertex(new Vector3D<float>( 0.5f, -0.5f,  0.5f),  new Vector2D<float>(1.0f, 0.0f)),
-            new CubeVertex(new Vector3D<float>( 0.5f,  0.5f,  0.5f),  new Vector2D<float>(1.0f, 1.0f)),
-            new CubeVertex(new Vector3D<float>( 0.5f,  0.5f,  0.5f),  new Vector2D<float>(1.0f, 1.0f)),
-            new CubeVertex(new Vector3D<float>(-0.5f,  0.5f,  0.5f),  new Vector2D<float>(0.0f, 1.0f)),
-            new CubeVertex(new Vector3D<float>(-0.5f, -0.5f,  0.5f),  new Vector2D<float>(0.0f, 0.0f)),
-
-            new CubeVertex(new Vector3D<float>(-0.5f,  0.5f,  0.5f),  new Vector2D<float>(1.0f, 0.0f)),
-            new CubeVertex(new Vector3D<float>(-0.5f,  0.5f, -0.5f),  new Vector2D<float>(1.0f, 1.0f)),
-            new CubeVertex(new Vector3D<float>(-0.5f, -0.5f, -0.5f),  new Vector2D<float>(0.0f, 1.0f)),
-            new CubeVertex(new Vector3D<float>(-0.5f, -0.5f, -0.5f),  new Vector2D<float>(0.0f, 1.0f)),
-            new CubeVertex(new Vector3D<float>(-0.5f, -0.5f,  0.5f),  new Vector2D<float>(0.0f, 0.0f)),
-            new CubeVertex(new Vector3D<float>(-0.5f,  0.5f,  0.5f),  new Vector2D<float>(1.0f, 0.0f)),
-
-            new CubeVertex(new Vector3D<float>(0.5f,  0.5f,  0.5f),  new Vector2D<float>(1.0f, 0.0f)),
-            new CubeVertex(new Vector3D<float>(0.5f,  0.5f, -0.5f),  new Vector2D<float>(1.0f, 1.0f)),
-            new CubeVertex(new Vector3D<float>(0.5f, -0.5f, -0.5f),  new Vector2D<float>(0.0f, 1.0f)),
-            new CubeVertex(new Vector3D<float>(0.5f, -0.5f, -0.5f),  new Vector2D<float>(0.0f, 1.0f)),
-            new CubeVertex(new Vector3D<float>(0.5f, -0.5f,  0.5f),  new Vector2D<float>(0.0f, 0.0f)),
-            new CubeVertex(new Vector3D<float>(0.5f,  0.5f,  0.5f),  new Vector2D<float>(1.0f, 0.0f)),
-
-            new CubeVertex(new Vector3D<float>(-0.5f, -0.5f, -0.5f),  new Vector2D<float>(0.0f, 1.0f)),
-            new CubeVertex(new Vector3D<float>( 0.5f, -0.5f, -0.5f),  new Vector2D<float>(1.0f, 1.0f)),
-            new CubeVertex(new Vector3D<float>( 0.5f, -0.5f,  0.5f),  new Vector2D<float>(1.0f, 0.0f)),
-            new CubeVertex(new Vector3D<float>( 0.5f, -0.5f,  0.5f),  new Vector2D<float>(1.0f, 0.0f)),
-            new CubeVertex(new Vector3D<float>(-0.5f, -0.5f,  0.5f),  new Vector2D<float>(0.0f, 0.0f)),
-            new CubeVertex(new Vector3D<float>(-0.5f, -0.5f, -0.5f),  new Vector2D<float>(0.0f, 1.0f)),
-
-            new CubeVertex(new Vector3D<float>(-0.5f,  0.5f, -0.5f),  new Vector2D<float>(0.0f, 1.0f)),
-            new CubeVertex(new Vector3D<float>( 0.5f,  0.5f, -0.5f),  new Vector2D<float>(1.0f, 1.0f)),
-            new CubeVertex(new Vector3D<float>( 0.5f,  0.5f,  0.5f),  new Vector2D<float>(1.0f, 0.0f)),
-            new CubeVertex(new Vector3D<float>( 0.5f,  0.5f,  0.5f),  new Vector2D<float>(1.0f, 0.0f)),
-            new CubeVertex(new Vector3D<float>(-0.5f,  0.5f,  0.5f),  new Vector2D<float>(0.0f, 0.0f)),
-            new CubeVertex(new Vector3D<float>(-0.5f,  0.5f, -0.5f),  new Vector2D<float>(0.0f, 1.0f))
-        };
-
-
-
+        
         private static Shader cubeShader;
 
         private BufferObject<CubeVertex> Vbo;
@@ -119,9 +28,51 @@ namespace MinecraftCloneSilk.src.GameComponent
             game.disposables += Dispose;
 
             textureBlock = new TextureBlock("./Assets/blocks/json/dirt.json");
-
+    
             
-            Vbo = new BufferObject<CubeVertex>(Gl, CubeVertices, BufferTargetARB.ArrayBuffer);
+            
+            CubeVertex[] cubeVertices = new CubeVertex[36];
+            int index = 0;
+            foreach(CubeVertex vertices in textureBlock.CubeBackVertices())
+            {
+                cubeVertices[index] = vertices;
+                index++;
+            }
+            
+            foreach(CubeVertex vertices in textureBlock.CubeFrontVertices())
+            {
+                cubeVertices[index] = vertices;
+                index++;
+            }
+            
+            foreach(CubeVertex vertices in textureBlock.CubeRightVertices())
+            {
+                cubeVertices[index] = vertices;
+                index++;
+            }
+            
+            foreach(CubeVertex vertices in textureBlock.CubeLeftVertices())
+            {
+                cubeVertices[index] = vertices;
+                index++;
+            }
+            
+            foreach(CubeVertex vertices in textureBlock.CubeBottomVertices())
+            {
+                cubeVertices[index] = vertices;
+                index++;
+            }
+
+            foreach(CubeVertex vertices in textureBlock.CubeTopVertices())
+            {
+                cubeVertices[index] = vertices;
+                index++;
+            }
+
+
+
+
+            Vbo = new BufferObject<CubeVertex>(Gl, cubeVertices, BufferTargetARB.ArrayBuffer);
             VaoCube = new VertexArrayObject<CubeVertex, uint>(Gl, Vbo);
 
             VaoCube.VertexAttributePointer(0, 3, VertexAttribPointerType.Float, "position");
@@ -143,8 +94,6 @@ namespace MinecraftCloneSilk.src.GameComponent
             
             cubeShader.Use();
             cubeShader.SetUniform("texture1", 0);
-
-
         }
 
         public unsafe void Draw(GL Gl, double deltaTime, Vector3 position)
@@ -166,6 +115,8 @@ namespace MinecraftCloneSilk.src.GameComponent
         {
 
         }
-
+        
+        
+        
     }
 }
