@@ -1,5 +1,6 @@
 ﻿using Silk.NET.OpenGL;
 using System;
+using System.Runtime.InteropServices;
 
 
 namespace MinecraftCloneSilk.src
@@ -24,9 +25,9 @@ namespace MinecraftCloneSilk.src
             ebo?.Bind();
         }
 
-        public unsafe void VertexAttributePointer(uint index, int count, VertexAttribPointerType type, uint vertexSize, int offSet)
+        public unsafe void VertexAttributePointer(uint index, int count, VertexAttribPointerType type, string fieldName)
         {
-            _gl.VertexAttribPointer(index, count, type, false, vertexSize * (uint)sizeof(TVertexType), (void*)offSet);
+            _gl.VertexAttribPointer(index, count, type, false,(uint) sizeof(TVertexType), (void*) (Marshal.OffsetOf(typeof(TVertexType), fieldName)));
             _gl.EnableVertexAttribArray(index);
         }
 
