@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Numerics;
 using Silk.NET.OpenGL;
+using Silk.NET.Vulkan;
 
 namespace MinecraftCloneSilk.src.GameComponent
 {
@@ -13,49 +14,79 @@ namespace MinecraftCloneSilk.src.GameComponent
         private Vector3 position;
         private Block[,,] blocks;
 
+        private static readonly uint CHUNK_SIZE = 16;
+
 
         public Chunk(Vector3 position)
         {
             this.position = position;
-            blocks = new Block[16, 16, 16];
+            blocks = new Block[CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE];
             generateTerrain();
-            generateBlock();
+            fillChunkWithAirBlock();
+            initBlocks();
+        }
+
+        private void fillChunkWithAirBlock()
+        {
+            for (int x = 0; x < CHUNK_SIZE; x++)
+            {
+                for (int y = 0; y < CHUNK_SIZE; y++)
+                {
+                    for (int z = 0; z < CHUNK_SIZE; z++)
+                    {
+                        if(blocks[x,y,z].Equals(default(Block))) blocks[x, y, z] = new Block(new Vector3(x, y, z));
+                    }
+                }
+            }
+
         }
 
         private void generateTerrain()
         {
-            for (int x = 0; x < 5; x++)
+
+            Vector3[] positions = new[]
             {
-                for (int y = 0; y < 1; y++)
+                new Vector3(0, 0, 0),
+                new Vector3(2, 0, 0),
+                new Vector3(4, 0, 0),
+                new Vector3(0, 2, 0),
+                new Vector3(0, 4, 0),
+                new Vector3(0, 0, 2),
+                new Vector3(0, 0, 4),
+                new Vector3(2, 0, 2),
+                new Vector3(4, 0, 4)
+            };
+            foreach (var position in positions)
+            {
+                blocks[(int)position.X, (int)position.Y, (int)position.Z] = new Block(position, "dirt", false);
+            }
+        }
+
+        private void initBlocks()
+        {
+            for (int x = 0; x < CHUNK_SIZE; x++)
+            {
+                for (int y = 0; y < CHUNK_SIZE; y++)
                 {
-                    for (int z = 0; z < 5; z++)
+                    for (int z = 0; z < CHUNK_SIZE; z++)
                     {
-                        blocks[x, y, z] = new Block(new Vector3(x, y, z), "dirt", false);
+                        if(!blocks[x, y, z].airBlock) initCubes(x, y, z);
                     }
                 }
             }
         }
 
-        private void generateBlock()
-        {
-            blocks = new Block[16, 16, 16];
-            for(int x = 0; x < 5; x++){
-                for (int y = 0; y < 1; y++){
-                    for (int z = 0; z < 5; z++){
-                        addBlock(x, y, z, "dirt");
-                    }
-                }
-            }
-
+        private void initCubes(int x, int y, int z) {
+            if(getFaces(blocks[x,y,z]).Length == 0) return;
+            blocks[x, y, z].cube = new Cube(Game.getInstance().getGL(), blocks[x,y,z].name, getFaces(blocks[x, y, z]));
+            
         }
 
         public void addBlock(int x, int y , int z, string name)
         {
             blocks[x, y, z] = new Block(new Vector3(x, y, z), name, false);
-            
             //only if the cube is visible => faces not empty
-            blocks[x, y, z].cube = new Cube(Game.getInstance().getGL(), blocks[x,y,z].name, getFaces(blocks[x, y, z]));
-            
+            initCubes(x, y, z);
         }
 
         private Face[] getFaces(Block block)

@@ -20,68 +20,33 @@ namespace MinecraftCloneSilk.src.GameComponent
         private uint vbo;
         private uint vao;
         private static Texture cubeTexture;
-        private TextureBlock textureBlock;
-
+        private static Dictionary<string, TextureBlock> textureBlocks = new Dictionary<string, TextureBlock>();
+        
+    
+        
+        
         public unsafe Cube(GL Gl, string name, Face[] faces)
         {
-            Game game = Game.getInstance();
-            game.disposables += Dispose;
-
-            textureBlock = new TextureBlock("./Assets/blocks/json/dirt.json");
+            initStaticMembers(Gl, name);
+            TextureBlock textureBlock = textureBlocks[name];
     
-            
-            
-            CubeVertex[] cubeVertices = new CubeVertex[36];
-            int index = 0;
-            foreach(CubeVertex vertices in textureBlock.CubeBackVertices())
-            {
-                cubeVertices[index] = vertices;
-                index++;
-            }
-            
-            foreach(CubeVertex vertices in textureBlock.CubeFrontVertices())
-            {
-                cubeVertices[index] = vertices;
-                index++;
-            }
-            
-            foreach(CubeVertex vertices in textureBlock.CubeRightVertices())
-            {
-                cubeVertices[index] = vertices;
-                index++;
-            }
-            
-            foreach(CubeVertex vertices in textureBlock.CubeLeftVertices())
-            {
-                cubeVertices[index] = vertices;
-                index++;
-            }
-            
-            foreach(CubeVertex vertices in textureBlock.CubeBottomVertices())
-            {
-                cubeVertices[index] = vertices;
-                index++;
-            }
-
-            foreach(CubeVertex vertices in textureBlock.CubeTopVertices())
-            {
-                cubeVertices[index] = vertices;
-                index++;
-            }
-
-
-
-
-            Vbo = new BufferObject<CubeVertex>(Gl, cubeVertices, BufferTargetARB.ArrayBuffer);
+            Vbo = new BufferObject<CubeVertex>(Gl, textureBlock.cubeVertices, BufferTargetARB.ArrayBuffer);
             VaoCube = new VertexArrayObject<CubeVertex, uint>(Gl, Vbo);
 
             VaoCube.VertexAttributePointer(0, 3, VertexAttribPointerType.Float, "position");
             VaoCube.VertexAttributePointer(1, 2, VertexAttribPointerType.Float, "texCoords");
+            
+            cubeShader.Use();
+            cubeShader.SetUniform("texture1", 0);
+        }
 
 
-
-
-            //The lighting shader will give our main cube its colour multiplied by the lights intensity
+        private void initStaticMembers(GL Gl, string name)
+        {
+            if (!textureBlocks.ContainsKey(name))
+            {
+                textureBlocks[name] = new TextureBlock(name);
+            }
             if (cubeShader == null)
             {
                 cubeShader = new Shader(Gl, "./Shader/3dPosOneTextUni/VertexShader.hlsl", "./Shader/3dPosOneTextUni/FragmentShader.hlsl");
@@ -91,14 +56,10 @@ namespace MinecraftCloneSilk.src.GameComponent
             {
                 cubeTexture = new Texture(Gl, "./Assets/spriteSheet.png");
             }
-            
-            cubeShader.Use();
-            cubeShader.SetUniform("texture1", 0);
         }
 
         public unsafe void Draw(GL Gl, double deltaTime, Vector3 position)
         {
-            //Gl.BindVertexArray(vao);
             VaoCube.Bind();
             cubeShader.Use();
             cubeTexture.Bind();
@@ -111,10 +72,6 @@ namespace MinecraftCloneSilk.src.GameComponent
             Gl.DrawArrays(PrimitiveType.Triangles, 0, 36);
         }
 
-        public void Dispose()
-        {
-
-        }
         
         
         
