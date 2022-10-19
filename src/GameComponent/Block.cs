@@ -14,6 +14,9 @@ namespace MinecraftCloneSilk.src.GameComponent
         public bool airBlock = true;
         public bool transparent = true;
         public Cube? cube;
+
+
+        public Block(Vector3 position) : this(position, "air", true) { }
         
         public Block(Vector3 position, string name, bool transparent)
         {
