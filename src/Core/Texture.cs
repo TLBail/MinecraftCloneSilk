@@ -3,7 +3,9 @@ using System;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 
-namespace MinecraftCloneSilk.src
+using MinecraftCloneSilk.GameComponent;
+
+namespace MinecraftCloneSilk.Core
 {
     public class Texture : IDisposable
     {

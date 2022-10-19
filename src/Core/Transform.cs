@@ -1,5 +1,5 @@
 ﻿using System.Numerics;
-namespace MinecraftCloneSilk.src.Core
+namespace MinecraftCloneSilk.Core
 {
     public class Transform
     {

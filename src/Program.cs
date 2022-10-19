@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
+using MinecraftCloneSilk.GameComponent;
 using Silk.NET.Input;
 using Silk.NET.Maths;
 using Silk.NET.Windowing;
 
-namespace MinecraftCloneSilk.src
+namespace MinecraftCloneSilk
 {
     public class Program
     {

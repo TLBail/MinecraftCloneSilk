@@ -1,6 +1,6 @@
 ﻿using Silk.NET.Maths;
 
-namespace MinecraftCloneSilk.src.GameComponent
+namespace MinecraftCloneSilk.GameComponent
 {
     public struct CubeVertex
     {

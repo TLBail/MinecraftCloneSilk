@@ -1,57 +1,61 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
-using System.Text.Json;
+﻿using System.Text.Json;
 using Silk.NET.Maths;
 
-namespace MinecraftCloneSilk.src.GameComponent
+namespace MinecraftCloneSilk.GameComponent
 {
     public class TextureBlock
     {
         private class TextureBlockJson
         {
-            public string name { get; set; }
+            public string? name { get; set; }
             public Dictionary<Face, int[]> texture { get; set; }
         }
 
-        private TextureBlockJson textureBlockJson;
-        public CubeVertex[] cubeVertices; 
+        private readonly TextureBlockJson textureBlockJson;
+        private readonly CubeVertex[][] cubeVertices;
 
-        private static readonly string pathToJson = "./Assets/blocks/json/";
+        private const string PATH_TO_JSON = "./Assets/blocks/json/";
 
-        
+
         public TextureBlock(string nameBlock)
         {
-            string path = pathToJson + nameBlock + ".json";
+            string path = PATH_TO_JSON + nameBlock + ".json";
             string jsonString = File.ReadAllText(path);
             textureBlockJson = JsonSerializer.Deserialize<TextureBlockJson>(jsonString)!;
-
-            List<CubeVertex> listCubeVertices = new List<CubeVertex>();
-            listCubeVertices.AddRange(calculateCubeBackVertices());
-            listCubeVertices.AddRange(calculateCubeFrontVertices());
-            listCubeVertices.AddRange(calculateCubeLeftVertices());
-            listCubeVertices.AddRange(calculateCubeRightVertices());
-            listCubeVertices.AddRange(calculateCubeBottomVertices());
-            listCubeVertices.AddRange(calculateCubeTopVertices());
-            cubeVertices = listCubeVertices.ToArray();
+            cubeVertices = new CubeVertex[6][];
+            cubeVertices[(int)Face.BACK]  = calculateCubeBackVertices();
+            cubeVertices[(int)Face.FRONT]  = calculateCubeFrontVertices();
+            cubeVertices[(int)Face.LEFT]  = calculateCubeLeftVertices();
+            cubeVertices[(int)Face.RIGHT]  = calculateCubeRightVertices();
+            cubeVertices[(int)Face.BOTTOM]  = calculateCubeBottomVertices();
+            cubeVertices[(int)Face.TOP]  = calculateCubeTopVertices();
         }
-        
-        public Vector2D<float> bottomLeft(int textureX, int textureY) {
+
+        public CubeVertex[] getCubeVertices(Face[] faces)
+        {
+            CubeVertex[] vertices = new CubeVertex[6 * faces.Length];
+            int index = 0;
+            foreach (var face in faces) {
+                foreach (var vertex in cubeVertices[(int)face]) {
+                    vertices[index] = vertex;
+                    index++;
+                }
+            }
+            return vertices.ToArray();
+        }
+        private Vector2D<float> bottomLeft(int textureX, int textureY) {
             return new Vector2D<float>( (32.0f * textureX) / 256.0f + 0.01f, (32.0f * textureY) / 256.0f  + 0.01f);
         }
 
-        public Vector2D<float> topRight(int textureX, int textureY) {
+        private Vector2D<float> topRight(int textureX, int textureY) {
             return  new Vector2D<float>( (32.0f * (textureX + 1)) / 256.0f - 0.01f, (32.0f * (textureY + 1)) / 256.0f - 0.01f );
         }
 
-        public Vector2D<float> bottomRight(int textureX, int textureY) {
+        private Vector2D<float> bottomRight(int textureX, int textureY) {
             return new Vector2D<float>((32.0f * (textureX + 1)) / 256.0f - 0.01f, (32.0f * textureY) / 256.0f + 0.01f );
         }
 
-        public Vector2D<float> topLeft(int textureX, int textureY) {
+        private Vector2D<float> topLeft(int textureX, int textureY) {
             return new Vector2D<float>( (32.0f * textureX) / 256.0f + 0.01f, (32.0f * (textureY + 1)) / 256.0f - 0.01f );
         }
         

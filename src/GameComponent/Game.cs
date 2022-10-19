@@ -6,10 +6,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Silk.NET.OpenGL;
-using MinecraftCloneSilk.src.GameComponent;
-using MinecraftCloneSilk.src.Core;
+using MinecraftCloneSilk.GameComponent;
+using MinecraftCloneSilk.Core;
 
-namespace MinecraftCloneSilk.src
+namespace MinecraftCloneSilk.GameComponent
 {
     public delegate void Update(double deltaTime);
     public delegate void Draw(GL gl,double deltaTime);
