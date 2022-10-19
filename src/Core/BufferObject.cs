@@ -1,7 +1,8 @@
 ﻿using Silk.NET.OpenGL;
 using System;
+using MinecraftCloneSilk.GameComponent;
 
-namespace MinecraftCloneSilk.src
+namespace MinecraftCloneSilk.Core
 {
     public class BufferObject<TDataType> : IDisposable
         where TDataType : unmanaged

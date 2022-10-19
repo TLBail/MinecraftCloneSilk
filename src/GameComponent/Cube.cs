@@ -4,11 +4,14 @@ using System.Linq;
 using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
-using MinecraftCloneSilk.src.Core;
 using Silk.NET.OpenGL;
 using Silk.NET.Maths;
 using System.Runtime.InteropServices;
-namespace MinecraftCloneSilk.src.GameComponent
+using MinecraftCloneSilk.Core;
+using Shader = MinecraftCloneSilk.Core.Shader;
+using Texture = MinecraftCloneSilk.Core.Texture;
+
+namespace MinecraftCloneSilk.GameComponent
 {
     public class Cube
     {
@@ -29,8 +32,9 @@ namespace MinecraftCloneSilk.src.GameComponent
         {
             initStaticMembers(Gl, name);
             TextureBlock textureBlock = textureBlocks[name];
-    
-            Vbo = new BufferObject<CubeVertex>(Gl, textureBlock.cubeVertices, BufferTargetARB.ArrayBuffer);
+            
+            
+            Vbo = new BufferObject<CubeVertex>(Gl, textureBlock.getCubeVertices(faces), BufferTargetARB.ArrayBuffer);
             VaoCube = new VertexArrayObject<CubeVertex, uint>(Gl, Vbo);
 
             VaoCube.VertexAttributePointer(0, 3, VertexAttribPointerType.Float, "position");

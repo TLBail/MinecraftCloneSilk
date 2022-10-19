@@ -5,8 +5,10 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Numerics;
 using Silk.NET.Input;
+using MinecraftCloneSilk.Core;
 
-namespace MinecraftCloneSilk.src
+
+namespace MinecraftCloneSilk.GameComponent
 {
     public class Player
     {

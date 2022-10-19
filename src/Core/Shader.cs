@@ -3,10 +3,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+
+using MinecraftCloneSilk.GameComponent;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MinecraftCloneSilk.src
+namespace MinecraftCloneSilk.Core
 {
     public class Shader : IDisposable
     {
