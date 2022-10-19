@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Numerics;
+using Silk.NET.Maths;
 using Silk.NET.OpenGL;
 using Silk.NET.Vulkan;
 
@@ -34,7 +35,7 @@ namespace MinecraftCloneSilk.src.GameComponent
                 {
                     for (int z = 0; z < CHUNK_SIZE; z++)
                     {
-                        if(blocks[x,y,z].Equals(default(Block))) blocks[x, y, z] = new Block(new Vector3(x, y, z));
+                        if(blocks[x,y,z].Equals(default(Block))) blocks[x, y, z] = new Block(new Vector3D<int>(x, y, z));
                     }
                 }
             }
@@ -44,17 +45,17 @@ namespace MinecraftCloneSilk.src.GameComponent
         private void generateTerrain()
         {
 
-            Vector3[] positions = new[]
+            Vector3D<int>[] positions = new[]
             {
-                new Vector3(0, 0, 0),
-                new Vector3(2, 0, 0),
-                new Vector3(4, 0, 0),
-                new Vector3(0, 2, 0),
-                new Vector3(0, 4, 0),
-                new Vector3(0, 0, 2),
-                new Vector3(0, 0, 4),
-                new Vector3(2, 0, 2),
-                new Vector3(4, 0, 4)
+                new Vector3D<int>(0, 0, 0),
+                new Vector3D<int>(2, 0, 0),
+                new Vector3D<int>(4, 0, 0),
+                new Vector3D<int>(0, 2, 0),
+                new Vector3D<int>(0, 4, 0),
+                new Vector3D<int>(0, 0, 2),
+                new Vector3D<int>(0, 0, 4),
+                new Vector3D<int>(2, 0, 2),
+                new Vector3D<int>(4, 0, 4)
             };
             foreach (var position in positions)
             {
@@ -84,15 +85,22 @@ namespace MinecraftCloneSilk.src.GameComponent
 
         public void addBlock(int x, int y , int z, string name)
         {
-            blocks[x, y, z] = new Block(new Vector3(x, y, z), name, false);
+            blocks[x, y, z] = new Block(new Vector3D<int>(x, y, z), name, false);
             //only if the cube is visible => faces not empty
             initCubes(x, y, z);
         }
 
         private Face[] getFaces(Block block)
         {
-            Face[] faces = { Face.TOP,Face.BOTTOM, Face.LEFT,Face.RIGHT, Face.FRONT,Face.BACK};
-            return faces;
+            if(block.transparent) return new [] { Face.TOP,Face.BOTTOM, Face.LEFT,Face.RIGHT, Face.FRONT,Face.BACK};
+            List<Face> faces = new List<Face>();
+            if (block.position.X > 0 &&
+                blocks[(int)(block.position.X - 1), block.position.Y, block.position.Z].transparent)
+            {
+                faces.Add(Face.LEFT);
+            }
+
+            return faces.ToArray();
         }
 
 
@@ -107,7 +115,7 @@ namespace MinecraftCloneSilk.src.GameComponent
             foreach (Block block in blocks)
             {
                 if (!block.airBlock) {
-                    block.cube?.Draw(gl, deltaTime, block.position);
+                    block.cube?.Draw(gl, deltaTime, new Vector3(block.position.X, block.position.Y, block.position.Z));
                 }
             }
         }

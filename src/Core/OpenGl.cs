@@ -59,9 +59,7 @@ namespace MinecraftCloneSilk.src.Core
             Gl = window.CreateOpenGL();
 
             imGuiController = new ImGuiController(Gl, window, input);
-
-
-
+            
             primaryKeyboard = input.Keyboards.FirstOrDefault();
             primaryMouse = input.Mice.FirstOrDefault();
 
@@ -69,17 +67,32 @@ namespace MinecraftCloneSilk.src.Core
             {
                 primaryKeyboard.KeyDown += KeyDown;
             }
+            
+            enableFaceCulling();
+            
+            game.start(Gl);
+        }
 
+        
+        
+        private unsafe void initUniformBuffers()
+        {
             uboWorld = Gl.GenBuffer();
             Gl.BindBuffer(BufferTargetARB.UniformBuffer, uboWorld);
             Gl.BufferData(BufferTargetARB.UniformBuffer, (nuint)(2 * sizeof(Matrix4X4<float>)), null, GLEnum.StaticDraw);
             Gl.BindBuffer(BufferTargetARB.UniformBuffer, 0);
 
             Gl.BindBufferRange(BufferTargetARB.UniformBuffer, 0, uboWorld, 0, (nuint)(2 * sizeof(Matrix4X4<float>)));
-
-            game.start(Gl);
         }
 
+        private void enableFaceCulling()
+        {
+            initUniformBuffers();
+            Gl.Enable(GLEnum.CullFace);
+            Gl.CullFace(GLEnum.Front);
+            Gl.FrontFace(GLEnum.CW);
+        }
+        
         private void OnUpdate(double deltaTime)
         {
             imGuiController.Update((float)deltaTime);
