@@ -45,22 +45,39 @@ namespace MinecraftCloneSilk.GameComponent
         private void generateTerrain()
         {
 
+            for (int x = 0; x < CHUNK_SIZE; x++)
+            {
+                for (int z = 0; z < CHUNK_SIZE; z++)
+                {
+                    blocks[x, 0, z] = new Block(new Vector3D<int>(x, 0, z), "grass", false);
+                }
+            }
+            
             Vector3D<int>[] positions = new[]
             {
-                new Vector3D<int>(0, 0, 0),
-                new Vector3D<int>(2, 0, 0),
-                new Vector3D<int>(4, 0, 0),
+                new Vector3D<int>(0, 1, 0),
+                new Vector3D<int>(2, 1, 0),
+                new Vector3D<int>(4, 1, 0),
                 new Vector3D<int>(0, 2, 0),
                 new Vector3D<int>(0, 4, 0),
-                new Vector3D<int>(0, 0, 2),
-                new Vector3D<int>(0, 0, 4),
-                new Vector3D<int>(2, 0, 2),
-                new Vector3D<int>(4, 0, 4)
+                new Vector3D<int>(0, 1, 2),
+                new Vector3D<int>(0, 1, 4),
+                new Vector3D<int>(2, 1, 2),
+                new Vector3D<int>(4, 1, 4)
             };
             foreach (var position in positions)
             {
                 blocks[(int)position.X, (int)position.Y, (int)position.Z] = new Block(position, "grass", false);
             }
+
+            blocks[6, 2, 0] = new Block(new Vector3D<int>(6, 2, 0), "dirt", false);
+            blocks[6, 2, 2] = new Block(new Vector3D<int>(6, 2, 2), "cobblestone", false);
+            blocks[6, 2, 4] = new Block(new Vector3D<int>(6, 2, 4), "foliage", true);
+            blocks[6, 2, 6] = new Block(new Vector3D<int>(6, 2, 6), "grass", false);
+            blocks[6, 2, 8] = new Block(new Vector3D<int>(6, 2, 8), "metal", false);
+            blocks[6, 2, 10] = new Block(new Vector3D<int>(6, 2, 10), "oak", false);
+            blocks[6, 2, 12] = new Block(new Vector3D<int>(6, 2, 12), "stone", false);
+
         }
 
         private void initBlocks()

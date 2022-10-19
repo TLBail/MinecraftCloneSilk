@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Silk.NET.OpenGL;
 using MinecraftCloneSilk.GameComponent;
 using MinecraftCloneSilk.Core;
+using MinecraftCloneSilk.UI;
 
 namespace MinecraftCloneSilk.GameComponent
 {
@@ -15,18 +16,28 @@ namespace MinecraftCloneSilk.GameComponent
     public delegate void Draw(GL gl,double deltaTime);
     public delegate void Dispose();
 
+    public delegate void DrawUI();
+
     public sealed class Game
     {
         private static Game instance;
         private static readonly object _lock = new object();
         private OpenGl openGl;
-        private Player player;
         public Update updatables;
         public Draw drawables;
         public Dispose disposables;
+        public DrawUI uiDrawables;
         public Camera mainCamera { get; set; }
-        private World world;
 
+        
+        //game element
+        private World world;
+        private Player player;
+        
+        
+        //UI element
+        
+        
         private Game()
         {
             openGl = new OpenGl(this);
@@ -42,7 +53,11 @@ namespace MinecraftCloneSilk.GameComponent
         {
             player = new Player();
             world = new World(player);
-
+            
+            //UI
+            //new DemoWindow();
+            new PlayerUi(this, player);
+            
         }
 
 
@@ -72,7 +87,7 @@ namespace MinecraftCloneSilk.GameComponent
 
         public void drawUI()
         {
-            ImGuiNET.ImGui.ShowDemoWindow();
+            uiDrawables?.Invoke();
         }
 
         public void dispose()

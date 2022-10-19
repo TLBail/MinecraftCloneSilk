@@ -5,11 +5,13 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using MinecraftCloneSilk.GameComponent;
+using Silk.NET.GLFW;
 using Silk.NET.Input;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL;
 using Silk.NET.Windowing;
 using Silk.NET.OpenGL.Extensions.ImGui;
+using Glfw = Silk.NET.GLFW.Glfw;
 
 namespace MinecraftCloneSilk.Core
 {
@@ -124,11 +126,30 @@ namespace MinecraftCloneSilk.Core
             Gl?.Dispose();
         }
 
+        private unsafe void setCursorMode(CursorModeValue cursorMode)
+        {
+            Glfw.GetApi().SetInputMode((WindowHandle*)window.Handle, CursorStateAttribute.Cursor, cursorMode);
+        }
+
+        private unsafe CursorModeValue getCursorMode()
+        {
+            return (CursorModeValue)Glfw.GetApi()
+                .GetInputMode((WindowHandle*)window.Handle, CursorStateAttribute.Cursor);
+        }
+
         private void KeyDown(IKeyboard keyboard, Key key, int arg3)
         {
             if (key == Key.Escape)
             {
                 window.Close();
+            }
+
+            if (key == Key.F1)
+            {
+                unsafe
+                {
+                    setCursorMode((getCursorMode() == CursorModeValue.CursorNormal) ? CursorModeValue.CursorDisabled : CursorModeValue.CursorNormal);
+                }
             }
         }
     }
