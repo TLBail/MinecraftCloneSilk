@@ -12,9 +12,18 @@ namespace MinecraftCloneSilk.GameComponent
 {
     public class Player
     {
-        Camera camera;
-        IKeyboard primaryKeyboard;
+        private Camera camera;
+        private IKeyboard primaryKeyboard;
 
+        public Vector3 position
+        {
+            get => camera.Position;
+            set
+            {
+                camera.Position = value;
+            }
+        }
+        
         public Player()
         {
             //Start a camera at position 3 on the Z axis, looking at position -1 on the Z axis
