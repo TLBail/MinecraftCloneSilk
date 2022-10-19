@@ -4,14 +4,14 @@ using System.Linq;
 using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
-
+using MinecraftCloneSilk.GameComponent;
 using Silk.NET.Input;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL;
 using Silk.NET.Windowing;
 using Silk.NET.OpenGL.Extensions.ImGui;
 
-namespace MinecraftCloneSilk.src.Core
+namespace MinecraftCloneSilk.Core
 {
     class OpenGl
     {

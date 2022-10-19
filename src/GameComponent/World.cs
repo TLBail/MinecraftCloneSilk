@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Silk.NET.OpenGL;
 using System.Numerics;
 
-namespace MinecraftCloneSilk.src.GameComponent
+namespace MinecraftCloneSilk.GameComponent
 {
     public class World
     {

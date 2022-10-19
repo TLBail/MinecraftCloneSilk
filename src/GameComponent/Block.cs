@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.Numerics;
 using Silk.NET.Maths;
 
-namespace MinecraftCloneSilk.src.GameComponent
+namespace MinecraftCloneSilk.GameComponent
 {
     public struct Block
     {

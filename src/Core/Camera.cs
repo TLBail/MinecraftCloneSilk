@@ -3,9 +3,9 @@ using System;
 using System.Numerics;
 using Silk.NET.Windowing;
 using Silk.NET.Maths;
-using MinecraftCloneSilk.src.Core;
+using MinecraftCloneSilk.GameComponent;
 
-namespace MinecraftCloneSilk.src
+namespace MinecraftCloneSilk.Core
 {
     public class Camera
     {

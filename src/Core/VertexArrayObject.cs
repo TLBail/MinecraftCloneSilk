@@ -1,9 +1,10 @@
 ﻿using Silk.NET.OpenGL;
 using System;
 using System.Runtime.InteropServices;
+using MinecraftCloneSilk.GameComponent;
 
 
-namespace MinecraftCloneSilk.src
+namespace MinecraftCloneSilk.Core
 {
     public class VertexArrayObject<TVertexType, TIndexType> : IDisposable
         where TVertexType : unmanaged
