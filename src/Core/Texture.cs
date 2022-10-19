@@ -4,6 +4,7 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 
 using MinecraftCloneSilk.GameComponent;
+using SixLabors.ImageSharp.Processing;
 
 namespace MinecraftCloneSilk.Core
 {
@@ -23,6 +24,7 @@ namespace MinecraftCloneSilk.Core
             //Loading an image using imagesharp.
             using (var img = Image.Load<Rgba32>(path))
             {
+                img.Mutate(x => x.Flip(FlipMode.Vertical));
                 //Reserve enough memory from the gpu for the whole image
                 gl.TexImage2D(TextureTarget.Texture2D, 0, InternalFormat.Rgba8, (uint)img.Width, (uint)img.Height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, null);
 

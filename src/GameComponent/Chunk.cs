@@ -59,7 +59,7 @@ namespace MinecraftCloneSilk.GameComponent
             };
             foreach (var position in positions)
             {
-                blocks[(int)position.X, (int)position.Y, (int)position.Z] = new Block(position, "dirt", false);
+                blocks[(int)position.X, (int)position.Y, (int)position.Z] = new Block(position, "grass", false);
             }
         }
 
@@ -97,10 +97,10 @@ namespace MinecraftCloneSilk.GameComponent
             //X
             if (block.position.X > 0 &&
                 blocks[block.position.X - 1, block.position.Y, block.position.Z].transparent)
-                faces.Add(Face.LEFT);
+                faces.Add(Face.RIGHT);
             if(block.position.X < CHUNK_SIZE - 1 && 
                blocks[block.position.X + 1, block.position.Y, block.position.Z].transparent)
-                faces.Add(Face.RIGHT);
+                faces.Add(Face.LEFT);
             //Y
             if (block.position.Y > 0 &&
                 blocks[block.position.X , block.position.Y - 1, block.position.Z].transparent)

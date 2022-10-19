@@ -48,6 +48,18 @@ namespace MinecraftCloneSilk.GameComponent
                 //Move right
                 camera.Position += Vector3.Normalize(Vector3.Cross(camera.Front, camera.Up)) * moveSpeed;
             }
+
+            if (primaryKeyboard.IsKeyPressed(Key.Space))
+            {
+                //move up
+                camera.Position += camera.Up * moveSpeed;
+            }
+            if (primaryKeyboard.IsKeyPressed(Key.Q))
+            {
+                //move up
+                camera.Position += -camera.Up * moveSpeed;
+            }
+
         }
     }
 }
