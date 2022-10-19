@@ -8,7 +8,7 @@ using Silk.NET.Maths;
 using Silk.NET.OpenGL;
 using Silk.NET.Vulkan;
 
-namespace MinecraftCloneSilk.src.GameComponent
+namespace MinecraftCloneSilk.GameComponent
 {
     public class Chunk
     {
@@ -94,12 +94,30 @@ namespace MinecraftCloneSilk.src.GameComponent
         {
             if(block.transparent) return new [] { Face.TOP,Face.BOTTOM, Face.LEFT,Face.RIGHT, Face.FRONT,Face.BACK};
             List<Face> faces = new List<Face>();
+            //X
             if (block.position.X > 0 &&
-                blocks[(int)(block.position.X - 1), block.position.Y, block.position.Z].transparent)
-            {
+                blocks[block.position.X - 1, block.position.Y, block.position.Z].transparent)
                 faces.Add(Face.LEFT);
-            }
+            if(block.position.X < CHUNK_SIZE - 1 && 
+               blocks[block.position.X + 1, block.position.Y, block.position.Z].transparent)
+                faces.Add(Face.RIGHT);
+            //Y
+            if (block.position.Y > 0 &&
+                blocks[block.position.X , block.position.Y - 1, block.position.Z].transparent)
+                faces.Add(Face.BOTTOM);
+            if(block.position.Y < CHUNK_SIZE - 1 && 
+               blocks[block.position.X, block.position.Y  + 1, block.position.Z].transparent)
+                faces.Add(Face.TOP);
+            //Z
+            if (block.position.Z > 0 &&
+                blocks[block.position.X , block.position.Y, block.position.Z - 1].transparent)
+                faces.Add(Face.BACK);
+            if(block.position.Z < CHUNK_SIZE - 1 && 
+               blocks[block.position.X, block.position.Y, block.position.Z + 1].transparent)
+                faces.Add(Face.FRONT);
 
+            
+            
             return faces.ToArray();
         }
 
