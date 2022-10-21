@@ -7,6 +7,10 @@ using System.Numerics;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL;
 using Silk.NET.Vulkan;
+using MinecraftCloneSilk.Core;
+using Shader = MinecraftCloneSilk.Core.Shader;
+using Texture = MinecraftCloneSilk.Core.Texture;
+
 
 namespace MinecraftCloneSilk.GameComponent
 {
@@ -16,15 +20,59 @@ namespace MinecraftCloneSilk.GameComponent
         private Block[,,] blocks;
 
         private static readonly uint CHUNK_SIZE = 16;
+        private static Shader cubeShader;
+        private static Texture cubeTexture;
 
+        private static Dictionary<string, TextureBlock> textureBlocks = new Dictionary<string, TextureBlock>();
 
+        
+        private BufferObject<CubeVertex> Vbo;
+        private VertexArrayObject<CubeVertex, uint> Vao;
+        private CubeVertex[] vertices;
+
+        private GL Gl;
+        
         public Chunk(Vector3 position)
         {
             this.position = position;
             blocks = new Block[CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE];
+            this.Gl = Game.getInstance().getGL();
+            initStaticMembers();
             generateTerrain();
             fillChunkWithAirBlock();
             initBlocks();
+            setOpenGl();
+        }
+
+        private void setOpenGl()
+        {
+            List<CubeVertex> listVertices = new List<CubeVertex>();
+            foreach (Block block in blocks)
+            {
+                if(!block.airBlock) listVertices.AddRange(
+                    textureBlocks[block.name].getCubeVertices(getFaces(block),
+                        new Vector3D<float>(block.position.X, block.position.Y, block.position.Z)));
+            }
+            vertices = listVertices.ToArray();
+            Vbo = new BufferObject<CubeVertex>(Gl, vertices, BufferTargetARB.ArrayBuffer);
+            Vao = new VertexArrayObject<CubeVertex, uint>(Gl, Vbo);
+
+            Vao.VertexAttributePointer(0, 3, VertexAttribPointerType.Float, "position");
+            Vao.VertexAttributePointer(1, 2, VertexAttribPointerType.Float, "texCoords");
+
+        }
+
+        private void initStaticMembers() {
+            if (cubeShader == null)
+            {
+                cubeShader = new Shader(Gl, "./Shader/3dPosOneTextUni/VertexShader.hlsl", "./Shader/3dPosOneTextUni/FragmentShader.hlsl");
+                cubeShader.Use();
+                cubeShader.SetUniform("texture1", 0);
+            }
+            if (cubeTexture == null)
+            {
+                cubeTexture = new Texture(Gl, "./Assets/spriteSheet.png");
+            }
         }
 
         private void fillChunkWithAirBlock()
@@ -94,15 +142,15 @@ namespace MinecraftCloneSilk.GameComponent
             }
         }
 
-        private void initCubes(int x, int y, int z) {
-            if(getFaces(blocks[x,y,z]).Length == 0) return;
-            blocks[x, y, z].cube = new Cube(
-                Game.getInstance().getGL(),
-                blocks[x,y,z].name,
-                getFaces(blocks[x, y, z]),
-                new Vector3D<float>(x, y, z)
-                );
-            
+        private void initCubes(int x, int y, int z)
+        {
+            Block block = blocks[x, y, z];
+            if(getFaces(block).Length == 0) return;
+            Face[] faces = getFaces(block);
+            if (!textureBlocks.ContainsKey(block.name))
+            {
+                textureBlocks[block.name] = new TextureBlock(block.name);
+            }
         }
 
         public void addBlock(int x, int y , int z, string name)
@@ -150,15 +198,19 @@ namespace MinecraftCloneSilk.GameComponent
 
         }
 
-        public void Draw(GL gl, double deltaTime)
+        
+        public unsafe void Draw(GL Gl, double deltaTime)
         {
-            foreach (Block block in blocks)
-            {
-                if (!block.airBlock) {
-                    block.cube?.Draw(gl, deltaTime, position);
-                }
-            }
-        }
+            Vao.Bind();
+            cubeShader.Use();
+            cubeTexture.Bind();
 
+            Matrix4x4 model = Matrix4x4.Identity;
+            model = Matrix4x4.CreateTranslation(position);
+            cubeShader.SetUniform("model", model);
+
+
+            Gl.DrawArrays(PrimitiveType.Triangles, 0, (uint)vertices.Length);
+        }
     }
 }
