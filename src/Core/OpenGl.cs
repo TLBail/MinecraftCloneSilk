@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Numerics;
 using System.Text;
@@ -28,6 +29,8 @@ namespace MinecraftCloneSilk.Core
         public Game game;
 
         public uint uboWorld;
+
+        private static readonly Color CLEAR_COLOR = Color.Aqua;
 
         public OpenGl(Game game)
         {
@@ -104,6 +107,7 @@ namespace MinecraftCloneSilk.Core
         private unsafe void OnRender(double delta)
         {
             Gl.Enable(EnableCap.DepthTest);
+            Gl.ClearColor(CLEAR_COLOR);
             Gl.Clear((uint)(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit));
 
             game.draw(Gl, delta);
