@@ -28,13 +28,13 @@ namespace MinecraftCloneSilk.GameComponent
     
         
         
-        public unsafe Cube(GL Gl, string name, Face[] faces)
+        public unsafe Cube(GL Gl, string name, Face[] faces, Vector3D<float> blockPosition)
         {
             initStaticMembers(Gl, name);
             TextureBlock textureBlock = textureBlocks[name];
             
             
-            Vbo = new BufferObject<CubeVertex>(Gl, textureBlock.getCubeVertices(faces), BufferTargetARB.ArrayBuffer);
+            Vbo = new BufferObject<CubeVertex>(Gl, textureBlock.getCubeVertices(faces, blockPosition), BufferTargetARB.ArrayBuffer);
             VaoCube = new VertexArrayObject<CubeVertex, uint>(Gl, Vbo);
 
             VaoCube.VertexAttributePointer(0, 3, VertexAttribPointerType.Float, "position");
@@ -62,14 +62,14 @@ namespace MinecraftCloneSilk.GameComponent
             }
         }
 
-        public unsafe void Draw(GL Gl, double deltaTime, Vector3 position)
+        public unsafe void Draw(GL Gl, double deltaTime, Vector3 chunkPosition)
         {
             VaoCube.Bind();
             cubeShader.Use();
             cubeTexture.Bind();
 
             Matrix4x4 model = Matrix4x4.Identity;
-            model = Matrix4x4.CreateTranslation(position);
+            model = Matrix4x4.CreateTranslation(chunkPosition);
             cubeShader.SetUniform("model", model);
 
 
