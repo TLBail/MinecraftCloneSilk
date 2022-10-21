@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Numerics;
+using System.Text.Json;
 using Silk.NET.Maths;
 
 namespace MinecraftCloneSilk.GameComponent
@@ -31,17 +32,18 @@ namespace MinecraftCloneSilk.GameComponent
             cubeVertices[(int)Face.TOP]  = calculateCubeTopVertices();
         }
 
-        public CubeVertex[] getCubeVertices(Face[] faces)
+        public CubeVertex[] getCubeVertices(Face[] faces, Vector3D<float> blockPosition)
         {
             CubeVertex[] vertices = new CubeVertex[6 * faces.Length];
             int index = 0;
             foreach (var face in faces) {
                 foreach (var vertex in cubeVertices[(int)face]) {
                     vertices[index] = vertex;
+                    vertices[index].position += blockPosition;
                     index++;
                 }
             }
-            return vertices.ToArray();
+            return vertices;
         }
         private Vector2D<float> bottomLeft(int textureX, int textureY) {
             return new Vector2D<float>( (32.0f * textureX) / 256.0f + 0.01f, (32.0f * textureY) / 256.0f  + 0.01f);

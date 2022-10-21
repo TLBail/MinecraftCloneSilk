@@ -96,7 +96,12 @@ namespace MinecraftCloneSilk.GameComponent
 
         private void initCubes(int x, int y, int z) {
             if(getFaces(blocks[x,y,z]).Length == 0) return;
-            blocks[x, y, z].cube = new Cube(Game.getInstance().getGL(), blocks[x,y,z].name, getFaces(blocks[x, y, z]));
+            blocks[x, y, z].cube = new Cube(
+                Game.getInstance().getGL(),
+                blocks[x,y,z].name,
+                getFaces(blocks[x, y, z]),
+                new Vector3D<float>(x, y, z)
+                );
             
         }
 
@@ -150,7 +155,7 @@ namespace MinecraftCloneSilk.GameComponent
             foreach (Block block in blocks)
             {
                 if (!block.airBlock) {
-                    block.cube?.Draw(gl, deltaTime, new Vector3(block.position.X, block.position.Y, block.position.Z));
+                    block.cube?.Draw(gl, deltaTime, position);
                 }
             }
         }
