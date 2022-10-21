@@ -24,12 +24,13 @@ namespace MinecraftCloneSilk.GameComponent
         private uint vao;
         private static Texture cubeTexture;
         private static Dictionary<string, TextureBlock> textureBlocks = new Dictionary<string, TextureBlock>();
-        
+        private uint nbVertex;
     
         
         
         public unsafe Cube(GL Gl, string name, Face[] faces, Vector3D<float> blockPosition)
         {
+            this.nbVertex = (uint)(faces.Length * 6);
             initStaticMembers(Gl, name);
             TextureBlock textureBlock = textureBlocks[name];
             
@@ -73,7 +74,7 @@ namespace MinecraftCloneSilk.GameComponent
             cubeShader.SetUniform("model", model);
 
 
-            Gl.DrawArrays(PrimitiveType.Triangles, 0, 36);
+            Gl.DrawArrays(PrimitiveType.Triangles, 0, nbVertex);
         }
 
         
