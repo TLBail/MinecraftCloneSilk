@@ -17,8 +17,25 @@ namespace MinecraftCloneSilk.GameComponent
 
         private const string PATH_TO_JSON = "./Assets/blocks/json/";
 
+        private static readonly Dictionary<string, TextureBlock> textureBlocks = new Dictionary<string, TextureBlock>();
 
-        public TextureBlock(string nameBlock)
+        public static List<string> keys()
+        {
+            return textureBlocks.Keys.ToList();
+        }
+        
+        public static TextureBlock get(string nameBlock)
+        {
+            if (textureBlocks.ContainsKey(nameBlock)) {
+                return textureBlocks[nameBlock];
+            }
+
+            TextureBlock textureBlock = new TextureBlock(nameBlock);
+            textureBlocks.Add(nameBlock, textureBlock);
+            return textureBlock;
+        }
+
+        private TextureBlock(string nameBlock)
         {
             string path = PATH_TO_JSON + nameBlock + ".json";
             string jsonString = File.ReadAllText(path);
