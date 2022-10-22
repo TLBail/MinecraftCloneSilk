@@ -57,7 +57,7 @@ namespace MinecraftCloneSilk.GameComponent
             //UI
             //new DemoWindow();
             new PlayerUi(this, player);
-            
+            new WorldUI(this, world);
         }
 
 
