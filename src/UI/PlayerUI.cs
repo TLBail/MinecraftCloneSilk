@@ -48,6 +48,8 @@ public class PlayerUi
         {
             player.position = new Vector3(newX, newY, newZ);
         }
+        
+        
 
         
         

@@ -1,5 +1,6 @@
 ﻿using Silk.NET.OpenGL;
 using System;
+using Microsoft.VisualBasic.CompilerServices;
 using MinecraftCloneSilk.GameComponent;
 
 namespace MinecraftCloneSilk.Core
@@ -17,6 +18,7 @@ namespace MinecraftCloneSilk.Core
             _gl = gl;
             _bufferType = bufferType;
 
+    
             _handle = _gl.GenBuffer();
             Bind();
             fixed (void* d = data)
@@ -25,6 +27,23 @@ namespace MinecraftCloneSilk.Core
             }
         }
 
+        public unsafe BufferObject(GL gl, int nbVertex, BufferTargetARB bufferType)
+        {
+            Game.getInstance().disposables += Dispose;
+            this._gl = gl;
+            _bufferType = bufferType;
+
+            _handle = gl.GenBuffer();
+            Bind();
+            gl.BufferData(bufferType, (nuint)(nbVertex * sizeof(TDataType)), null, BufferUsageARB.DynamicDraw);
+        }
+
+        public void  sendData(ReadOnlySpan<TDataType> data, nint offset)
+        {
+            _gl.BufferSubData(_bufferType, offset,  data);
+        }
+        
+        
         public void Bind()
         {
             _gl.BindBuffer(_bufferType, _handle);

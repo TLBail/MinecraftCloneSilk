@@ -29,8 +29,6 @@ namespace MinecraftCloneSilk.Core
             IWindow window = game.getWindow();
             Vector2D<int> size = window.GetFullSize();
             AspectRatio = (float)size.X / (float)size.Y;
-            Console.WriteLine("aspect ration " + AspectRatio);
-
             window.FramebufferResize += FrameBufferResize;
             game.mainCamera = this;
             IMouse mouse = game.getMouse();

@@ -30,7 +30,7 @@ namespace MinecraftCloneSilk.Core
 
         public uint uboWorld;
 
-        private static readonly Color CLEAR_COLOR = Color.Aqua;
+        private static readonly Color CLEAR_COLOR = Color.Lavender;
 
         public OpenGl(Game game)
         {
