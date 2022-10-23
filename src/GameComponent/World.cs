@@ -15,7 +15,7 @@ namespace MinecraftCloneSilk.GameComponent
 
         private Player player;
         private Game game;
-        private const int RADIUS = 1;
+        private const int RADIUS = 3;
 
 
         private Dictionary<Vector3D<int>, Chunk> worldChunks;
@@ -27,10 +27,9 @@ namespace MinecraftCloneSilk.GameComponent
             game.updatables += Update;
             game.drawables += Draw;
 
-            worldChunks = new Dictionary<Vector3D<int>, Chunk>();
-            //worldChunks.Add(Vector3D<int>.Zero, new Chunk(Vector3D<int>.Zero, this));
-            //worldChunks[Vector3D<int>.Zero].displayChunk();
+            worldChunks = new Dictionary<Vector3D<int>, Chunk>((RADIUS + 1) * (RADIUS + 1)* (RADIUS + 1));
         }
+
 
         public void addBlock(string blockName, Vector3D<int> position)
         {
@@ -139,6 +138,26 @@ namespace MinecraftCloneSilk.GameComponent
             foreach (var chunkReleva in chunkRelevant) {
                 chunkReleva.displayChunk();
             }
+        }
+
+        
+        private void addExempleChunk()
+        {
+            Vector3D<int>[] postions = new[]
+            {
+                Vector3D<int>.Zero, 
+                new Vector3D<int>(0, (int)Chunk.CHUNK_SIZE, 0),
+                new Vector3D<int>((int)Chunk.CHUNK_SIZE, 0, 0),
+
+            };
+            foreach (var postion in postions) {
+                worldChunks.Add(postion, new Chunk(postion, this));
+            }
+
+            foreach (var postion in postions) {
+                worldChunks[postion].displayChunk();
+            }
+            
         }
 
     }
