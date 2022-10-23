@@ -17,15 +17,15 @@ public class Chunk
     public static readonly uint CHUNK_SIZE = 16;
     private static Shader cubeShader;
     private static Texture cubeTexture;
-
+    
 
     private BufferObject<CubeVertex> Vbo;
     private VertexArrayObject<CubeVertex, uint> Vao;
-    private CubeVertex[] vertices;
 
     private World world;
     private readonly GL Gl;
     public bool displayable { get; private set; }
+    private int nbVertex = 0;
     
     
     public Chunk(Vector3D<int> position, World world)
@@ -97,10 +97,9 @@ public class Chunk
         Vbo = new BufferObject<CubeVertex>(Gl, nbVertexMax, BufferTargetARB.ArrayBuffer);
         Vao = new VertexArrayObject<CubeVertex, uint>(Gl, Vbo);
         
-        
+        Vao.Bind();
         Vao.VertexAttributePointer(0, 3, VertexAttribPointerType.Float, "position");
         Vao.VertexAttributePointer(1, 2, VertexAttribPointerType.Float, "texCoords");
-        
     }
 
 
@@ -122,10 +121,9 @@ public class Chunk
                 }
             }
         }
-
-        vertices = listVertices.ToArray();
-
-        Vbo.sendData(vertices, 0);
+        nbVertex = listVertices.Count;
+        Vbo.Bind();
+        Vbo.sendData(listVertices.ToArray(), 0);
     }
 
     private void initStaticMembers()
@@ -231,7 +229,7 @@ public class Chunk
         cubeShader.SetUniform("model", model);
 
 
-        Gl.DrawArrays(PrimitiveType.Triangles, 0, (uint)vertices.Length);
+        Gl.DrawArrays(PrimitiveType.Triangles, 0, (uint)nbVertex);
     }
     
     
