@@ -26,7 +26,9 @@ public class Chunk
     private readonly GL Gl;
     public bool displayable { get; private set; }
     private int nbVertex = 0;
-    
+
+    private List<DebugRay> debugRays = new List<DebugRay>();
+    private bool debugMode = false;
     
     public Chunk(Vector3D<int> position, World world)
     {
@@ -124,6 +126,25 @@ public class Chunk
         nbVertex = listVertices.Count;
         Vbo.Bind();
         Vbo.sendData(listVertices.ToArray(), 0);
+    }
+
+    public void debug(bool isDebugActive)
+    {
+        
+        if (debugMode) {
+            debugRays.Clear();
+        }
+        else {
+            debugRays.Add( new DebugRay(new Vector3D<float>(position.X, position.Y, position.Z),
+                new Vector3D<float>(position.X + Chunk.CHUNK_SIZE, position.Y, position.Z)));
+            debugRays.Add( new DebugRay(new Vector3D<float>(position.X, position.Y, position.Z),
+                new Vector3D<float>(position.X , position.Y +  Chunk.CHUNK_SIZE, position.Z)));
+
+            debugRays.Add( new DebugRay(new Vector3D<float>(position.X, position.Y, position.Z),
+                new Vector3D<float>(position.X , position.Y , position.Z +  Chunk.CHUNK_SIZE)));
+        }
+
+        debugMode = !debugMode;
     }
 
     private void initStaticMembers()

@@ -22,6 +22,7 @@ public class WorldUI
         game.uiDrawables += UiDrawables;
         keyboard = game.getKeyboard();
         visible = (key == null);
+        worldMode = world.worldMode.ToString();
     }
     public WorldUI(Game game, World world) : this(game, world, null) {}
 
@@ -31,7 +32,9 @@ public class WorldUI
     private static int newBlockZ;
 
     private static string newBlockName = "metal";
-        
+    private static string worldMode = "EMPTY";
+
+    private string previousWorldMode;
     
     private void UiDrawables()
     {
@@ -55,6 +58,8 @@ public class WorldUI
             }
             ImGui.EndCombo();
         }
+        
+        
 
         ImGui.InputInt("x", ref newBlockX);
         ImGui.InputInt("y", ref newBlockY);
@@ -62,6 +67,27 @@ public class WorldUI
         if (ImGui.Button("set block")) {
             world.addBlock(newBlockName, new Vector3D<int>(newBlockX, newBlockY, newBlockZ));
         }
+
+        WorldMode[] worldModes = (WorldMode[])Enum.GetValues(typeof(WorldMode));
+        if(ImGui.BeginCombo("worldMode",worldMode )) {
+            for (int n = 0; n < worldModes.Length; n++)
+            {
+                bool is_selected = (worldMode == worldModes[n].ToString());
+                if (ImGui.Selectable(worldModes[n].ToString(), is_selected))
+                    worldMode = worldModes[n].ToString();
+                if (is_selected)
+                    ImGui.SetItemDefaultFocus();   // Set the initial focus when opening the combo (scrolling + for keyboard navigation support in the upcoming navigation branch)
+            }
+            ImGui.EndCombo();
+        }
+
+        if (previousWorldMode != worldMode) {
+            world.setWorldMode(Enum.Parse<WorldMode>(worldMode));
+            previousWorldMode = worldMode;
+        }
+
+        
+
         
         
         ImGui.End();
