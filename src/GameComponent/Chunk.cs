@@ -135,13 +135,42 @@ public class Chunk
             debugRays.Clear();
         }
         else {
+            //base
             debugRays.Add( new DebugRay(new Vector3D<float>(position.X, position.Y, position.Z),
                 new Vector3D<float>(position.X + Chunk.CHUNK_SIZE, position.Y, position.Z)));
             debugRays.Add( new DebugRay(new Vector3D<float>(position.X, position.Y, position.Z),
-                new Vector3D<float>(position.X , position.Y +  Chunk.CHUNK_SIZE, position.Z)));
-
-            debugRays.Add( new DebugRay(new Vector3D<float>(position.X, position.Y, position.Z),
                 new Vector3D<float>(position.X , position.Y , position.Z +  Chunk.CHUNK_SIZE)));
+
+            debugRays.Add( new DebugRay(new Vector3D<float>(position.X, position.Y, position.Z +  Chunk.CHUNK_SIZE),
+                new Vector3D<float>(position.X + CHUNK_SIZE, position.Y , position.Z +  Chunk.CHUNK_SIZE)));
+            debugRays.Add( new DebugRay(new Vector3D<float>(position.X + CHUNK_SIZE, position.Y, position.Z),
+                new Vector3D<float>(position.X + CHUNK_SIZE, position.Y , position.Z +  Chunk.CHUNK_SIZE)));
+            
+            //top base
+
+            debugRays.Add( new DebugRay(new Vector3D<float>(position.X, position.Y + CHUNK_SIZE, position.Z),
+                new Vector3D<float>(position.X + Chunk.CHUNK_SIZE, position.Y + CHUNK_SIZE, position.Z)));
+            debugRays.Add( new DebugRay(new Vector3D<float>(position.X, position.Y + CHUNK_SIZE, position.Z),
+                new Vector3D<float>(position.X , position.Y + CHUNK_SIZE , position.Z +  Chunk.CHUNK_SIZE)));
+
+            
+            debugRays.Add( new DebugRay(new Vector3D<float>(position.X, position.Y + CHUNK_SIZE, position.Z +  Chunk.CHUNK_SIZE),
+                new Vector3D<float>(position.X + CHUNK_SIZE, position.Y +CHUNK_SIZE, position.Z +  Chunk.CHUNK_SIZE)));
+            debugRays.Add( new DebugRay(new Vector3D<float>(position.X + CHUNK_SIZE, position.Y + CHUNK_SIZE, position.Z),
+                new Vector3D<float>(position.X + CHUNK_SIZE, position.Y + CHUNK_SIZE , position.Z +  Chunk.CHUNK_SIZE)));
+            
+            //between
+            debugRays.Add( new DebugRay(new Vector3D<float>(position.X, position.Y, position.Z),
+                new Vector3D<float>(position.X , position.Y +  Chunk.CHUNK_SIZE, position.Z)));
+            debugRays.Add( new DebugRay(new Vector3D<float>(position.X + CHUNK_SIZE, position.Y, position.Z),
+                new Vector3D<float>(position.X + CHUNK_SIZE, position.Y +  Chunk.CHUNK_SIZE, position.Z)));
+            debugRays.Add( new DebugRay(new Vector3D<float>(position.X + CHUNK_SIZE, position.Y, position.Z + CHUNK_SIZE),
+                new Vector3D<float>(position.X + CHUNK_SIZE, position.Y +  Chunk.CHUNK_SIZE, position.Z+ CHUNK_SIZE)));
+            debugRays.Add( new DebugRay(new Vector3D<float>(position.X, position.Y, position.Z + CHUNK_SIZE),
+                new Vector3D<float>(position.X , position.Y +  Chunk.CHUNK_SIZE, position.Z+ CHUNK_SIZE)));
+
+            
+            
         }
 
         debugMode = !debugMode;
