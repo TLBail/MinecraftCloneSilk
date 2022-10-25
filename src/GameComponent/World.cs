@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,6 +11,13 @@ using Silk.NET.Maths;
 
 namespace MinecraftCloneSilk.GameComponent
 {
+    public enum WorldMode
+    {
+        EMPTY,   // no chunks
+        SIMPLE,  //juste couple of chunk around 0
+        DYNAMIC // chunks generated around player
+    }
+    
     public class World
     {
 
@@ -20,12 +28,15 @@ namespace MinecraftCloneSilk.GameComponent
 
         private Dictionary<Vector3D<int>, Chunk> worldChunks;
 
-        public World(Player player)
+        public WorldMode worldMode { get; set; }
+        
+        public World(Player player, WorldMode worldMode)
         {
             this.player = player;
             game = Game.getInstance();
             game.updatables += Update;
             game.drawables += Draw;
+            this.worldMode = worldMode;
 
             worldChunks = new Dictionary<Vector3D<int>, Chunk>((RADIUS + 1) * (RADIUS + 1)* (RADIUS + 1));
         }
@@ -66,15 +77,37 @@ namespace MinecraftCloneSilk.GameComponent
             }
             
         }
-        
+
+        public void setWorldMode(WorldMode worldMode)
+        {
+            this.worldMode =  worldMode;
+            switch (worldMode) {
+                case WorldMode.EMPTY:
+                    if(worldChunks.Count() > 0) worldChunks.Clear();
+                    break;
+                case WorldMode.SIMPLE:
+                    if (worldChunks.Count() == 0) addExempleChunk();
+                    break;
+                case WorldMode.DYNAMIC:
+                    createChunkAroundPlayer();
+                    break;
+            }
+        }
+
+        public ImmutableDictionary<Vector3D<int>, Chunk> getWorldChunks()
+        {
+            return worldChunks.ToImmutableDictionary();
+        }
+
         public void Update(double deltaTime)
         {
+            if(worldMode == WorldMode.DYNAMIC) createChunkAroundPlayer();   
+            
             foreach (var chunk in worldChunks.Values)
             {
                 chunk.Update(deltaTime);
             }
             
-            createChunkAroundPlayer();
             
         }
 
