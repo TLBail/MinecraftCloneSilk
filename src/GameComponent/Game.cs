@@ -9,6 +9,7 @@ using Silk.NET.OpenGL;
 using MinecraftCloneSilk.GameComponent;
 using MinecraftCloneSilk.Core;
 using MinecraftCloneSilk.UI;
+using Silk.NET.Maths;
 
 namespace MinecraftCloneSilk.GameComponent
 {
@@ -28,6 +29,8 @@ namespace MinecraftCloneSilk.GameComponent
         public Dispose disposables;
         public DrawUI uiDrawables;
         public Camera mainCamera { get; set; }
+
+        public List<DebugRay> debugRays = new List<DebugRay>();
 
         
         //game element
@@ -52,12 +55,13 @@ namespace MinecraftCloneSilk.GameComponent
         public void start(GL Gl)
         {
             player = new Player();
-            world = new World(player);
+            world = new World(player, WorldMode.EMPTY);
             
             //UI
             //new DemoWindow();
             new PlayerUi(this, player);
             new WorldUI(this, world);
+            new DebugRayManagerUI(this, world);
         }
 
 
