@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Numerics;
 using Silk.NET.Input;
 using MinecraftCloneSilk.Core;
+using Silk.NET.Maths;
 
 
 namespace MinecraftCloneSilk.GameComponent
@@ -16,6 +17,8 @@ namespace MinecraftCloneSilk.GameComponent
         private IKeyboard primaryKeyboard;
         private const float moveSpeed = 5.0f;
         private const float sprintSpeed = 10.0f;
+        private IMouse mouse;
+        private bool debugActivated = false;
         
         public Vector3 position
         {
@@ -33,6 +36,29 @@ namespace MinecraftCloneSilk.GameComponent
             Game game = Game.getInstance();
             primaryKeyboard = game.getKeyboard();
             game.updatables += Update;
+            this.mouse = game.getMouse();
+        }
+
+        private void onMouseClick(IMouse arg1, MouseButton arg2)
+        {
+            Console.WriteLine("new debug ray !");
+            float raySize = 3;
+            new DebugRay(new Vector3D<float>(position.X, position.Y, position.Z) , 
+                new Vector3D<float>(position.X + (camera.Front.X * raySize),
+                    position.Y + (camera.Front.Y * raySize),
+                    position.Z + (camera.Front.Z * raySize)));
+        }
+
+        public void debug(bool? setDebug = null)
+        {
+            debugActivated = setDebug ?? !debugActivated;
+
+            if (debugActivated) {
+                mouse.MouseDown += onMouseClick;
+            }
+            else {
+                mouse.MouseDown -= onMouseClick;
+            }
         }
 
         public void Update(double deltaTime)

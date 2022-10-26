@@ -51,6 +51,7 @@ namespace MinecraftCloneSilk.Core
 
         public void Dispose()
         {
+            Game.getInstance().disposables -= Dispose;
             _gl.DeleteBuffer(_handle);
         }
     }

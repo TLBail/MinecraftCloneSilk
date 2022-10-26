@@ -22,8 +22,10 @@ public class DebugRay
     private Game game;
     
     public DebugRay(Vector3D<float> start, Vector3D<float> end, Vector3D<float> color)
+    : this(start, end, color, color) {    }
+
+    public DebugRay(Vector3D<float> start, Vector3D<float> end, Vector3D<float> startColor, Vector3D<float> endColor)
     {
-        
         this.start = start;
         this.end = end;
         game = Game.getInstance();
@@ -32,8 +34,8 @@ public class DebugRay
 
         DebugRayVertex[] vertices = new[]
         {
-            new DebugRayVertex(start, color),
-            new DebugRayVertex(end, color),
+            new DebugRayVertex(start, startColor),
+            new DebugRayVertex(end, endColor),
         };
 
         Vbo = new BufferObject<DebugRayVertex>(Gl, vertices, BufferTargetARB.ArrayBuffer);
@@ -47,10 +49,19 @@ public class DebugRay
             rayShader = new Shader(Gl, "./Shader/3dPosOneColorUni/VertexShader.hlsl",
                 "./Shader/3dPosOneColorUni/FragmentShader.hlsl");
         }
+
     }
+    
     
     public DebugRay(Vector3D<float> start, Vector3D<float> end) : this(start,  end, DEFAULT_COLOR){}
 
+    public void remove()
+    {
+        game.drawables -= Drawables;
+        Vao.Dispose();
+        Vbo.Dispose();
+    }
+    
     private void Drawables(GL gl, double deltatime)
     {
         Vao.Bind();
