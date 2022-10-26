@@ -29,6 +29,8 @@ public class PlayerUi
     static float newZ = 5;
 
     
+
+    
     private void uiDrawables()
     {
         if (key != null && keyboard.IsKeyPressed((Key)key)) visible = !visible;
@@ -49,11 +51,46 @@ public class PlayerUi
             player.position = new Vector3(newX, newY, newZ);
         }
         
-        
-
-        
+        switchDebug();    
+    
         
         ImGui.End();
         
+    }
+
+    
+    static bool enable_7m = false;  // default value, the button is disabled 
+    static float b = 0.3f; //  test whatever color you need from imgui_demo.cpp e.g.
+    static float c = 0.5f; // 
+    static int i = 3;
+
+    
+    private void switchDebug()
+    {
+        
+
+        if (enable_7m == true)
+        {
+
+            ImGui.PushID("disable player debug click");
+            ImGui.PushStyleColor(ImGuiCol.Button, new Vector4(i/7.0f, b, b, 1.0f));
+            ImGui.PushStyleColor(ImGuiCol.ButtonHovered, new Vector4(i/7.0f, b, b, 1.0f));
+            ImGui.PushStyleColor(ImGuiCol.ButtonActive, new Vector4(i/7.0f, c, c, 1.0f));
+            ImGui.Button("disable player debug click");
+            if (ImGui.IsItemClicked(0))
+            {
+                enable_7m = !enable_7m;
+                player.debug();
+            }
+            ImGui.PopStyleColor(3);
+            ImGui.PopID();
+        }
+        else
+        {
+            if (ImGui.Button("enable player debug click")) {
+                enable_7m = true;
+                player.debug(true);
+            }
+        }
     }
 }
