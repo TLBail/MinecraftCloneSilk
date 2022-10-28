@@ -99,6 +99,15 @@ namespace MinecraftCloneSilk.GameComponent
             return worldChunks.ToImmutableDictionary();
         }
 
+        public Chunk getChunk(Vector3D<int> position)
+        {
+            position = getChunkPosition(position);
+            if (worldChunks.ContainsKey(position)) {
+                return worldChunks[position];
+            }
+            return null;
+        }
+        
         public void Update(double deltaTime)
         {
             if(worldMode == WorldMode.DYNAMIC) createChunkAroundPlayer();   
@@ -126,7 +135,7 @@ namespace MinecraftCloneSilk.GameComponent
             }
         }
         
-        private Vector3D<int> getChunkPosition(Vector3D<int> blockPosition) {
+        public static Vector3D<int> getChunkPosition(Vector3D<int> blockPosition) {
             return new Vector3D<int>(
                 (int)((int)(MathF.Floor((float)blockPosition.X / Chunk.CHUNK_SIZE)) * Chunk.CHUNK_SIZE),
                 (int)((int)(MathF.Floor((float)blockPosition.Y/ Chunk.CHUNK_SIZE)) * Chunk.CHUNK_SIZE),
@@ -135,7 +144,7 @@ namespace MinecraftCloneSilk.GameComponent
 
         }
 
-        private Vector3D<int> getLocalPosition(Vector3D<int> globalPosition) {
+        public static Vector3D<int> getLocalPosition(Vector3D<int> globalPosition) {
             Vector3D<int> localPosition  = new Vector3D<int>((int)(globalPosition.X % Chunk.CHUNK_SIZE), (int)(globalPosition.Y % Chunk.CHUNK_SIZE), (int)(globalPosition.Z % Chunk.CHUNK_SIZE));
             if (localPosition.X < 0) localPosition.X = (int)(Chunk.CHUNK_SIZE  + localPosition.X);
             if (localPosition.Y < 0) localPosition.Y = (int)(Chunk.CHUNK_SIZE + localPosition.Y);

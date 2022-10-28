@@ -36,6 +36,7 @@ namespace MinecraftCloneSilk.GameComponent
         //game element
         private World world;
         private Player player;
+        private PlayerInteractionToWorld playerInteraction;
         
         
         //UI element
@@ -56,12 +57,14 @@ namespace MinecraftCloneSilk.GameComponent
         {
             player = new Player();
             world = new World(player, WorldMode.EMPTY);
-            
+            playerInteraction = new PlayerInteractionToWorld(world, player, this);
+          
             //UI
             //new DemoWindow();
             new PlayerUi(this, player);
             new WorldUI(this, world);
             new DebugRayManagerUI(this, world);
+            new PlayerInteractionUI(this, world, playerInteraction);
         }
 
 

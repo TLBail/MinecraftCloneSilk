@@ -19,7 +19,8 @@ namespace MinecraftCloneSilk.GameComponent
         private const float sprintSpeed = 10.0f;
         private IMouse mouse;
         private bool debugActivated = false;
-        
+
+
         public Vector3 position
         {
             get => camera.Position;
@@ -37,6 +38,16 @@ namespace MinecraftCloneSilk.GameComponent
             primaryKeyboard = game.getKeyboard();
             game.updatables += Update;
             this.mouse = game.getMouse();
+        }
+
+        public Vector3 getDirection()
+        {
+            return camera.Front;
+        }
+
+        public Vector3D<float> getDirection3D()
+        {
+            return new Vector3D<float>(camera.Front.X, camera.Front.Y, camera.Front.Z);
         }
 
         private void onMouseClick(IMouse arg1, MouseButton arg2)
