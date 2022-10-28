@@ -27,4 +27,14 @@ public class Ray
         sign[2] = (invdir.Z < 0) ? 1: 0;
 
     }
+
+    public Vector3D<int> projectToBlock(float offset)
+    {
+        Vector3D<float> projetion = orig + Vector3D.Multiply(dir, offset);
+        return new Vector3D<int>(
+            (int)Math.Round(projetion.X, 0), 
+            (int)Math.Round(projetion.Y, 0),
+            (int)Math.Round(projetion.Z, 0)
+            );
+    }
 }
