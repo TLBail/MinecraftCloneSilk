@@ -19,7 +19,7 @@ public class Plane
         this.planeCenter = center;
     }
 
-    public bool intersect(Ray ray, float t)
+    public bool intersect(Ray ray, ref float t)
     {
         float denom = Vector3D.Dot(planeNormal, ray.dir);
         if (denom > 1.0e-6) {

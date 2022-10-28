@@ -55,7 +55,7 @@ namespace MinecraftCloneSilk.GameComponent
         {
             //create all objects 
             gameObjects.Add("player", new Player(this));
-            gameObjects.Add("world", new World(this, WorldMode.SIMPLE));
+            gameObjects.Add("world", new World(this, WorldMode.DYNAMIC));
             
             //gameObjects.Add("demoWindow", new DemoWindow());
 

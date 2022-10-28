@@ -42,11 +42,13 @@ namespace MinecraftCloneSilk.GameComponent
         protected override void start()
         {
             this.player = (Player)game.gameObjects["player"];
+            if(worldMode == WorldMode.SIMPLE) addExempleChunk();
         }
 
         protected override void update(double deltaTime)
         {
             if(worldMode == WorldMode.DYNAMIC) createChunkAroundPlayer();   
+            
             
             foreach (var chunk in worldChunks.Values)
             {
@@ -66,7 +68,7 @@ namespace MinecraftCloneSilk.GameComponent
             Vector3D<int> key = getChunkPosition(position);
             if (worldChunks.ContainsKey(key)) {
                 Vector3D<int> localPosition = getLocalPosition(position);
-                worldChunks[key].addBlock(localPosition.X, localPosition.Y, localPosition.Z, blockName);
+                worldChunks[key].setBlock(localPosition.X, localPosition.Y, localPosition.Z, blockName);
             }
         }
 

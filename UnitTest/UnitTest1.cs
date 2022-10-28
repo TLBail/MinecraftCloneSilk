@@ -22,10 +22,11 @@ public class Tests
             new Vector3D<float>(0.0f, -0.5f, -0.5f),
             new Vector3D<float>(0f, 0f, 0f)
         );
-        Assert.IsTrue(plane.intersect(ray, 10));
+        float distance = 10;
+        Assert.IsTrue(plane.intersect(ray, ref distance));
         
         Ray rayThatDontIntersect = new Ray(Vector3D<float>.Zero, new Vector3D<float>(-1.0f, 0.0f, 0.0f));
-        Assert.IsFalse(plane.intersect(rayThatDontIntersect, 10));
+        Assert.IsFalse(plane.intersect(rayThatDontIntersect, ref distance));
         
         
         Plane planeInverse = new Plane(
@@ -35,7 +36,7 @@ public class Tests
             new Vector3D<float>(0f, 0f, 0f)
         );
         
-        Assert.IsFalse(planeInverse.intersect(ray, 10));
+        Assert.IsFalse(planeInverse.intersect(ray, ref distance));
 
     }
 }
