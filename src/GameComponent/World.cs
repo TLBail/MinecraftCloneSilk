@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Silk.NET.OpenGL;
 using System.Numerics;
 using System.Runtime.Serialization.Json;
+using MinecraftCloneSilk.UI;
 using Silk.NET.Maths;
 
 namespace MinecraftCloneSilk.GameComponent
@@ -18,31 +19,45 @@ namespace MinecraftCloneSilk.GameComponent
         DYNAMIC // chunks generated around player
     }
     
-    public class World
+    public class World : GameObject
     {
 
         private Player player;
-        private Game game;
         private const int RADIUS = 3;
-
+        private WorldUI worldUi;
 
         private Dictionary<Vector3D<int>, Chunk> worldChunks;
 
         public WorldMode worldMode { get; set; }
         
-        public World(Player player, WorldMode worldMode)
+        public World(Game game, WorldMode worldMode = WorldMode.EMPTY) : base(game)
         {
-            this.player = player;
-            game = Game.getInstance();
-            game.updatables += Update;
             game.drawables += Draw;
             this.worldMode = worldMode;
-
             worldChunks = new Dictionary<Vector3D<int>, Chunk>((RADIUS + 1) * (RADIUS + 1)* (RADIUS + 1));
+            worldUi = new WorldUI(this);
+        }
+        
+        
+        protected override void start()
+        {
+            this.player = (Player)game.gameObjects["player"];
         }
 
+        protected override void update(double deltaTime)
+        {
+            if(worldMode == WorldMode.DYNAMIC) createChunkAroundPlayer();   
+            
+            foreach (var chunk in worldChunks.Values)
+            {
+                chunk.Update(deltaTime);
+            }
+        }
 
-        public void addBlock(string blockName, Vector3D<int> position)
+      
+
+
+        public void setBlock(string blockName, Vector3D<int> position)
         {
             if (blockName.Equals("airBlock")) {
                 removeBlock(position);
@@ -108,17 +123,7 @@ namespace MinecraftCloneSilk.GameComponent
             return null;
         }
         
-        public void Update(double deltaTime)
-        {
-            if(worldMode == WorldMode.DYNAMIC) createChunkAroundPlayer();   
-            
-            foreach (var chunk in worldChunks.Values)
-            {
-                chunk.Update(deltaTime);
-            }
-            
-            
-        }
+    
 
         public void Draw(GL gl, double deltaTime)
         {
@@ -202,5 +207,9 @@ namespace MinecraftCloneSilk.GameComponent
             
         }
 
+        public override void toImGui()
+        {
+            worldUi.drawUi();
+        }
     }
 }
