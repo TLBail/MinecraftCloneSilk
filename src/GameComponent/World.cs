@@ -23,8 +23,9 @@ namespace MinecraftCloneSilk.GameComponent
     {
 
         private Player player;
-        private const int RADIUS = 3;
+        private const int RADIUS = 6;
         private WorldUI worldUi;
+        public WorldGeneration worldGeneration;
 
         private Dictionary<Vector3D<int>, Chunk> worldChunks;
 
@@ -36,12 +37,13 @@ namespace MinecraftCloneSilk.GameComponent
             this.worldMode = worldMode;
             worldChunks = new Dictionary<Vector3D<int>, Chunk>((RADIUS + 1) * (RADIUS + 1)* (RADIUS + 1));
             worldUi = new WorldUI(this);
+            worldGeneration = new WorldGeneration();
         }
         
         
         protected override void start()
         {
-            this.player = (Player)game.gameObjects["player"];
+            this.player = (Player)game.gameObjects[nameof(Player)];
             if(worldMode == WorldMode.SIMPLE) addExempleChunk();
         }
 
@@ -100,7 +102,11 @@ namespace MinecraftCloneSilk.GameComponent
             this.worldMode =  worldMode;
             switch (worldMode) {
                 case WorldMode.EMPTY:
-                    if(worldChunks.Count() > 0) worldChunks.Clear();
+                    if (worldChunks.Count() > 0) {
+                        worldChunks.Clear();
+                        GC.Collect();
+                    }
+                    
                     break;
                 case WorldMode.SIMPLE:
                     if (worldChunks.Count() == 0) addExempleChunk();

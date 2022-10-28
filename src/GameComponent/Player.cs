@@ -88,8 +88,8 @@ namespace MinecraftCloneSilk.GameComponent
 
         protected override void start()
         {
-            this.playerInteractionToWorld = new PlayerInteractionToWorld((World)game.gameObjects["world"], this);
-            world = (World)game.gameObjects["world"];
+            this.playerInteractionToWorld = new PlayerInteractionToWorld((World)game.gameObjects[nameof(World)], this);
+            world = (World)game.gameObjects[nameof(World)];
         }
 
         private void movePlayer(double deltaTime)
