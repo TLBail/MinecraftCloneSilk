@@ -25,7 +25,10 @@ namespace MinecraftCloneSilk.GameComponent
             this.name = name;
             this.transparent = transparent;
         }
-        
 
+        public override string ToString()
+        {
+            return "[" + position + "]" + " name : " + name;
+        }
     }
 }
