@@ -17,7 +17,8 @@ namespace MinecraftCloneSilk.GameComponent
 
 
         public Block(Vector3D<int> position) : this(position, "air", true) { }
-        
+
+        public Block(Vector3D<int> position, string name) : this(position, name, false){}
         public Block(Vector3D<int> position, string name, bool transparent)
         {
             airBlock = name.Equals("air"); 
