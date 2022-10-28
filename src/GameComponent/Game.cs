@@ -54,14 +54,15 @@ namespace MinecraftCloneSilk.GameComponent
         public void awake()
         {
             //create all objects 
-            gameObjects.Add("player", new Player(this));
-            gameObjects.Add("world", new World(this, WorldMode.DYNAMIC));
+            gameObjects.Add(nameof(Player), new Player(this));
+            gameObjects.Add(nameof(World), new World(this, WorldMode.DYNAMIC));
             
             //gameObjects.Add("demoWindow", new DemoWindow());
 
-            gameObjects.Add("DebugRayManagerUI",new DebugRayManagerUI(this));
-            gameObjects.Add("PlayerInteractionUI",new PlayerInteractionUI(this));
-            gameObjects.Add("gameUI", new GameUi(this));
+            gameObjects.Add(nameof(DebugRayManagerUI),new DebugRayManagerUI(this));
+            gameObjects.Add(nameof(PlayerInteractionUI),new PlayerInteractionUI(this));
+            gameObjects.Add(nameof(GameUi), new GameUi(this));
+            gameObjects.Add(nameof(WorldGeneration), new WorldGenerationUI(this));
         }
 
 

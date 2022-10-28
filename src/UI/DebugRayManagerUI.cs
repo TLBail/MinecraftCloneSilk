@@ -22,7 +22,7 @@ public class DebugRayManagerUI : GameObject
 
     protected override void start()
     {
-        world = (World)game.gameObjects["world"];
+        world = (World)game.gameObjects[nameof(World)];
     }
 
     public DebugRayManagerUI(Game game) : this(game, null) {}

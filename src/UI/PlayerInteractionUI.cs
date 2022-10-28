@@ -10,7 +10,6 @@ namespace MinecraftCloneSilk.UI;
 public class PlayerInteractionUI : GameObject
 {
     private PlayerInteractionToWorld playerInteraction;
-    private Game game;
     private Key? key;
     private IKeyboard keyboard;
     private bool visible;
@@ -28,7 +27,7 @@ public class PlayerInteractionUI : GameObject
 
     protected override void start()
     {
-        playerInteraction = ((Player)game.gameObjects["player"]).getPlayerInteractionToWorld();
+        playerInteraction = ((Player)game.gameObjects[nameof(Player)]).getPlayerInteractionToWorld();
     }
 
 
