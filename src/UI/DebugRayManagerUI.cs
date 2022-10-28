@@ -6,23 +6,26 @@ using Silk.NET.Maths;
 
 namespace MinecraftCloneSilk.UI;
 
-public class DebugRayManagerUI
+public class DebugRayManagerUI : GameObject
 {
     private World world;
     private bool visible;
     private IKeyboard keyboard;
     private Key? key;
-    public DebugRayManagerUI(Game game, World world, Key? key)
+    public DebugRayManagerUI(Game game, Key? key) : base(game)
     {
         game.uiDrawables += uiDrawables;
-        this.world = world;
         keyboard = game.getKeyboard();
         visible = (key == null);
         this.key = key;
-        
     }
 
-    public DebugRayManagerUI(Game game, World world) : this(game, world, null) {}
+    protected override void start()
+    {
+        world = (World)game.gameObjects["world"];
+    }
+
+    public DebugRayManagerUI(Game game) : this(game, null) {}
 
     static float newX = 5;
     static float newY = 5;

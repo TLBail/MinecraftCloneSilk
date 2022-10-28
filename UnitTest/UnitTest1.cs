@@ -27,5 +27,15 @@ public class Tests
         Ray rayThatDontIntersect = new Ray(Vector3D<float>.Zero, new Vector3D<float>(-1.0f, 0.0f, 0.0f));
         Assert.IsFalse(plane.intersect(rayThatDontIntersect, 10));
         
+        
+        Plane planeInverse = new Plane(
+            new Vector3D<float>(0.0f, -0.5f, -0.5f),
+            new Vector3D<float>(0.0f, -0.5f, 0.5f),
+            new Vector3D<float>(0.0f, 0.5f, 0.5f),
+            new Vector3D<float>(0f, 0f, 0f)
+        );
+        
+        Assert.IsFalse(planeInverse.intersect(ray, 10));
+
     }
 }

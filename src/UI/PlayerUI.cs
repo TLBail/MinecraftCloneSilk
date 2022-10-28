@@ -9,35 +9,18 @@ public class PlayerUi
 {
 
     private Player player;
-    private bool visible;
-    private IKeyboard keyboard;
-    private Key? key;
-    public PlayerUi(Game game, Player player, Key? key)
+    public PlayerUi(Player player)
     {
-        game.uiDrawables += uiDrawables;
         this.player = player;
-        keyboard = game.getKeyboard();
-        visible = (key == null);
-        this.key = key;
-        
     }
-
-    public PlayerUi(Game game, Player player) : this(game, player, null) {}
+    
 
     static float newX = 5;
     static float newY = 5;
     static float newZ = 5;
 
-    
-
-    
-    private void uiDrawables()
+    public void drawUi()
     {
-        if (key != null && keyboard.IsKeyPressed((Key)key)) visible = !visible;
-        if(!visible) return;
-        
-        
-        ImGui.Begin("Player");
         ImGui.Text("player coordonate");
         ImGui.Text("x : [ " + player.position.X.ToString("0.00") +
                    " ] y : [ " + player.position.Y.ToString("0.00") +
@@ -52,10 +35,6 @@ public class PlayerUi
         }
         
         switchDebug();    
-    
-        
-        ImGui.End();
-        
     }
 
     
@@ -93,4 +72,7 @@ public class PlayerUi
             }
         }
     }
+
+    
+
 }

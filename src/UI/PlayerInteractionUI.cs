@@ -7,29 +7,31 @@ using Silk.NET.Maths;
 
 namespace MinecraftCloneSilk.UI;
 
-public class PlayerInteractionUI
+public class PlayerInteractionUI : GameObject
 {
-    private  PlayerInteractionToWorld playerInteraction;
-    private World world;
+    private PlayerInteractionToWorld playerInteraction;
     private Game game;
     private Key? key;
     private IKeyboard keyboard;
     private bool visible;
     private Chunk lastChunkDebuged;
     
-    public PlayerInteractionUI(Game game, World world, PlayerInteractionToWorld playerInteraction, Key? key)
+    public PlayerInteractionUI(Game game, Key? key) : base(game)
     {
         this.key = key;
         this.game = game;
-        this.world = world;
-        this.playerInteraction = playerInteraction;
         game.uiDrawables += UiDrawables;
         keyboard = game.getKeyboard();
         visible = (key == null);
     }
-    public PlayerInteractionUI(Game game, World world, PlayerInteractionToWorld playerInteraction) : this(game, world, playerInteraction, null) {}
+    public PlayerInteractionUI(Game game) : this(game, null) {}
 
-    
+    protected override void start()
+    {
+        playerInteraction = ((Player)game.gameObjects["player"]).getPlayerInteractionToWorld();
+    }
+
+
     private void UiDrawables()
     {
         if (key != null && keyboard.IsKeyPressed((Key)key)) visible = !visible;
@@ -50,6 +52,9 @@ public class PlayerInteractionUI
                 chunkToDebug?.debug(true);
                 lastChunkDebuged =  chunkToDebug;
             }
+
+            Face? face = playerInteraction.getFace();
+            ImGui.Text("face toucher : " + face.ToString());
         }
         else {
             ImGui.Text("nothing intersect with player");

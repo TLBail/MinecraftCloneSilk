@@ -1,6 +1,7 @@
 ﻿using System.Numerics;
 using MinecraftCloneSilk.Collision;
 using Silk.NET.Maths;
+using Plane = MinecraftCloneSilk.Collision.Plane;
 
 namespace MinecraftCloneSilk.GameComponent;
 
@@ -8,9 +9,10 @@ public class PlayerInteractionToWorld
 {
     private World world;
     private Player player;
-    private Game game;
     private Block? block;
     private Chunk? chunk;
+    private Face? face;
+    
     
     private static readonly Vector3D<float> minChunk = new Vector3D<float>(-0.5f, -0.5f, -0.5f);
 
@@ -20,18 +22,30 @@ public class PlayerInteractionToWorld
     private static readonly Vector3D<float> minBlock = new Vector3D<float>(-0.5f, -0.5f, -0.5f);
     private static readonly Vector3D<float> maxBlock = new Vector3D<float>(0.5f, 0.5f, 0.5f);
 
+    private bool haveUpdated = false;
     
-    public PlayerInteractionToWorld(World world, Player player, Game game)
+    public PlayerInteractionToWorld(World world, Player player)
     {
         this.world = world;
         this.player = player;
-        this.game = game;
+        Game.getInstance().updatables += Updatables;
     }
 
+    private void Updatables(double deltatime)
+    {
+        haveUpdated = false;
+    }
 
 
     public void updateBlock()
     {
+        if(haveUpdated) return;
+        haveUpdated = true;
+        
+        
+        chunk = null;
+        block = null;
+        face = null;
         Vector3D<float> playerPositionf = new Vector3D<float>(player.position.X, player.position.Y, player.position.Z);
         Vector3D<int> playerPosition = new Vector3D<int>((int)player.position.X, (int)player.position.Y, (int)player.position.Z);
         Ray ray = new Ray(playerPositionf, player.getDirection3D());
@@ -40,10 +54,10 @@ public class PlayerInteractionToWorld
         Vector3D<int> chunkToTestPosition =
             World.getChunkPosition(playerPosition) + new Vector3D<int>((int)-Chunk.CHUNK_SIZE, (int)-Chunk.CHUNK_SIZE, (int)-Chunk.CHUNK_SIZE);
 
-        const int RADIUS = 1;
-        for (int x = 0; x < 2 *RADIUS; x++) {
-            for (int y = 0; y < 2 * RADIUS; y++) {
-                for (int z = 0; z < 2 * RADIUS; z++) {
+        const int RADIUS = 3;
+        for (int x = 0; x < RADIUS; x++) {
+            for (int y = 0; y <  RADIUS; y++) {
+                for (int z = 0; z < RADIUS; z++) {
                     Vector3D<int> key = chunkToTestPosition + new Vector3D<int>((int)(x * Chunk.CHUNK_SIZE), (int)(y * Chunk.CHUNK_SIZE),
                         (int)(z * Chunk.CHUNK_SIZE));
                     Vector3D<float> positionf =   new Vector3D<float>(chunkToTestPosition.X +  (x * Chunk.CHUNK_SIZE),
@@ -58,7 +72,6 @@ public class PlayerInteractionToWorld
                 }
             }
         }
-        
 
         foreach (Vector3D<float> hitedChunkPosition in hitedChunks) {
             
@@ -66,7 +79,13 @@ public class PlayerInteractionToWorld
             for (int x = 0; x < Chunk.CHUNK_SIZE; x++) {
                 for (int y = 0; y < Chunk.CHUNK_SIZE; y++) {
                     for (int z = 0; z < Chunk.CHUNK_SIZE; z++) {
-                        ray = new Ray(playerPositionf, player.getDirection3D());
+                        if (block.HasValue) {
+                            if (MathF.Abs( Vector3D.Distance(playerPositionf, hitedChunkPosition + new Vector3D<float>(x, y, z)) )>
+                                MathF.Abs(Vector3D.Distance(playerPositionf, hitedChunkPosition + new Vector3D<float>(((Block)block).position.X,
+                                    ((Block)block).position.Y, ((Block)block).position.Z)))) {
+                                continue;
+                            }
+                        }
                         AABBCube cube = new AABBCube(hitedChunkPosition +  minBlock + new Vector3D<float>(x, y, z),
                             hitedChunkPosition + maxBlock + new Vector3D<float>(x, y, z));
                         if (cube.intersect(ray, Chunk.CHUNK_SIZE * 2)) {
@@ -74,7 +93,6 @@ public class PlayerInteractionToWorld
                             if (!hitedChunk.getBlock(x, y, z).airBlock) {
                                 chunk = hitedChunk;
                                 block = hitedChunk.getBlock(x, y, z);
-                                return;   
                             }
                         }
                     }
@@ -82,12 +100,92 @@ public class PlayerInteractionToWorld
             }
         }
 
-        chunk = null;
-        block = null;
+        if(block.HasValue) updateFace(ray);
+
 
     }
 
 
+    private void updateFace(Ray ray)
+    {
+        //z-
+        Block rblock = (Block)block;
+        Plane collidingPlaneBackFace = new Plane(
+            new Vector3D<float>(rblock.position.X - 0.5f, rblock.position.Y - 0.5f, rblock.position.Z - 0.5f),
+            new Vector3D<float>(rblock.position.X + 0.5f, rblock.position.Y - 0.5f, rblock.position.Z - 0.5f),
+            new Vector3D<float>(rblock.position.X - 0.5f, rblock.position.Y + 0.5f, rblock.position.Z - 0.5f),
+            new Vector3D<float>(rblock.position.X, rblock.position.Y, rblock.position.Z - 0.5f)
+        );
+        if (collidingPlaneBackFace.intersect(ray, 16.0f)) {
+            face = Face.BACK;
+            return;
+        }
+        
+        
+        //z+
+        Plane collidingPlaneFrontFace = new Plane(
+            new Vector3D<float>(rblock.position.X - 0.5f, rblock.position.Y - 0.5f, rblock.position.Z + 0.5f),
+            new Vector3D<float>(rblock.position.X - 0.5f, rblock.position.Y + 0.5f, rblock.position.Z + 0.5f),
+            new Vector3D<float>(rblock.position.X + 0.5f, rblock.position.Y - 0.5f, rblock.position.Z + 0.5f),
+            new Vector3D<float>(rblock.position.X, rblock.position.Y, rblock.position.Z + 0.5f)
+        );
+        if (collidingPlaneFrontFace.intersect(ray, 16.0f)) {
+            face = Face.FRONT;
+            return;
+        }
+
+
+        //x-
+        Plane collidingPlaneLeftFace = new Plane(
+            new Vector3D<float>(rblock.position.X - 0.5f, rblock.position.Y - 0.5f, rblock.position.Z - 0.5f),
+            new Vector3D<float>(rblock.position.X - 0.5f, rblock.position.Y + 0.5f, rblock.position.Z - 0.5f),
+            new Vector3D<float>(rblock.position.X - 0.5f, rblock.position.Y - 0.5f, rblock.position.Z + 0.5f),
+            new Vector3D<float>(rblock.position.X - 0.5f, rblock.position.Y, rblock.position.Z)
+        );
+        if (collidingPlaneLeftFace.intersect(ray, 16.0f)) {
+            face = Face.LEFT;
+            return;
+        }
+
+        //x+
+        Plane collidingPlaneRightFace = new Plane(
+            new Vector3D<float>(rblock.position.X + 0.5f, rblock.position.Y - 0.5f, rblock.position.Z - 0.5f),
+            new Vector3D<float>(rblock.position.X + 0.5f, rblock.position.Y - 0.5f, rblock.position.Z + 0.5f),
+            new Vector3D<float>(rblock.position.X + 0.5f, rblock.position.Y + 0.5f, rblock.position.Z - 0.5f),
+            new Vector3D<float>(rblock.position.X + 0.5f, rblock.position.Y, rblock.position.Z)
+        );
+        if (collidingPlaneRightFace.intersect(ray, 16.0f)) {
+            face = Face.RIGHT;
+            return;
+        }
+        
+        //y-
+        Plane collidingPlaneBottomFace = new Plane(
+            new Vector3D<float>(rblock.position.X - 0.5f, rblock.position.Y - 0.5f, rblock.position.Z - 0.5f),
+            new Vector3D<float>(rblock.position.X - 0.5f, rblock.position.Y - 0.5f, rblock.position.Z + 0.5f),
+            new Vector3D<float>(rblock.position.X + 0.5f, rblock.position.Y - 0.5f, rblock.position.Z - 0.5f),
+            new Vector3D<float>(rblock.position.X, rblock.position.Y - 0.5f, rblock.position.Z)
+        );
+        if (collidingPlaneBottomFace.intersect(ray, 16.0f)) {
+            face = Face.BOTTOM;
+            return;
+        }
+
+        //y+
+        Plane collidingPlaneTopFace = new Plane(
+            new Vector3D<float>(rblock.position.X - 0.5f, rblock.position.Y + 0.5f, rblock.position.Z - 0.5f),
+            new Vector3D<float>(rblock.position.X + 0.5f, rblock.position.Y + 0.5f, rblock.position.Z - 0.5f),
+            new Vector3D<float>(rblock.position.X - 0.5f, rblock.position.Y + 0.5f, rblock.position.Z + 0.5f),
+            new Vector3D<float>(rblock.position.X, rblock.position.Y + 0.5f, rblock.position.Z)
+        );
+        if (collidingPlaneTopFace.intersect(ray, 16.0f)) {
+            face = Face.TOP;
+            return;
+        }
+
+
+    }
+    
     public Block? getBlock()
     {
         updateBlock();
@@ -98,5 +196,12 @@ public class PlayerInteractionToWorld
     {
         updateBlock();
         return chunk;
+    }
+
+
+    public Face? getFace()
+    {
+        updateBlock();
+        return face;
     }
 }
