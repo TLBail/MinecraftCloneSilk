@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.Numerics;
+using DotnetNoise;
 using MinecraftCloneSilk.Core;
 using MinecraftCloneSilk.UI;
 using Silk.NET.Maths;
@@ -29,6 +30,8 @@ public class Chunk
 
     private List<DebugRay> debugRays = new List<DebugRay>();
     private bool debugMode = false;
+
+    public const int seed = 1234543;
     
     public Chunk(Vector3D<int> position, World world)
     {
@@ -70,10 +73,15 @@ public class Chunk
     }
 
     public Vector3D<int> getPosition() => position;
-    
-   
 
-    public void addBlock(int x, int y, int z, string name)
+
+
+    public void setBlock(Vector3D<int> blockPosition, string name)
+    {
+        setBlock(blockPosition.X, blockPosition.Y, blockPosition.Z, name);
+    }
+
+    public void setBlock(int x, int y, int z, string name)
     {
         blocks[x, y, z] = new Block(new Vector3D<int>(x, y, z), name, false);
         updateBlocksAround(x, y, z);
@@ -196,32 +204,70 @@ public class Chunk
 
     private void generateTerrain()
     {
-        for (var x = 0; x < CHUNK_SIZE; x++)
-        for (var z = 0; z < CHUNK_SIZE; z++)
-            blocks[x, 0, z] = new Block(new Vector3D<int>(x, 0, z), "grass", false);
+        FastNoise noiseGenerator = new FastNoise(seed);
 
-        Vector3D<int>[] positions =
-        {
-            new(0, 1, 0),
-            new(2, 1, 0),
-            new(4, 1, 0),
-            new(0, 2, 0),
-            new(0, 4, 0),
-            new(0, 1, 2),
-            new(0, 1, 4),
-            new(2, 1, 2),
-            new(4, 1, 4)
-        };
-        foreach (var position in positions)
-            blocks[position.X, position.Y, position.Z] = new Block(position, "grass", false);
+        for (int i = 0; i < Chunk.CHUNK_SIZE; i++) {
+            for (int j = 0; j < Chunk.CHUNK_SIZE; j++) {
+                double x = (double)j / ((double)CHUNK_SIZE);
+                double z = (double)i / ((double)CHUNK_SIZE);
 
-        blocks[6, 2, 0] = new Block(new Vector3D<int>(6, 2, 0), "dirt", false);
-        blocks[6, 2, 2] = new Block(new Vector3D<int>(6, 2, 2), "cobblestone", false);
-        blocks[6, 2, 4] = new Block(new Vector3D<int>(6, 2, 4), "foliage", true);
-        blocks[6, 2, 6] = new Block(new Vector3D<int>(6, 2, 6), "grass", false);
-        blocks[6, 2, 8] = new Block(new Vector3D<int>(6, 2, 8), "metal", false);
-        blocks[6, 2, 10] = new Block(new Vector3D<int>(6, 2, 10), "oak", false);
-        blocks[6, 2, 12] = new Block(new Vector3D<int>(6, 2, 12), "stone", false);
+                int globalY =calculateGlobalY(noiseGenerator, x, z);
+                x *= CHUNK_SIZE;
+                z *= CHUNK_SIZE;
+
+                if (globalY >= position.Y && globalY < position.Y + CHUNK_SIZE)
+                {
+                    int localY = (int)(globalY % CHUNK_SIZE);
+                    if (localY < 0)
+                        localY = (int)(CHUNK_SIZE + localY);
+                    blocks[(int)x,localY,(int)z] = new Block(new Vector3D<int>((int)x, localY, (int)z), "grass");
+                    for (int g = localY - 1; g >= 0 && g >= localY - 4; g--)
+                    {
+                        blocks[(int)x,g,(int)z] = new Block( new Vector3D<int>((int)x, (int)g, (int)z), "stone");
+                    }
+                    for (int g = localY - 5; g >= 0; g--)
+                    {
+                        blocks[(int)x,g,(int)z] = new Block( new Vector3D<int>((int)x, (int)g, (int)z), "stone");
+                    }
+                }
+                else if (globalY >= position.Y + CHUNK_SIZE)
+                {
+                    for (int y = 0; y < CHUNK_SIZE; y++)
+                    {
+                        blocks[j, y,i] = new Block(new Vector3D<int>(j, y, i),"stone");
+                    }
+                }
+            }
+        }
+        
+    }
+
+    private const         float heightMultiplicator = 1;
+    private int calculateGlobalY(FastNoise noiseGenerator, double x, double z)
+    {
+        float baseX = (float)((position.X / CHUNK_SIZE) + x);
+        float baseZ = (float)((position.Z / CHUNK_SIZE) + z);
+        
+        //plateau global
+        float freq = 10;
+        float amp = 100;
+        float y = noiseGenerator.GetPerlin( baseX / freq, baseZ / freq) * amp;
+        
+        
+        //moyen variation
+        freq = 0.1f;
+        amp = 10;
+        y += noiseGenerator.GetPerlin( baseX / freq, baseZ / freq) * amp;
+
+        
+        //petit variation
+        freq = 0.01f;
+        amp = 3;
+        y += noiseGenerator.GetPerlin( baseX / freq, baseZ / freq) * amp;
+
+        int i = (int)MathF.Floor(heightMultiplicator * y);
+        return i;
+
     }
 
    

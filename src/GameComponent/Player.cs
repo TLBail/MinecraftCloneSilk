@@ -22,6 +22,7 @@ namespace MinecraftCloneSilk.GameComponent
         private bool debugActivated = false;
         private PlayerUi playerUi;
         private World world;
+        private string activeBlockName = "metal";
 
         private PlayerInteractionToWorld? playerInteractionToWorld;
 
@@ -54,14 +55,21 @@ namespace MinecraftCloneSilk.GameComponent
         private void onMouseClick(IMouse mouse, MouseButton mouseButton)
         {
             if(debugActivated) showDebugRayOnClick();
-            if (mouseButton == MouseButton.Left) {
-                Block? block = playerInteractionToWorld.getBlock();
-                Chunk? chunk = playerInteractionToWorld.getChunk(); 
-                if (block.HasValue) {
+            Block? block = playerInteractionToWorld.getBlock();
+            Chunk? chunk = playerInteractionToWorld.getChunk(); 
+            if (block.HasValue) {
+
+                if (mouseButton == MouseButton.Left) {
                     Vector3D<int> position = ((Block)block).position + chunk.getPosition();
                     world.setBlock("airBlock", position);
                 }
+
+                if (mouseButton == MouseButton.Right && playerInteractionToWorld.getFace().HasValue) {
+                    Face face = (Face)playerInteractionToWorld.getFace();
+                    world.setBlock( activeBlockName,  chunk.getPosition() +  ((Block)block).position + FaceOffset.getOffsetOfFace(face));
+                }
             }
+            
         }
 
        
