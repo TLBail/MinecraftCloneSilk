@@ -13,6 +13,8 @@ using Silk.NET.Maths;
 
 namespace MinecraftCloneSilk.GameComponent
 {
+    public delegate void Startable();
+
     public delegate void Update(double deltaTime);
     public delegate void Draw(GL gl,double deltaTime);
     public delegate void Dispose();
@@ -24,22 +26,19 @@ namespace MinecraftCloneSilk.GameComponent
         private static Game instance;
         private static readonly object _lock = new object();
         private OpenGl openGl;
+        
         public Update updatables;
         public Draw drawables;
         public Dispose disposables;
         public DrawUI uiDrawables;
+        public Startable startables;
         public Camera mainCamera { get; set; }
 
         public List<DebugRay> debugRays = new List<DebugRay>();
 
         
         //game element
-        private World world;
-        private Player player;
-        private PlayerInteractionToWorld playerInteraction;
-        
-        
-        //UI element
+        public Dictionary<string, GameObject> gameObjects = new Dictionary<string, GameObject>();
         
         
         private Game()
@@ -52,19 +51,25 @@ namespace MinecraftCloneSilk.GameComponent
             openGl.Run();
         }
 
+        public void awake()
+        {
+            //create all objects 
+            gameObjects.Add("player", new Player(this));
+            gameObjects.Add("world", new World(this, WorldMode.SIMPLE));
+            
+            //gameObjects.Add("demoWindow", new DemoWindow());
+
+            gameObjects.Add("DebugRayManagerUI",new DebugRayManagerUI(this));
+            gameObjects.Add("PlayerInteractionUI",new PlayerInteractionUI(this));
+            gameObjects.Add("gameUI", new GameUi(this));
+        }
+
 
         public void start(GL Gl)
         {
-            player = new Player();
-            world = new World(player, WorldMode.EMPTY);
-            playerInteraction = new PlayerInteractionToWorld(world, player, this);
-          
-            //UI
-            //new DemoWindow();
-            new PlayerUi(this, player);
-            new WorldUI(this, world);
-            new DebugRayManagerUI(this, world);
-            new PlayerInteractionUI(this, world, playerInteraction);
+            awake();
+            startables?.Invoke();
+            
         }
 
 

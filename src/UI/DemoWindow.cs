@@ -2,11 +2,11 @@
 
 namespace MinecraftCloneSilk.UI;
 
-public class DemoWindow
+public class DemoWindow : GameObject
 {
     public DemoWindow()
     {
-        Game.getInstance().uiDrawables += UiDrawables;
+        game.uiDrawables += UiDrawables;
     }
 
     private void UiDrawables()

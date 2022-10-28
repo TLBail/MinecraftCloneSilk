@@ -9,23 +9,11 @@ namespace MinecraftCloneSilk.UI;
 public class WorldUI
 {
     private World world;
-    private Game game;
-    private Key? key;
-    private IKeyboard keyboard;
-    private bool visible;
-    
-    public WorldUI(Game game, World world, Key? key)
+    public WorldUI(World world)
     {
-        this.key = key;
-        this.game = game;
         this.world = world;
-        game.uiDrawables += UiDrawables;
-        keyboard = game.getKeyboard();
-        visible = (key == null);
         worldMode = world.worldMode.ToString();
     }
-    public WorldUI(Game game, World world) : this(game, world, null) {}
-
 
     private static int newBlockX;
     private static int newBlockY;
@@ -36,13 +24,8 @@ public class WorldUI
 
     private string previousWorldMode;
     
-    private void UiDrawables()
+    public void drawUi()
     {
-        if (key != null && keyboard.IsKeyPressed((Key)key)) visible = !visible;
-        if(!visible) return;
-        
-        
-        ImGui.Begin("World");
         ImGui.Text("add block");
 
         List<string> blockNames = TextureBlock.keys();
@@ -65,7 +48,7 @@ public class WorldUI
         ImGui.InputInt("y", ref newBlockY);
         ImGui.InputInt("z", ref newBlockZ);
         if (ImGui.Button("set block")) {
-            world.addBlock(newBlockName, new Vector3D<int>(newBlockX, newBlockY, newBlockZ));
+            world.setBlock(newBlockName, new Vector3D<int>(newBlockX, newBlockY, newBlockZ));
         }
 
         WorldMode[] worldModes = (WorldMode[])Enum.GetValues(typeof(WorldMode));
@@ -85,11 +68,5 @@ public class WorldUI
             world.setWorldMode(Enum.Parse<WorldMode>(worldMode));
             previousWorldMode = worldMode;
         }
-
-        
-
-        
-        
-        ImGui.End();
     }
 }
