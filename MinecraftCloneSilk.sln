@@ -5,7 +5,7 @@ VisualStudioVersion = 17.2.32602.215
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MinecraftCloneSilk", "MinecraftCloneSilk.csproj", "{A4F518BB-190D-4194-9BD6-F61F4E445B2D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTest", "UnitTest\UnitTest.csproj", "{CEF0B85D-AFE9-4041-BD04-72108C57FD4E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTest", "UnitTest\UnitTest.csproj", "{A855FDBA-D750-4386-A048-10169880AE26}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,7 +17,10 @@ Global
 		{A4F518BB-190D-4194-9BD6-F61F4E445B2D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A4F518BB-190D-4194-9BD6-F61F4E445B2D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A4F518BB-190D-4194-9BD6-F61F4E445B2D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{CEF0B85D-AFE9-4041-BD04-72108C57FD4E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A855FDBA-D750-4386-A048-10169880AE26}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A855FDBA-D750-4386-A048-10169880AE26}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A855FDBA-D750-4386-A048-10169880AE26}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A855FDBA-D750-4386-A048-10169880AE26}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
