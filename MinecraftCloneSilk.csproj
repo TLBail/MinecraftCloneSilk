@@ -6,9 +6,12 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <GenerateProgramFile>false</GenerateProgramFile>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.3.2" />
+    <PackageReference Include="NUnit" Version="3.13.3" />
     <PackageReference Include="Silk.NET" Version="2.16.0" />
     <PackageReference Include="Silk.NET.Core" Version="2.16.0" />
     <PackageReference Include="Silk.NET.OpenGL.Extensions.ImGui" Version="2.16.0" />
