@@ -18,4 +18,16 @@
     <PackageReference Include="SixLabors.ImageSharp" Version="2.1.3" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Remove="UnitTest\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Remove="UnitTest\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="UnitTest\**" />
+  </ItemGroup>
+
 </Project>

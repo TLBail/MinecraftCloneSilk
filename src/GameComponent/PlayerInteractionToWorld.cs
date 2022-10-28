@@ -61,6 +61,8 @@ public class PlayerInteractionToWorld
         
 
         foreach (Vector3D<float> hitedChunkPosition in hitedChunks) {
+            
+            //TODO prendre que les blocs qui sont proche de player position
             for (int x = 0; x < Chunk.CHUNK_SIZE; x++) {
                 for (int y = 0; y < Chunk.CHUNK_SIZE; y++) {
                     for (int z = 0; z < Chunk.CHUNK_SIZE; z++) {
