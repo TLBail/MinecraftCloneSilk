@@ -7,13 +7,15 @@ public class WorldGeneration
 {
     private FastNoise noiseGenerator;
     public static int seed = 1234;
+    private static BlockFactory blockFactory;
 
     public WorldGeneration()
     {
+        if(blockFactory == null) blockFactory = BlockFactory.getInstance();
     }
     
     
-    public void generateTerrain(Vector3D<int> position, Block?[,,] blocks)
+    public void generateTerrain(Vector3D<int> position, BlockData[,,] blocks)
     {
         noiseGenerator = new FastNoise(seed);
 
@@ -31,21 +33,22 @@ public class WorldGeneration
                     int localY = (int)(globalY % Chunk.CHUNK_SIZE);
                     if (localY < 0)
                         localY = (int)(Chunk.CHUNK_SIZE + localY);
-                    blocks[(int)x,localY,(int)z] = new Block(new Vector3D<int>((int)x, localY, (int)z), "grass");
+                    blocks[(int)x,localY,(int)z] = blockFactory.buildData("grass");
+
                     for (int g = localY - 1; g >= 0 && g >= localY - 4; g--)
                     {
-                        blocks[(int)x,g,(int)z] = new Block( new Vector3D<int>((int)x, (int)g, (int)z), "stone");
+                        blocks[(int)x,g,(int)z] = blockFactory.buildData("stone");
                     }
                     for (int g = localY - 5; g >= 0; g--)
                     {
-                        blocks[(int)x,g,(int)z] = new Block( new Vector3D<int>((int)x, (int)g, (int)z), "stone");
+                        blocks[(int)x,g,(int)z] = blockFactory.buildData("stone");
                     }
                 }
                 else if (globalY >= position.Y + Chunk.CHUNK_SIZE)
                 {
                     for (int y = 0; y < Chunk.CHUNK_SIZE; y++)
                     {
-                        blocks[j, y,i] = new Block(new Vector3D<int>(j, y, i),"stone");
+                        blocks[j, y,i] = blockFactory.buildData("stone");
                     }
                 }
             }
