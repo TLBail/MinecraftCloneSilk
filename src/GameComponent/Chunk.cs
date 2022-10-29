@@ -13,7 +13,7 @@ namespace MinecraftCloneSilk.GameComponent;
 public class Chunk
 {
     private readonly Vector3D<int> position;
-    private readonly Block?[,,] blocks;
+    private readonly BlockData[,,] blocks;
 
     public static readonly uint CHUNK_SIZE = 16;
     private static Shader cubeShader;
@@ -34,14 +34,17 @@ public class Chunk
     public const int seed = 1234543;
 
     private WorldGeneration worldGeneration;
+
+    private static BlockFactory blockFactory;
     
     public Chunk(Vector3D<int> position, World world)
     {
         this.world = world;
         this.position = position;
         this.displayable = false;
+        if(blockFactory == null) blockFactory = BlockFactory.getInstance();
         this.worldGeneration = world.worldGeneration;
-        blocks = new Block?[CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE];
+        blocks = new BlockData[CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE];
         Gl = Game.getInstance().getGL();
         initStaticMembers();
         generateTerrain();
@@ -62,8 +65,8 @@ public class Chunk
         if (blockPosition.X >= CHUNK_SIZE || blockPosition.X < 0 ||
             blockPosition.Y >= CHUNK_SIZE || blockPosition.Y < 0 ||
             blockPosition.Z >= CHUNK_SIZE || blockPosition.Z < 0) return world.getBlock(position + blockPosition);
-        var block = blocks[blockPosition.X, blockPosition.Y, blockPosition.Z] ?? new Block(blockPosition);
-        return block;
+        var blockData = blocks[blockPosition.X, blockPosition.Y, blockPosition.Z];
+        return blockFactory.buildFromBlockData(blockPosition, blockData);
     }
 
     public Block getBlock(int x, int y, int z)
@@ -71,8 +74,8 @@ public class Chunk
         if (x >= CHUNK_SIZE || x < 0 ||
             y >= CHUNK_SIZE || y < 0 ||
             z >= CHUNK_SIZE || z < 0) return world.getBlock(position + new Vector3D<int>(x, y, z));
-        var block = blocks[x, y, z] ?? new Block(new Vector3D<int>(x, y, z)); 
-        return block;
+        var blockData = blocks[x, y, z];
+        return blockFactory.buildFromBlockData(new Vector3D<int>(x, y, z), blockData);
     }
 
     public Vector3D<int> getPosition() => position;
@@ -86,7 +89,7 @@ public class Chunk
 
     public void setBlock(int x, int y, int z, string name)
     {
-        blocks[x, y, z] = new Block(new Vector3D<int>(x, y, z), name, false);
+        blocks[x, y, z].name = name;
         updateBlocksAround(x, y, z);
         if(displayable) updateChunkVertex();
     }
@@ -95,7 +98,7 @@ public class Chunk
 
     public void removeBlock(Vector3D<int> localPosition)
     {
-        blocks[localPosition.X, localPosition.Y, localPosition.Z] = null;
+        blocks[localPosition.X, localPosition.Y, localPosition.Z].name = null;
         //only if the cube is visible => faces not empty
         updateBlocksAround(localPosition.X, localPosition.Y, localPosition.Z);
         
@@ -123,7 +126,7 @@ public class Chunk
         for (int x = 0; x < CHUNK_SIZE; x++) {
             for (int y = 0; y < CHUNK_SIZE; y++) {
                 for (int z = 0; z < CHUNK_SIZE; z++) {
-                    if(blocks[x, y, z] == null) continue;
+                    if(blocks[x, y, z].name == null  || blocks[x ,y, z].name.Equals(BlockFactory.AIR_BLOCK)) continue;
                     Block block = getBlock(x, y, z);
                     Face[] faces = getFaces(block);
                     if (!block.airBlock && faces.Length > 0) {
@@ -221,29 +224,29 @@ public class Chunk
 
         var faces = new List<Face>();
         //X
-        if (getBlock(block.position.X - 1, block.position.Y, block.position.Z).transparent) {
+        if (isBlockTransparent(block.position.X - 1, block.position.Y, block.position.Z)) {
             faces.Add(Face.RIGHT);
         }
 
-        if (getBlock(block.position.X + 1, block.position.Y, block.position.Z).transparent) {
+        if (isBlockTransparent(block.position.X + 1, block.position.Y, block.position.Z)) {
             faces.Add(Face.LEFT);
         }
 
         //Y
-        if (getBlock(block.position.X, block.position.Y - 1, block.position.Z).transparent) {
+        if (isBlockTransparent(block.position.X, block.position.Y - 1, block.position.Z)) {
             faces.Add(Face.BOTTOM);
         }
 
-        if (getBlock(block.position.X, block.position.Y  + 1, block.position.Z).transparent) {
+        if (isBlockTransparent(block.position.X, block.position.Y  + 1, block.position.Z)) {
             faces.Add(Face.TOP);
         }
 
         //Z
-        if (getBlock(block.position.X, block.position.Y, block.position.Z - 1).transparent) {
+        if (isBlockTransparent(block.position.X, block.position.Y, block.position.Z - 1)) {
             faces.Add(Face.BACK);
         }
 
-        if (getBlock(block.position.X, block.position.Y, block.position.Z + 1).transparent) {
+        if (isBlockTransparent(block.position.X, block.position.Y, block.position.Z + 1)) {
             faces.Add(Face.FRONT);
         }
 
@@ -284,6 +287,19 @@ public class Chunk
         if(z == 0) world.updateChunkVertex(getChunkPosition(position + new Vector3D<int>(x , y, z - 1)));
         if(z == CHUNK_SIZE - 1) world.updateChunkVertex(getChunkPosition(position + new Vector3D<int>(x , y ,z + 1)));
 
+    }
+
+    private bool isBlockTransparent(int x, int y, int z)
+    {
+        if (x >= CHUNK_SIZE || x < 0 ||
+            y >= CHUNK_SIZE || y < 0 ||
+            z >= CHUNK_SIZE || z < 0) return world.getBlock(position + new Vector3D<int>(x, y, z)).transparent;
+
+        BlockData blockData = blocks[x, y, z];
+        if (blockData.name == null || blockFactory.isBlockTransparent(blockData)) {
+            return true;
+        }
+        return getBlock(x, y, z).transparent;
     }
 
     private Vector3D<int> getChunkPosition(Vector3D<int> blockPosition) {

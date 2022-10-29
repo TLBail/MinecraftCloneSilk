@@ -55,10 +55,9 @@ namespace MinecraftCloneSilk.GameComponent
         private void onMouseClick(IMouse mouse, MouseButton mouseButton)
         {
             if(debugActivated) showDebugRayOnClick();
-            Block? block = playerInteractionToWorld.getBlock();
-            Chunk? chunk = playerInteractionToWorld.getChunk(); 
-            if (block.HasValue) {
-
+            Block block = playerInteractionToWorld.getBlock();
+            Chunk chunk = playerInteractionToWorld.getChunk(); 
+            if (block != null) {
                 if (mouseButton == MouseButton.Left) {
                     Vector3D<int> position = ((Block)block).position + chunk.getPosition();
                     world.setBlock("airBlock", position);

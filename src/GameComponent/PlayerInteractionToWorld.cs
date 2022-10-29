@@ -9,8 +9,8 @@ public class PlayerInteractionToWorld
 {
     private World world;
     private Player player;
-    private Block? block;
-    private Chunk? chunk;
+    private Block block;
+    private Chunk chunk;
     private Face? face;
     
     
@@ -63,7 +63,7 @@ public class PlayerInteractionToWorld
         }
 
         
-        if(block.HasValue) updateFace(ray);
+        if(haveHitedBlock()) updateFace(ray);
 
 
     }
@@ -163,14 +163,21 @@ public class PlayerInteractionToWorld
             face = Face.TOP;
         }
     }
+
+
+    public bool haveHitedBlock()
+    {
+        updateBlock();
+        return block != null;
+    }
     
-    public Block? getBlock()
+    public Block getBlock()
     {
         updateBlock();
         return block;
     }
 
-    public Chunk? getChunk()
+    public Chunk getChunk()
     {
         updateBlock();
         return chunk;
