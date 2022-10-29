@@ -8,7 +8,7 @@ using Silk.NET.Maths;
 
 namespace MinecraftCloneSilk.GameComponent
 {
-    public struct Block
+    public class Block : ICloneable
     {
         public Vector3D<int> position;
         public string name = "air";
@@ -16,20 +16,33 @@ namespace MinecraftCloneSilk.GameComponent
         public bool transparent = true;
 
 
-        public Block(Vector3D<int> position) : this(position, "air", true) { }
+        public Block(Vector3D<int> position) : this(position, BlockFactory.AIR_BLOCK, true) { }
 
         public Block(Vector3D<int> position, string name) : this(position, name, false){}
         public Block(Vector3D<int> position, string name, bool transparent)
         {
-            airBlock = name.Equals("air"); 
+            airBlock = BlockFactory.AIR_BLOCK.Equals(name); 
             this.position = position;
             this.name = name;
             this.transparent = transparent;
         }
 
+        public BlockData toBlockData()
+        {
+            return new BlockData(name);
+        }
+        
         public override string ToString()
         {
             return "[" + position + "]" + " name : " + name;
+        }
+
+        public object Clone()
+        {
+            Block block = new Block(position, this.name);
+            block.transparent = this.transparent;
+            block.airBlock = this.airBlock;
+            return block;
         }
     }
 }

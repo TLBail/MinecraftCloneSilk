@@ -40,10 +40,11 @@ public class PlayerInteractionUI : GameObject
         ImGui.Begin("Player interaction");
         ImGui.Text("hovered block");
 
-        Block? block = playerInteraction.getBlock();
         
-        if (block.HasValue) {
+        if (playerInteraction.haveHitedBlock()) {
+            Block block = playerInteraction.getBlock();
             ImGui.Text("intersect with :");
+
             ImGui.Text(block.ToString());
             Chunk? chunkToDebug = playerInteraction.getChunk();
             if (chunkToDebug != null &&  chunkToDebug != lastChunkDebuged) {
