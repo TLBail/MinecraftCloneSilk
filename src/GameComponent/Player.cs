@@ -136,7 +136,7 @@ namespace MinecraftCloneSilk.GameComponent
         private void showDebugRayOnClick()
         {
             Console.WriteLine("new debug ray !");
-            float raySize = 3;
+            float raySize = 20;
             new DebugRay(new Vector3D<float>(position.X, position.Y, position.Z) , 
                 new Vector3D<float>(position.X + (camera.Front.X * raySize),
                     position.Y + (camera.Front.Y * raySize),
