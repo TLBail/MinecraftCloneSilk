@@ -49,19 +49,28 @@ public class PlayerInteractionToWorld
         Vector3D<float> playerPositionf = new Vector3D<float>(player.position.X, player.position.Y, player.position.Z);
         Ray ray = new Ray(playerPositionf, player.getDirection3D());
 
+        Vector3D<float> bestPosition = Vector3D<float>.Zero;
+        
         const int maxDistance = 16;
-        for (int distance = 0; distance < maxDistance; distance++) {
-             Vector3D<int> position = ray.projectToBlock(distance);
-             Chunk chunkTested = world.getChunk(position);
-             if(chunkTested == null) continue;
-             Block testedBlock =  chunkTested.getBlock(World.getLocalPosition(position));
-             if (!testedBlock.airBlock) {
-                 chunk = chunkTested;
-                 block = testedBlock;
-                 break;
-             }
-        }
 
+        List<Vector3D<int>> hitedPosition = ray.projetedCoords(maxDistance);
+        foreach (Vector3D<int> position in hitedPosition) {
+            Chunk chunkTested = world.getChunk(position);
+            if(chunkTested == null) continue;
+            Block testedBlock =  chunkTested.getBlock(World.getLocalPosition(position));
+            if (!testedBlock.airBlock) {
+                if (block == null) {
+                    chunk = chunkTested;
+                    block = testedBlock;   
+                }else if (Vector3D.Distance(playerPositionf, bestPosition) >
+                          Vector3D.Distance(playerPositionf, new Vector3D<float>(position.X,position.Y,position.Z))) {
+                    bestPosition = new Vector3D<float>(position.X, position.Y, position.Z);
+                    chunk = chunkTested;
+                    block = testedBlock;
+                }
+            }
+            
+        }
         
         if(haveHitedBlock()) updateFace(ray);
 
