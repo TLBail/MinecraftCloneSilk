@@ -47,7 +47,11 @@ public class PlayerInteractionUI : GameObject
 
             ImGui.Text(block.ToString());
             Chunk? chunkToDebug = playerInteraction.getChunk();
+            if (chunkToDebug != null) {
+                ImGui.Text("world coord block " + (chunkToDebug.getPosition() + block.position));
+            }
             if (chunkToDebug != null &&  chunkToDebug != lastChunkDebuged) {
+                ImGui.Text("world coord block " + chunkToDebug.getPosition() + block.position);
                 lastChunkDebuged?.debug(false);
                 chunkToDebug?.debug(true);
                 lastChunkDebuged =  chunkToDebug;
