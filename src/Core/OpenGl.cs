@@ -16,7 +16,7 @@ using Glfw = Silk.NET.GLFW.Glfw;
 
 namespace MinecraftCloneSilk.Core
 {
-    class OpenGl
+    public class OpenGl
     {
         public IWindow window { get; private set; }
         public IInputContext input { get; private set; }
@@ -130,12 +130,14 @@ namespace MinecraftCloneSilk.Core
             Gl?.Dispose();
         }
 
-        private unsafe void setCursorMode(CursorModeValue cursorMode)
+        public unsafe void setCursorMode(CursorModeValue cursorMode)
         {
             Glfw.GetApi().SetInputMode((WindowHandle*)window.Handle, CursorStateAttribute.Cursor, cursorMode);
         }
 
-        private unsafe CursorModeValue getCursorMode()
+        public bool cursorIsNotAvailable() => getCursorMode() != CursorModeValue.CursorNormal;
+        
+        public unsafe CursorModeValue getCursorMode()
         {
             return (CursorModeValue)Glfw.GetApi()
                 .GetInputMode((WindowHandle*)window.Handle, CursorStateAttribute.Cursor);

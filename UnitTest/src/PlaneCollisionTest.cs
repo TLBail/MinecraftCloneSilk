@@ -1,16 +1,11 @@
-using MinecraftCloneSilk.Collision;
+﻿using MinecraftCloneSilk.Collision;
 using Silk.NET.Maths;
 using Plane = MinecraftCloneSilk.Collision.Plane;
 
 namespace UnitTest;
 
-public class Tests
+public class PlaneCollisionTest
 {
-    [SetUp]
-    public void Setup()
-    {
-    }
-
     [Test]
     public void Test1()
     {

@@ -25,7 +25,7 @@ namespace MinecraftCloneSilk.GameComponent
     {
         private static Game instance;
         private static readonly object _lock = new object();
-        private OpenGl openGl;
+        public OpenGl openGl { get;  }
         
         public Update updatables;
         public Draw drawables;
