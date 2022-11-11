@@ -100,7 +100,6 @@ namespace MinecraftCloneSilk.Core
         private void FrameBufferResize(Vector2D<int> size)
         {
             AspectRatio = (float)size.X / (float)size.Y;
-            Console.WriteLine("aspect ration " + AspectRatio);
         }
 
     }

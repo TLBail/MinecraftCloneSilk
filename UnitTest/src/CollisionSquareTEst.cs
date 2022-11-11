@@ -70,12 +70,6 @@ public class CollisionSquareTEst
         Assert.IsFalse(square.intersect(ray));
 
     }
-    //
-    // new Vector3D<float>(rblock.position.X - 0.5f, rblock.position.Y - 0.5f, rblock.position.Z - 0.5f),
-    // new Vector3D<float>(rblock.position.X - 0.5f, rblock.position.Y + 0.5f, rblock.position.Z - 0.5f),
-    // new Vector3D<float>(rblock.position.X - 0.5f, rblock.position.Y - 0.5f, rblock.position.Z + 0.5f),
-    //
-    //
     [Test]
     public void testLeftFace()
     {
