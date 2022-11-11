@@ -66,7 +66,6 @@ namespace MinecraftCloneSilk.GameComponent
                 if (mouseButton == MouseButton.Right && playerInteractionToWorld.getFace().HasValue) {
                     Face face = (Face)playerInteractionToWorld.getFace();
                     world.setBlock( activeBlockName,  chunk.getPosition() +  ((Block)block).position + FaceOffset.getOffsetOfFace(face));
-                    Console.WriteLine("salut " + face.ToString());
                 }
             }
             
@@ -136,7 +135,6 @@ namespace MinecraftCloneSilk.GameComponent
 
         private void showDebugRayOnClick()
         {
-            Console.WriteLine("new debug ray !");
             float raySize = 20;
             new DebugRay(new Vector3D<float>(position.X, position.Y, position.Z) , 
                 new Vector3D<float>(position.X + (camera.Front.X * raySize),

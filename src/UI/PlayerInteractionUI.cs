@@ -1,6 +1,7 @@
 ﻿using System.Numerics;
 using ImGuiNET;
 using MinecraftCloneSilk.Collision;
+using MinecraftCloneSilk.Core;
 using MinecraftCloneSilk.GameComponent;
 using Silk.NET.Input;
 using Silk.NET.Maths;
@@ -14,7 +15,7 @@ public class PlayerInteractionUI : GameObject
     private IKeyboard keyboard;
     private bool visible;
     private Chunk lastChunkDebuged;
-    
+    private OpenGl openGl;
     public PlayerInteractionUI(Game game, Key? key) : base(game)
     {
         this.key = key;
@@ -22,6 +23,7 @@ public class PlayerInteractionUI : GameObject
         game.uiDrawables += UiDrawables;
         keyboard = game.getKeyboard();
         visible = (key == null);
+        openGl = game.openGl;
     }
     public PlayerInteractionUI(Game game) : this(game, null) {}
 
@@ -36,7 +38,9 @@ public class PlayerInteractionUI : GameObject
         if (key != null && keyboard.IsKeyPressed((Key)key)) visible = !visible;
         if(!visible) return;
         
-        
+        if (openGl.cursorIsNotAvailable()) {
+            ImGui.BeginDisabled();
+        }
         ImGui.Begin("Player interaction");
         ImGui.Text("hovered block");
 
@@ -64,9 +68,14 @@ public class PlayerInteractionUI : GameObject
             ImGui.Text("nothing intersect with player");
         }
         
+        
         switchDebug();
         
+        
         ImGui.End();
+        if (openGl.cursorIsNotAvailable()) {
+            ImGui.EndDisabled();
+        }
     }
     
     

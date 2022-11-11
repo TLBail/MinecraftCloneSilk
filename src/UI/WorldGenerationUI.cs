@@ -4,20 +4,11 @@ using Silk.NET.Input;
 
 namespace MinecraftCloneSilk.UI;
 
-public class WorldGenerationUI : GameObject
+public class WorldGenerationUI : UiWindow
 {
-    private Key? key;
-    private IKeyboard keyboard;
-    private bool visible;
-    private World world = null;
+    private World world;
     
-    public WorldGenerationUI(Game game, Key? key) : base(game)
-    {
-        this.key = key;
-        game.uiDrawables += UiDrawables;
-        keyboard = game.getKeyboard();
-        visible = (key == null);
-    }
+    public WorldGenerationUI(Game game, Key? key) : base(game, key) {    }
     public WorldGenerationUI(Game game) : this(game, null) {}
 
     protected override void start()
@@ -26,12 +17,8 @@ public class WorldGenerationUI : GameObject
     }
 
     static WorldGeneration.GenerationParameter parameter;
-    private void UiDrawables()
+    protected override void  drawUi()
     {
-        if (key != null && keyboard.IsKeyPressed((Key)key)) visible = !visible;
-        if(!visible) return;
-        
-        
         ImGui.Begin("World Generation");
 
         ImGui.InputInt("seed", ref WorldGeneration.seed);
