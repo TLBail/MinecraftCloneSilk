@@ -16,7 +16,7 @@ namespace MinecraftCloneSilk.GameComponent
     {
         private Camera camera;
         private IKeyboard primaryKeyboard;
-        private const float moveSpeed = 5.0f;
+        private float moveSpeed = 5.0f;
         private const float sprintSpeed = 10.0f;
         private IMouse mouse;
         private bool debugActivated = false;
@@ -66,6 +66,7 @@ namespace MinecraftCloneSilk.GameComponent
                 if (mouseButton == MouseButton.Right && playerInteractionToWorld.getFace().HasValue) {
                     Face face = (Face)playerInteractionToWorld.getFace();
                     world.setBlock( activeBlockName,  chunk.getPosition() +  ((Block)block).position + FaceOffset.getOffsetOfFace(face));
+                    Console.WriteLine("salut " + face.ToString());
                 }
             }
             
@@ -93,7 +94,7 @@ namespace MinecraftCloneSilk.GameComponent
 
         private void movePlayer(double deltaTime)
         {
-            var speed = Player.moveSpeed * (float)deltaTime;
+            var speed = moveSpeed * (float)deltaTime;
 
 
             if (primaryKeyboard.IsKeyPressed(Key.ShiftLeft)) speed = sprintSpeed * (float)deltaTime;
@@ -147,6 +148,8 @@ namespace MinecraftCloneSilk.GameComponent
         {
             playerUi.drawUi();
         }
+        
+        
        
         public void debug(bool? setDebug = null)
         {
