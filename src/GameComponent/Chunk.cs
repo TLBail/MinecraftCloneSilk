@@ -89,7 +89,7 @@ public class Chunk
 
     public void setBlock(int x, int y, int z, string name)
     {
-        blocks[x, y, z].name = name;
+        blocks[x, y, z].id = name.GetHashCode();
         updateBlocksAround(x, y, z);
         if(displayable) updateChunkVertex();
     }
@@ -98,7 +98,7 @@ public class Chunk
 
     public void removeBlock(Vector3D<int> localPosition)
     {
-        blocks[localPosition.X, localPosition.Y, localPosition.Z].name = null;
+        blocks[localPosition.X, localPosition.Y, localPosition.Z].id = 0;
         //only if the cube is visible => faces not empty
         updateBlocksAround(localPosition.X, localPosition.Y, localPosition.Z);
         
@@ -126,7 +126,7 @@ public class Chunk
         for (int x = 0; x < CHUNK_SIZE; x++) {
             for (int y = 0; y < CHUNK_SIZE; y++) {
                 for (int z = 0; z < CHUNK_SIZE; z++) {
-                    if(blocks[x, y, z].name == null  || blocks[x ,y, z].name.Equals(BlockFactory.AIR_BLOCK)) continue;
+                    if(blocks[x, y, z].id == 0  || blockFactory.getBlockNameById(blocks[x ,y, z].id).Equals(BlockFactory.AIR_BLOCK)) continue;
                     Block block = getBlock(x, y, z);
                     Face[] faces = getFaces(block);
                     if (!block.airBlock && faces.Length > 0) {
@@ -296,7 +296,7 @@ public class Chunk
             z >= CHUNK_SIZE || z < 0) return world.getBlock(position + new Vector3D<int>(x, y, z)).transparent;
 
         BlockData blockData = blocks[x, y, z];
-        if (blockData.name == null || blockFactory.isBlockTransparent(blockData)) {
+        if (blockData.id == 0 || blockFactory.isBlockTransparent(blockData)) {
             return true;
         }
         return getBlock(x, y, z).transparent;

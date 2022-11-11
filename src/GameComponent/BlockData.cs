@@ -2,11 +2,16 @@
 
 public struct BlockData
 {
-    public string name; //block id
+    public int id; //block id
 
     public BlockData(string name)
     {
-        this.name = name;
+        this.id = name.GetHashCode();
+    }
+
+    public BlockData(int id)
+    {
+        this.id = id;
     }
 }
 
