@@ -1,34 +1,18 @@
 ﻿using ImGuiNET;
+using MinecraftCloneSilk.Core;
 using MinecraftCloneSilk.GameComponent;
+using Silk.NET.GLFW;
 using Silk.NET.Input;
-
 namespace MinecraftCloneSilk.UI;
 
-public class GameUi : GameObject
+public class GameUi : UiWindow
 {
-    private World world;
-    private Key? key;
-    private IKeyboard keyboard;
-    private bool visible;
-    
-    public GameUi(Game game, Key? key) : base(game)
-    {
-        this.key = key;
-        game.uiDrawables += UiDrawables;
-        keyboard = game.getKeyboard();
-        visible = (key == null);
-    }
+    public GameUi(Game game, Key? key) : base(game, key) {    }
     public GameUi(Game game) : this(game, null) {}
 
-    
-    private void UiDrawables()
+    protected override void  drawUi()
     {
-        if (key != null && keyboard.IsKeyPressed((Key)key)) visible = !visible;
-        if(!visible) return;
-        
-        
         ImGui.Begin("Game");
-
         
         foreach (GameObject gameObject in game.gameObjects.Values) {
             if (ImGui.CollapsingHeader("gameObject : " + gameObject.GetType().Name)) {
@@ -37,7 +21,6 @@ public class GameUi : GameObject
                 
             }
         }
-        
         
         ImGui.End();
     }

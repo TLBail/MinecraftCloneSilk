@@ -6,27 +6,8 @@ using Silk.NET.Maths;
 
 namespace MinecraftCloneSilk.UI;
 
-public class DebugRayManagerUI : GameObject
+public class DebugRayManagerUI : UiWindow
 {
-    private World world;
-    private bool visible;
-    private IKeyboard keyboard;
-    private Key? key;
-    public DebugRayManagerUI(Game game, Key? key) : base(game)
-    {
-        game.uiDrawables += uiDrawables;
-        keyboard = game.getKeyboard();
-        visible = (key == null);
-        this.key = key;
-    }
-
-    protected override void start()
-    {
-        world = (World)game.gameObjects[nameof(World)];
-    }
-
-    public DebugRayManagerUI(Game game) : this(game, null) {}
-
     static float newX = 5;
     static float newY = 5;
     static float newZ = 5;
@@ -34,14 +15,21 @@ public class DebugRayManagerUI : GameObject
     static float newendX = 5;
     static float newendY = 5;
     static float newendZ = 5;
-    
-    
-    private void uiDrawables()
+
+
+    private World world;
+    public DebugRayManagerUI(Game game, Key? key) : base(game, key) { }
+    public DebugRayManagerUI(Game game) : this(game, null) {}
+
+    protected override void start()
     {
-        if (key != null && keyboard.IsKeyPressed((Key)key)) visible = !visible;
-        if(!visible) return;
-        
-        
+        world = (World)game.gameObjects[nameof(World)];
+    }
+
+
+    
+    protected override void drawUi()
+    {
         ImGui.Begin("DebugRayManager");
         ImGui.Text("ray coordonnate");
 
@@ -65,9 +53,6 @@ public class DebugRayManagerUI : GameObject
                 chunk.debug();
             }
         }
-        
-        
         ImGui.End();
-        
     }
 }
