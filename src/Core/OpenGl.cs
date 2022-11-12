@@ -32,6 +32,8 @@ namespace MinecraftCloneSilk.Core
 
         private static readonly Color CLEAR_COLOR = Color.Lavender;
 
+        private Glfw glfw;
+        
         public OpenGl(Game game)
         {
             this.game = game;
@@ -49,6 +51,8 @@ namespace MinecraftCloneSilk.Core
             window.Update += OnUpdate;
             window.Closing += OnClose;
             window.FramebufferResize += FrameBufferResize;
+            
+            glfw = Glfw.GetApi();
         }
 
         public void Run()
@@ -132,14 +136,14 @@ namespace MinecraftCloneSilk.Core
 
         public unsafe void setCursorMode(CursorModeValue cursorMode)
         {
-            Glfw.GetApi().SetInputMode((WindowHandle*)window.Handle, CursorStateAttribute.Cursor, cursorMode);
+            glfw.SetInputMode((WindowHandle*)window.Handle, CursorStateAttribute.Cursor, cursorMode);
         }
 
         public bool cursorIsNotAvailable() => getCursorMode() != CursorModeValue.CursorNormal;
         
         public unsafe CursorModeValue getCursorMode()
         {
-            return (CursorModeValue)Glfw.GetApi()
+            return (CursorModeValue)glfw
                 .GetInputMode((WindowHandle*)window.Handle, CursorStateAttribute.Cursor);
         }
 

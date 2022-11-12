@@ -17,7 +17,7 @@ namespace MinecraftCloneSilk.GameComponent
         private Camera camera;
         private IKeyboard primaryKeyboard;
         private float moveSpeed = 5.0f;
-        private const float sprintSpeed = 10.0f;
+        private const float sprintSpeed = 50.0f;
         private IMouse mouse;
         private bool debugActivated = false;
         private PlayerUi playerUi;

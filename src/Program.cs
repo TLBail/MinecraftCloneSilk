@@ -18,7 +18,6 @@ namespace MinecraftCloneSilk
             Game game = Game.getInstance();
             game.Run();
         }
-
-       
+        
     }
 }
