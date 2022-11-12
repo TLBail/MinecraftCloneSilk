@@ -10,7 +10,7 @@ using Texture = MinecraftCloneSilk.Core.Texture;
 
 namespace MinecraftCloneSilk.GameComponent;
 
-public class Chunk
+public class Chunk : IDisposable
 {
     private readonly Vector3D<int> position;
     private readonly BlockData[,,] blocks;
@@ -31,7 +31,6 @@ public class Chunk
     private List<DebugRay> debugRays = new List<DebugRay>();
     private bool debugMode = false;
 
-    public const int seed = 1234543;
 
     private WorldGeneration worldGeneration;
 
@@ -309,5 +308,11 @@ public class Chunk
             (int)((int)(MathF.Floor((float)blockPosition.Z / Chunk.CHUNK_SIZE)) * Chunk.CHUNK_SIZE)
         );
 
+    }
+
+    public void Dispose() {
+        Vao.Dispose();
+        Vbo.Dispose();
+        
     }
 }
