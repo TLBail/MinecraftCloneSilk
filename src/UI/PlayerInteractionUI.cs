@@ -32,11 +32,11 @@ public class PlayerInteractionUI : UiWindow
 
         if (hoveredHiglihtMode == true) {
 
-            ImGui.PushID("disable player debug click");
+            ImGui.PushID("remove chunk highlight hovered");
             ImGui.PushStyleColor(ImGuiCol.Button, new Vector4(i / 7.0f, b, b, 1.0f));
             ImGui.PushStyleColor(ImGuiCol.ButtonHovered, new Vector4(i / 7.0f, b, b, 1.0f));
             ImGui.PushStyleColor(ImGuiCol.ButtonActive, new Vector4(i / 7.0f, c, c, 1.0f));
-            ImGui.Button("disable player debug click");
+            ImGui.Button("remove chunk highlight hovered");
             if (ImGui.IsItemClicked(0)) {
                 hoveredHiglihtMode = !hoveredHiglihtMode;
             }
@@ -45,11 +45,10 @@ public class PlayerInteractionUI : UiWindow
             ImGui.PopID();
         }
         else {
-            if (ImGui.Button("enable player debug click")) {
+            if (ImGui.Button("display chunk hovered")) {
                 hoveredHiglihtMode = true;
             }
         }
-
     }
 
     protected override void drawUi() {
@@ -69,9 +68,11 @@ public class PlayerInteractionUI : UiWindow
             }
             if (chunkToDebug != null &&  chunkToDebug != lastChunkDebuged) {
                 ImGui.Text("world coord block " + chunkToDebug.getPosition() + block.position);
-                lastChunkDebuged?.debug(false);
-                chunkToDebug?.debug(true);
-                lastChunkDebuged =  chunkToDebug;
+                if (hoveredHiglihtMode) {
+                    lastChunkDebuged?.debug(false);
+                    chunkToDebug?.debug(true);
+                    lastChunkDebuged =  chunkToDebug;
+                }
             }
 
             Face? face = playerInteraction.getFace();
@@ -87,4 +88,7 @@ public class PlayerInteractionUI : UiWindow
         
         ImGui.End();
     }
+    
+    
+
 }
