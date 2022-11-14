@@ -1,13 +1,13 @@
 ﻿using ImGuiNET;
 using MinecraftCloneSilk.Core;
-using MinecraftCloneSilk.GameComponent;
-using Silk.NET.Input;
 using Silk.NET.Maths;
 
-namespace MinecraftCloneSilk.UI;
+namespace MinecraftCloneSilk.GameComponent;
 
-public class DebugRayManagerUI : UiWindow
+public class DebugRayManager : GameObject
 {
+
+        
     static float newX = 5;
     static float newY = 5;
     static float newZ = 5;
@@ -16,21 +16,17 @@ public class DebugRayManagerUI : UiWindow
     static float newendY = 5;
     static float newendZ = 5;
 
-
     private World world;
-    public DebugRayManagerUI(Game game, Key? key) : base(game, key) { }
-    public DebugRayManagerUI(Game game) : this(game, null) {}
 
-    protected override void start()
-    {
+    
+    public DebugRayManager(Game game) : base(game) {}
+
+    protected override void start() {
         world = (World)game.gameObjects[typeof(World).FullName];
     }
 
 
-    
-    protected override void drawUi()
-    {
-        ImGui.Begin("DebugRayManager");
+    public override void toImGui() {
         ImGui.Text("ray coordonnate");
 
         ImGui.InputFloat("start x", ref newX);
@@ -53,6 +49,5 @@ public class DebugRayManagerUI : UiWindow
                 chunk.debug();
             }
         }
-        ImGui.End();
     }
 }
