@@ -73,7 +73,10 @@ public class BlockFactory
 
     public bool isBlockTransparent(BlockData blockData)
     {
-        return transparentBlockId.Any(id => blockData.Equals(blockData.id));
+        for (var i = 0; i < transparentBlockId.Count; i++) {
+            if (transparentBlockId[i].Equals(blockData.id)) return true;
+        }
+        return false;
     }
 
     private void addBlock(Block block)
