@@ -23,6 +23,7 @@ public class WorldUI
     private static string worldMode = "EMPTY";
 
     private string previousWorldMode;
+    private static WorldGeneration.GenerationParameter parameter;
     
     public void drawUi()
     {
@@ -63,10 +64,30 @@ public class WorldUI
             }
             ImGui.EndCombo();
         }
-
+        
+        ImGui.Separator();
+        ImGui.Text("World generation");
+        
         if (previousWorldMode != worldMode) {
             world.setWorldMode(Enum.Parse<WorldMode>(worldMode));
             previousWorldMode = worldMode;
+        }
+        
+        ImGui.InputInt("seed", ref WorldGeneration.seed);
+        ImGui.Separator();
+        for (int i = 0; i < WorldGeneration.generationParameters.Count; i++) {
+            parameter = WorldGeneration.generationParameters[i];
+            ImGui.InputFloat("freq" + i, ref parameter.freq);
+            ImGui.InputFloat("amp"+ i, ref parameter.amp);
+            ImGui.Separator();
+            WorldGeneration.generationParameters[i] = parameter;
+        }
+
+
+        
+        if (ImGui.Button("reload Chunks")) {
+            world.setWorldMode(WorldMode.EMPTY);
+            world.setWorldMode(WorldMode.DYNAMIC);
         }
     }
 }
