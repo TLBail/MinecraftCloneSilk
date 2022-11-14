@@ -55,10 +55,16 @@ public class Chunk : IDisposable
         if(displayable) return;
         displayable = true;
         setOpenGl();
-        updateChunkVertex();
+        List<CubeVertex> cubeVertices = getCubeVertices();
+        if (cubeVertices.Count == 0) {
+            return;
+        } 
+        sendCubeVertices(cubeVertices);
     }
+
     
-    
+
+
     public Block getBlock(Vector3D<int> blockPosition)
     {
         if (blockPosition.X >= CHUNK_SIZE || blockPosition.X < 0 ||
@@ -118,9 +124,17 @@ public class Chunk : IDisposable
     }
 
 
+    
     public void updateChunkVertex()
     {
         if(!displayable) return;
+        List<CubeVertex> vertices = getCubeVertices();
+        nbVertex = vertices.Count;
+        sendCubeVertices(vertices);
+    }
+
+    
+    private List<CubeVertex> getCubeVertices() {
         var listVertices = new List<CubeVertex>();
         for (int x = 0; x < CHUNK_SIZE; x++) {
             for (int y = 0; y < CHUNK_SIZE; y++) {
@@ -137,9 +151,15 @@ public class Chunk : IDisposable
             }
         }
         nbVertex = listVertices.Count;
-        Vbo.Bind();
-        Vbo.sendData(listVertices.ToArray(), 0);
+        return listVertices;
     }
+
+    
+    private void sendCubeVertices(List<CubeVertex> vertices) {
+        Vbo.Bind();
+        Vbo.sendData(vertices.ToArray(), 0);
+    }
+    
 
     public void debug(bool? setDebug = null)
     {
@@ -259,6 +279,7 @@ public class Chunk : IDisposable
     public void Draw(GL Gl, double deltaTime)
     {
         if(!displayable) return;
+        if(nbVertex == 0) return;
         Vao.Bind();
         cubeShader.Use();
         cubeTexture.Bind();
