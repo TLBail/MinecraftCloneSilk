@@ -12,12 +12,12 @@ namespace MinecraftCloneSilk.Core
     {
         private uint _handle;
         private GL _gl;
-
+        private bool disposed = false;
+        
         public VertexArrayObject(GL gl, BufferObject<TVertexType> vbo) : this(gl, vbo, null){ }
 
         public VertexArrayObject(GL gl, BufferObject<TVertexType> vbo, BufferObject<TIndexType> ebo)
         {
-            Game.getInstance().disposables += Dispose;
             _gl = gl;
 
             _handle = _gl.GenVertexArray();
@@ -37,10 +37,23 @@ namespace MinecraftCloneSilk.Core
             _gl.BindVertexArray(_handle);
         }
 
+        ~VertexArrayObject() {
+            Dispose(false);
+        }
+
+        protected void Dispose(bool disposing) {
+            if (!disposed) {
+                if (disposing) {
+                    _gl.DeleteVertexArray(_handle);
+                }
+                disposed = true;
+            }
+        }
+        
         public void Dispose()
         {
-            Game.getInstance().disposables -= Dispose;
-            _gl.DeleteVertexArray(_handle);
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
     }
 }

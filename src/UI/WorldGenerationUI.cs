@@ -13,7 +13,7 @@ public class WorldGenerationUI : UiWindow
 
     protected override void start()
     {
-        world = (World)game.gameObjects[nameof(World)];
+        world = (World)game.gameObjects[typeof(World).FullName];
     }
 
     static WorldGeneration.GenerationParameter parameter;

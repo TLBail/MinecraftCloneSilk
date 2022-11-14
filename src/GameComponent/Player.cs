@@ -60,7 +60,7 @@ namespace MinecraftCloneSilk.GameComponent
             if (block != null) {
                 if (mouseButton == MouseButton.Left) {
                     Vector3D<int> position = ((Block)block).position + chunk.getPosition();
-                    world.setBlock("airBlock", position);
+                    world.setBlock(BlockFactory.AIR_BLOCK, position);
                 }
 
                 if (mouseButton == MouseButton.Right && playerInteractionToWorld.getFace().HasValue) {
@@ -87,8 +87,8 @@ namespace MinecraftCloneSilk.GameComponent
 
         protected override void start()
         {
-            this.playerInteractionToWorld = new PlayerInteractionToWorld((World)game.gameObjects[nameof(World)], this);
-            world = (World)game.gameObjects[nameof(World)];
+            world = (World)game.gameObjects[typeof(World).FullName];
+            this.playerInteractionToWorld = new PlayerInteractionToWorld(world, this);
         }
 
         private void movePlayer(double deltaTime)

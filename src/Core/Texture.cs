@@ -12,10 +12,9 @@ namespace MinecraftCloneSilk.Core
     {
         private uint _handle;
         private GL _gl;
-
+        private bool disposed = false;
         public unsafe Texture(GL gl, string path)
         {
-            Game.getInstance().disposables += Dispose;
             _gl = gl;
 
             _handle = _gl.GenTexture();
@@ -42,7 +41,6 @@ namespace MinecraftCloneSilk.Core
                     }
                 });
             }
-
             SetParameters();
 
         }
@@ -85,10 +83,24 @@ namespace MinecraftCloneSilk.Core
             _gl.BindTexture(TextureTarget.Texture2D, _handle);
         }
 
+        ~Texture() {
+            Dispose(false);
+        }
+        
         public void Dispose()
         {
-            //In order to dispose we need to delete the opengl handle for the texure.
-            _gl.DeleteTexture(_handle);
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected void Dispose(bool disposing) {
+            if (!disposed) {
+                if (disposing) {
+                    _gl.DeleteTexture(_handle);
+                }
+
+                disposed = true;
+            }
         }
     }
 }
