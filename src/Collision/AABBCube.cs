@@ -5,16 +5,15 @@ namespace MinecraftCloneSilk;
 
 public class AABBCube
 {
-    
-    
-    private Vector3D<float>[] bounds = new Vector3D<float>[2];
+    public Vector3D<float>[] bounds = new Vector3D<float>[2];
 
     public AABBCube(Vector3D<float> min, Vector3D<float> max)
     {
         bounds[0] = min;
         bounds[1] = max;
     }
-
+    
+    
     public bool intersect(Ray r, float t)
     {
         float tmin, tmax, tymin, tymax, tzmin, tzmax;

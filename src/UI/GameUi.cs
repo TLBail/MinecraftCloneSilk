@@ -15,7 +15,7 @@ public class GameUi : UiWindow
         ImGui.Begin("Game");
         
         foreach (GameObject gameObject in game.gameObjects.Values) {
-            if (ImGui.CollapsingHeader("gameObject : " + gameObject.GetType().Name)) {
+            if (!(gameObject is UiWindow) && ImGui.CollapsingHeader("gameObject : " + gameObject.GetType().Name)) {
                 gameObject.toImGui();
                 ImGui.Separator();
                 

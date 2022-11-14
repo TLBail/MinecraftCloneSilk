@@ -42,7 +42,7 @@ public class PlayerInteractionToWorld
 
 
         const int maxDistance = 16;
-
+        AABBCube aabbCube = new AABBCube(Vector3D<float>.Zero, Vector3D<float>.Zero);
         for (var x = -maxDistance; x < maxDistance; x++)
         for (var y = -maxDistance; y < maxDistance; y++)
         for (var z = -maxDistance; z < maxDistance; z++) {
@@ -51,15 +51,16 @@ public class PlayerInteractionToWorld
                 (int)(y + Math.Round(playerPositionf.Y)),
                 (int)(z + Math.Round(playerPositionf.Z))
             );
-            var aabbCube = new AABBCube(new Vector3D<float>(
+            aabbCube.bounds[0] = new Vector3D<float>(
                 -0.5f + blockPosition.X,
                 -0.5f + blockPosition.Y,
                 -0.5f + blockPosition.Z
-            ), new Vector3D<float>(
+            );
+            aabbCube.bounds[1] = new Vector3D<float>(
                 0.5f + blockPosition.X,
                 0.5f + blockPosition.Y,
                 0.5f + blockPosition.Z
-            ));
+            );
             var hit = aabbCube.intersect(ray);
             if (hit.haveHited) {
                 var chunkTested = world.getChunk(blockPosition);

@@ -43,7 +43,7 @@ namespace MinecraftCloneSilk.GameComponent
         
         protected override void start()
         {
-            this.player = (Player)game.gameObjects[nameof(Player)];
+            this.player = (Player)game.gameObjects[typeof(Player).FullName];
             if(worldMode == WorldMode.SIMPLE) addExempleChunk();
         }
 
@@ -63,26 +63,17 @@ namespace MinecraftCloneSilk.GameComponent
 
         public void setBlock(string blockName, Vector3D<int> position)
         {
-            if (blockName.Equals("airBlock")) {
-                removeBlock(position);
-                return;
-            }
             Vector3D<int> key = getChunkPosition(position);
+            Vector3D<int> localPosition = getLocalPosition(position);
             if (worldChunks.ContainsKey(key)) {
-                Vector3D<int> localPosition = getLocalPosition(position);
+                worldChunks[key].setBlock(localPosition.X, localPosition.Y, localPosition.Z, blockName);
+            } else {
+                Chunk chunk = new Chunk(key, this);
+                worldChunks.Add(key, chunk);
                 worldChunks[key].setBlock(localPosition.X, localPosition.Y, localPosition.Z, blockName);
             }
         }
-
-        public void removeBlock(Vector3D<int> position)
-        {
-            Vector3D<int> key = getChunkPosition(position);
-            if (worldChunks.ContainsKey(key)) {
-                Vector3D<int> localPosition = getLocalPosition(position);
-                worldChunks[key].removeBlock(localPosition);
-            }
-        }
-
+        
         public Block getBlock(Vector3D<int> position)
         {
             Vector3D<int> key = getChunkPosition(position);
@@ -94,9 +85,22 @@ namespace MinecraftCloneSilk.GameComponent
                 worldChunks.Add(key, chunk);
                 return chunk.getBlock(localPosition);
             }
-            
         }
 
+        
+        public BlockData getBlockData(Vector3D<int> position) {
+            Vector3D<int> key = getChunkPosition(position);
+            Vector3D<int> localPosition = getLocalPosition(position);
+            if (worldChunks.ContainsKey(key)) {
+                return worldChunks[key].getBlockData(localPosition);
+            } else {
+                Chunk chunk = new Chunk(key, this);
+                worldChunks.Add(key, chunk);
+                return chunk.getBlockData(localPosition);
+            }  
+        }
+        
+        
         public void setWorldMode(WorldMode worldMode)
         {
             this.worldMode =  worldMode;
@@ -187,7 +191,7 @@ namespace MinecraftCloneSilk.GameComponent
             var chunksToDelete = worldChunks.Values.Except(chunkRelevant);
 
             foreach (var chunkToDelete in chunksToDelete) {
-                worldChunks.Remove(chunkToDelete.getPosition());
+                removeChunk(chunkToDelete);
             }
 
             foreach (var chunkReleva in chunkRelevant) {
@@ -195,6 +199,11 @@ namespace MinecraftCloneSilk.GameComponent
             }
         }
 
+
+        private void removeChunk(Chunk chunk) {
+            chunk.Dispose();
+            worldChunks.Remove(chunk.getPosition());
+        }
         
         private void addExempleChunk()
         {
@@ -219,5 +228,6 @@ namespace MinecraftCloneSilk.GameComponent
         {
             worldUi.drawUi();
         }
+
     }
 }

@@ -15,7 +15,8 @@ public abstract class UiWindow : GameObject
     private IKeyboard keyboard;
     private Key? key;
     protected bool visible;
-
+    protected bool needMouse = true;
+    
     public UiWindow(Game game, Key? key) : base(game) {
         this.key = key;
         visible = (key == null);
@@ -29,11 +30,12 @@ public abstract class UiWindow : GameObject
         if (key != null && keyboard.IsKeyPressed((Key)key)) visible = !visible;
         if(!visible) return;
         
-        if (openGl.cursorIsNotAvailable()) {
+        
+        if (needMouse && openGl.cursorIsNotAvailable()) {
             ImGui.BeginDisabled();
         }
         drawUi();
-        if (openGl.cursorIsNotAvailable()) {
+        if (needMouse && openGl.cursorIsNotAvailable()) {
             ImGui.EndDisabled();
         }
     }

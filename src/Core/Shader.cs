@@ -14,10 +14,10 @@ namespace MinecraftCloneSilk.Core
     {
         private uint _handle;
         private GL _gl;
-
+        private bool disposed = false;
+        
         public Shader(GL gl, string vertexPath, string fragmentPath)
         {
-            Game.getInstance().disposables += Dispose;
             _gl = gl;
 
             uint vertex = LoadShader(ShaderType.VertexShader, vertexPath);
@@ -92,9 +92,23 @@ namespace MinecraftCloneSilk.Core
             _gl.Uniform3(location, value.X, value.Y, value.Z);
         }
 
+        ~Shader() {
+            Dispose(false);
+        }
+        
         public void Dispose()
         {
-            _gl.DeleteProgram(_handle);
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected void Dispose(bool disposing) {
+            if (!disposed) {
+                if (disposing) {
+                    _gl.DeleteProgram(_handle);
+                }
+                disposed = true;
+            }
         }
 
         private uint LoadShader(ShaderType type, string path)
