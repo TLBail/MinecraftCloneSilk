@@ -89,6 +89,7 @@ namespace MinecraftCloneSilk.GameComponent
         {
             world = (World)game.gameObjects[typeof(World).FullName];
             this.playerInteractionToWorld = new PlayerInteractionToWorld(world, this);
+            playerUi.start(playerInteractionToWorld);
         }
 
         private void movePlayer(double deltaTime)

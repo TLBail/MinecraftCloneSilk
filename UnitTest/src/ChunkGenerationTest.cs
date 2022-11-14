@@ -18,10 +18,7 @@ public class ChunkGenerationTest
     {
         new(typeof(Player).FullName),
         new(typeof(World).FullName, new object[] { WorldMode.DYNAMIC }),
-        new(typeof(DebugRayManagerUI).FullName),
-        new(typeof(PlayerInteractionUI).FullName),
         new(typeof(GameUi).FullName),
-        new(typeof(WorldGenerationUI).FullName),
         new(typeof(GeneralInfo).FullName)
     });
     
