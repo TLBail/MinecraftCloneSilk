@@ -23,7 +23,7 @@ public class DebugRayManagerUI : UiWindow
 
     protected override void start()
     {
-        world = (World)game.gameObjects[nameof(World)];
+        world = (World)game.gameObjects[typeof(World).FullName];
     }
 
 

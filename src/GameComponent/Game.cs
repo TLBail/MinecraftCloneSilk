@@ -13,11 +13,11 @@ using Silk.NET.Maths;
 
 namespace MinecraftCloneSilk.GameComponent
 {
+
     public delegate void Startable();
 
     public delegate void Update(double deltaTime);
     public delegate void Draw(GL gl,double deltaTime);
-    public delegate void Dispose();
 
     public delegate void DrawUI();
 
@@ -29,40 +29,45 @@ namespace MinecraftCloneSilk.GameComponent
         
         public Update updatables;
         public Draw drawables;
-        public Dispose disposables;
         public DrawUI uiDrawables;
         public Startable startables;
         public Camera mainCamera { get; set; }
 
         public List<DebugRay> debugRays = new List<DebugRay>();
 
+        private Scene scene;
         
         //game element
         public Dictionary<string, GameObject> gameObjects = new Dictionary<string, GameObject>();
         
+        //frame count
+        private TaskCompletionSource frameCountTaskSource = new TaskCompletionSource();
+        private int frameCount;
         
-        private Game()
-        {
+        private Game(Scene scene, bool start = true) {
+            this.scene = scene;
             openGl = new OpenGl(this);
         }
+        
 
         public void Run()
         {
             openGl.Run();
         }
 
+        public void Stop() {
+            openGl.Stop();
+        }
+
         public void awake()
         {
-            //create all objects 
-            gameObjects.Add(nameof(Player), new Player(this));
-            gameObjects.Add(nameof(World), new World(this, WorldMode.DYNAMIC));
-            
-            //gameObjects.Add("demoWindow", new DemoWindow());
-
-            gameObjects.Add(nameof(DebugRayManagerUI),new DebugRayManagerUI(this));
-            gameObjects.Add(nameof(PlayerInteractionUI),new PlayerInteractionUI(this));
-            gameObjects.Add(nameof(GameUi), new GameUi(this));
-            gameObjects.Add(nameof(WorldGeneration), new WorldGenerationUI(this));
+            foreach (InitGameData data in scene.gameObjects) {
+                Object[] param = new []{this}.Concat(data.pars).ToArray();
+                GameObject gameObject = (GameObject)Activator.CreateInstance(
+                    Type.GetType(data.typeName) ?? throw new InvalidOperationException("Impossible de trouver la class " + data.typeName),
+                    param)!;
+                gameObjects.Add(data.typeName, gameObject); 
+            }
         }
 
 
@@ -96,17 +101,28 @@ namespace MinecraftCloneSilk.GameComponent
 
 
             drawables?.Invoke(gl, deltaTime);
+            
+            if(frameCountTaskSource.TrySetResult()) frameCount++;
         }
 
+        
+        
+        public async Task waitForFrame(int i) {
+            int currentFrameCount = frameCount;
+            while (true) {
+                frameCountTaskSource = new TaskCompletionSource();
+                await frameCountTaskSource.Task;
+                if (frameCount - currentFrameCount == i) {
+                    break;
+                }
+            }
+        }
+        
         public void drawUI()
         {
             uiDrawables?.Invoke();
         }
 
-        public void dispose()
-        {
-            disposables?.Invoke();
-        }
 
         public IWindow getWindow()
         {
@@ -134,7 +150,7 @@ namespace MinecraftCloneSilk.GameComponent
         }
 
 
-        public static Game getInstance()
+        public static Game getInstance(Scene? scene = null, bool run = true)
         {
             if (instance == null)
             {
@@ -142,7 +158,7 @@ namespace MinecraftCloneSilk.GameComponent
                 {
                     if (instance == null)
                     {
-                        instance = new Game();
+                        instance = new Game(scene ?? new Scene(new List<InitGameData>()), true);
                     }
                 }
             }

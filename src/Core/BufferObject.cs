@@ -11,10 +11,10 @@ namespace MinecraftCloneSilk.Core
         private uint _handle;
         private BufferTargetARB _bufferType;
         private GL _gl;
+        private bool disposed = false;
 
         public unsafe BufferObject(GL gl, Span<TDataType> data, BufferTargetARB bufferType)
         {
-            Game.getInstance().disposables += Dispose;
             _gl = gl;
             _bufferType = bufferType;
 
@@ -29,7 +29,6 @@ namespace MinecraftCloneSilk.Core
 
         public unsafe BufferObject(GL gl, int nbVertex, BufferTargetARB bufferType)
         {
-            Game.getInstance().disposables += Dispose;
             this._gl = gl;
             _bufferType = bufferType;
 
@@ -49,10 +48,23 @@ namespace MinecraftCloneSilk.Core
             _gl.BindBuffer(_bufferType, _handle);
         }
 
+        ~BufferObject() {
+            Dispose(false);
+        }
+        
         public void Dispose()
         {
-            Game.getInstance().disposables -= Dispose;
-            _gl.DeleteBuffer(_handle);
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected void Dispose(bool disposing) {
+            if (!disposed) {
+                if (disposing) {
+                    _gl.DeleteBuffer(_handle);
+                }
+                disposed = true;
+            }            
         }
     }
 

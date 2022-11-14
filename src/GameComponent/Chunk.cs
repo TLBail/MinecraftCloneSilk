@@ -125,13 +125,13 @@ public class Chunk : IDisposable
         for (int x = 0; x < CHUNK_SIZE; x++) {
             for (int y = 0; y < CHUNK_SIZE; y++) {
                 for (int z = 0; z < CHUNK_SIZE; z++) {
-                    if(blocks[x, y, z].id == 0  || blockFactory.getBlockNameById(blocks[x ,y, z].id).Equals(BlockFactory.AIR_BLOCK)) continue;
-                    Block block = getBlock(x, y, z);
-                    Face[] faces = getFaces(block);
-                    if (!block.airBlock && faces.Length > 0) {
+                    BlockData block = blocks[x, y, z];
+                    if(block.id == 0  || blockFactory.getBlockNameById(block.id).Equals(BlockFactory.AIR_BLOCK)) continue;
+                    List<Face> faces = getFaces(x ,y, z);
+                    if (faces.Count > 0) {
                         listVertices.AddRange(
-                            TextureBlock.get(block.name).getCubeVertices(faces,
-                                new Vector3D<float>(block.position.X, block.position.Y, block.position.Z)));
+                            TextureBlock.get(blockFactory.getBlockNameById(block.id)).getCubeVertices(faces.ToArray(),
+                                new Vector3D<float>(x, y, z)));
                     }
                 }
             }
@@ -215,42 +215,39 @@ public class Chunk : IDisposable
    
     
 
-    private Face[] getFaces(Block block)
+    private List<Face> getFaces(int x, int y, int z)
     {
-        if (block.transparent) {
-            return new[] { Face.TOP, Face.BOTTOM, Face.LEFT, Face.RIGHT, Face.FRONT, Face.BACK };
-        }
 
         var faces = new List<Face>();
         //X
-        if (isBlockTransparent(block.position.X - 1, block.position.Y, block.position.Z)) {
+        if (isBlockTransparent(x - 1, y, z)) {
             faces.Add(Face.RIGHT);
         }
 
-        if (isBlockTransparent(block.position.X + 1, block.position.Y, block.position.Z)) {
+        if (isBlockTransparent(x + 1, y, z)) {
             faces.Add(Face.LEFT);
         }
 
-        //Y
-        if (isBlockTransparent(block.position.X, block.position.Y - 1, block.position.Z)) {
+        //y
+        if (isBlockTransparent(x, y - 1, z)) {
             faces.Add(Face.BOTTOM);
         }
 
-        if (isBlockTransparent(block.position.X, block.position.Y  + 1, block.position.Z)) {
+        if (isBlockTransparent(x, y  + 1, z)) {
             faces.Add(Face.TOP);
         }
 
-        //Z
-        if (isBlockTransparent(block.position.X, block.position.Y, block.position.Z - 1)) {
+        //z
+        if (isBlockTransparent(x, y, z - 1)) {
             faces.Add(Face.BACK);
         }
 
-        if (isBlockTransparent(block.position.X, block.position.Y, block.position.Z + 1)) {
+        if (isBlockTransparent(x, y, z + 1)) {
             faces.Add(Face.FRONT);
         }
 
 
-        return faces.ToArray();
+        return faces;
     }
     
 
@@ -288,17 +285,16 @@ public class Chunk : IDisposable
 
     }
 
-    private bool isBlockTransparent(int x, int y, int z)
-    {
+    private bool isBlockTransparent(int x, int y, int z) {
+        BlockData blockData;
         if (x >= CHUNK_SIZE || x < 0 ||
             y >= CHUNK_SIZE || y < 0 ||
-            z >= CHUNK_SIZE || z < 0) return world.getBlock(position + new Vector3D<int>(x, y, z)).transparent;
-
-        BlockData blockData = blocks[x, y, z];
-        if (blockData.id == 0 || blockFactory.isBlockTransparent(blockData)) {
-            return true;
+            z >= CHUNK_SIZE || z < 0) {
+            blockData = world.getBlockData(position + new Vector3D<int>(x, y, z));
+        } else {
+            blockData = blocks[x, y, z];
         }
-        return getBlock(x, y, z).transparent;
+        return blockData.id == 0 || blockFactory.isBlockTransparent(blockData);
     }
 
     private Vector3D<int> getChunkPosition(Vector3D<int> blockPosition) {
@@ -310,9 +306,32 @@ public class Chunk : IDisposable
 
     }
 
+    protected bool disposed = false;
+
     public void Dispose() {
-        Vao.Dispose();
-        Vbo.Dispose();
-        
+        Dispose(true);  
+        GC.SuppressFinalize(this);
+
+    } 
+    ~Chunk() => Dispose(false);
+
+    protected virtual void Dispose(bool disposing) {
+        if (!disposed) {
+
+            if (disposing) {
+                Vao?.Dispose();
+                Vbo?.Dispose();
+            }
+            disposed = true;
+        }
+
+
+    }
+
+    public BlockData getBlockData(Vector3D<int> localPosition) {
+        if (localPosition.X < 0 || localPosition.X >= CHUNK_SIZE ||
+            localPosition.Y < 0 || localPosition.Y >= CHUNK_SIZE ||
+            localPosition.Z < 0 || localPosition.Z >= CHUNK_SIZE) return world.getBlockData(position + localPosition);
+        return blocks[localPosition.X, localPosition.Y, localPosition.Z];
     }
 }

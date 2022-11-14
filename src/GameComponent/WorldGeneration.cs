@@ -34,7 +34,6 @@ public class WorldGeneration
                     if (localY < 0)
                         localY = (int)(Chunk.CHUNK_SIZE + localY);
                     blocks[(int)x,localY,(int)z] = blockFactory.buildData("grass");
-
                     for (int g = localY - 1; g >= 0 && g >= localY - 4; g--)
                     {
                         blocks[(int)x,g,(int)z] = blockFactory.buildData("stone");

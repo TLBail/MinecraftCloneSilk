@@ -33,6 +33,8 @@ namespace MinecraftCloneSilk.Core
         private static readonly Color CLEAR_COLOR = Color.Lavender;
 
         private Glfw glfw;
+
+        private bool running = true;
         
         public OpenGl(Game game)
         {
@@ -59,6 +61,10 @@ namespace MinecraftCloneSilk.Core
         {
             //Run the window.
             window.Run();
+        }
+
+        public void Stop() {
+            running = false;
         }
 
         private unsafe void OnLoad()
@@ -104,6 +110,10 @@ namespace MinecraftCloneSilk.Core
         
         private void OnUpdate(double deltaTime)
         {
+            if (!running) {
+                closeWindow();
+                return;
+            }
             imGuiController.Update((float)deltaTime);
             game.update(deltaTime);
         }
@@ -130,7 +140,6 @@ namespace MinecraftCloneSilk.Core
         {
             imGuiController?.Dispose();
             input?.Dispose();
-            game.dispose();
             Gl?.Dispose();
         }
 
@@ -147,11 +156,15 @@ namespace MinecraftCloneSilk.Core
                 .GetInputMode((WindowHandle*)window.Handle, CursorStateAttribute.Cursor);
         }
 
+        private void closeWindow() {
+            window.Close();
+        }
+
         private void KeyDown(IKeyboard keyboard, Key key, int arg3)
         {
             if (key == Key.Escape)
             {
-                window.Close();
+                closeWindow();
             }
 
             if (key == Key.F1)
