@@ -143,9 +143,8 @@ public class Chunk : IDisposable
                     if(block.id == 0  || blockFactory.getBlockNameById(block.id).Equals(BlockFactory.AIR_BLOCK)) continue;
                     List<Face> faces = getFaces(x ,y, z);
                     if (faces.Count > 0) {
-                        listVertices.AddRange(
-                            TextureBlock.get(blockFactory.getBlockNameById(block.id)).getCubeVertices(faces.ToArray(),
-                                new Vector3D<float>(x, y, z)));
+                        listVertices.AddRange(blockFactory.blocksReadOnly[block.id].textureBlock
+                            .getCubeVertices(faces.ToArray(), new Vector3D<float>(x, y, z)));
                     }
                 }
             }
