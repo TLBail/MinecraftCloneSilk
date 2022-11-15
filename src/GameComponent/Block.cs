@@ -14,18 +14,25 @@ namespace MinecraftCloneSilk.GameComponent
         public string name = "air";
         public bool airBlock = true;
         public bool transparent = true;
-
+        public TextureBlock textureBlock;
+        
 
         public Block(Vector3D<int> position) : this(position, BlockFactory.AIR_BLOCK, true) { }
 
         public Block(Vector3D<int> position, string name) : this(position, name, false){}
-        public Block(Vector3D<int> position, string name, bool transparent)
+        public Block(Vector3D<int> position, string name, bool transparent) : this(position, name, transparent, null){}
+
+        public Block(Vector3D<int> position, string name, bool transparent, TextureBlock textureBlock)
         {
             airBlock = BlockFactory.AIR_BLOCK.Equals(name); 
             this.position = position;
             this.name = name;
             this.transparent = transparent;
+            this.textureBlock = textureBlock;
         }
+        
+        public Block(BlockJson blockJson) : this(Vector3D<int>.Zero, blockJson.name, blockJson.transparent, new TextureBlock(blockJson)) {}
+        
 
         public BlockData toBlockData()
         {

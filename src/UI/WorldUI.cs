@@ -9,10 +9,18 @@ namespace MinecraftCloneSilk.UI;
 public class WorldUI
 {
     private World world;
+    private string[] blockNames;
     public WorldUI(World world)
     {
         this.world = world;
         worldMode = world.worldMode.ToString();
+        blockNames = new string[BlockFactory.getInstance().blocksReadOnly.Count];
+        int index = 0;
+        foreach (int id in BlockFactory.getInstance().blocksReadOnly.Keys) {
+            blockNames[index] = BlockFactory.getInstance().getBlockNameById(id);
+            index++;
+        }
+
     }
 
     private static int newBlockX;
@@ -29,10 +37,8 @@ public class WorldUI
     {
         ImGui.Text("add block");
 
-        List<string> blockNames = TextureBlock.keys();
-        blockNames.Add("airBlock");
         if(ImGui.BeginCombo("blockname",newBlockName )) {
-            for (int n = 0; n < blockNames.Count; n++)
+            for (int n = 0; n < blockNames.Length; n++)
             {
                 bool is_selected = (newBlockName == blockNames[n]);
                 if (ImGui.Selectable(blockNames[n], is_selected))
