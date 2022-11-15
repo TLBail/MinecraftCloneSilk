@@ -6,40 +6,14 @@ namespace MinecraftCloneSilk.GameComponent
 {
     public class TextureBlock
     {
-        private class TextureBlockJson
-        {
-            public string? name { get; set; }
-            public Dictionary<Face, int[]> texture { get; set; }
-        }
 
-        private readonly TextureBlockJson textureBlockJson;
+        private readonly BlockJson blockJson;
         private readonly CubeVertex[][] cubeVertices;
 
-        private const string PATH_TO_JSON = "./Assets/blocks/json/";
-
-        private static readonly Dictionary<string, TextureBlock> textureBlocks = new Dictionary<string, TextureBlock>();
-
-        public static List<string> keys()
-        {
-            return textureBlocks.Keys.ToList();
-        }
         
-        public static TextureBlock get(string nameBlock)
-        {
-            if (textureBlocks.ContainsKey(nameBlock)) {
-                return textureBlocks[nameBlock];
-            }
 
-            TextureBlock textureBlock = new TextureBlock(nameBlock);
-            textureBlocks.Add(nameBlock, textureBlock);
-            return textureBlock;
-        }
-
-        private TextureBlock(string nameBlock)
-        {
-            string path = PATH_TO_JSON + nameBlock + ".json";
-            string jsonString = File.ReadAllText(path);
-            textureBlockJson = JsonSerializer.Deserialize<TextureBlockJson>(jsonString)!;
+        public TextureBlock(BlockJson blockJson) {
+            this.blockJson = blockJson;
             cubeVertices = new CubeVertex[6][];
             cubeVertices[(int)Face.BACK]  = calculateCubeBackVertices();
             cubeVertices[(int)Face.FRONT]  = calculateCubeFrontVertices();
@@ -85,17 +59,17 @@ namespace MinecraftCloneSilk.GameComponent
             {
 
                 new CubeVertex(new Vector3D<float>(-0.5f, -0.5f, -0.5f),
-                    bottomLeft(textureBlockJson.texture[Face.BACK][0], textureBlockJson.texture[Face.BACK][1])),
+                    bottomLeft(blockJson.texture[Face.BACK][0], blockJson.texture[Face.BACK][1])),
                 new CubeVertex(new Vector3D<float>(0.5f, 0.5f, -0.5f),
-                    topRight(textureBlockJson.texture[Face.BACK][0], textureBlockJson.texture[Face.BACK][1])),
+                    topRight(blockJson.texture[Face.BACK][0], blockJson.texture[Face.BACK][1])),
                 new CubeVertex(new Vector3D<float>(0.5f, -0.5f, -0.5f),
-                    bottomRight(textureBlockJson.texture[Face.BACK][0], textureBlockJson.texture[Face.BACK][1])),
+                    bottomRight(blockJson.texture[Face.BACK][0], blockJson.texture[Face.BACK][1])),
                 new CubeVertex(new Vector3D<float>(0.5f, 0.5f, -0.5f), 
-                    topRight(textureBlockJson.texture[Face.BACK][0], textureBlockJson.texture[Face.BACK][1])),
+                    topRight(blockJson.texture[Face.BACK][0], blockJson.texture[Face.BACK][1])),
                 new CubeVertex(new Vector3D<float>(-0.5f, -0.5f, -0.5f), 
-                    bottomLeft(textureBlockJson.texture[Face.BACK][0], textureBlockJson.texture[Face.BACK][1])),
+                    bottomLeft(blockJson.texture[Face.BACK][0], blockJson.texture[Face.BACK][1])),
                 new CubeVertex(new Vector3D<float>(-0.5f, 0.5f, -0.5f), 
-                    topLeft(textureBlockJson.texture[Face.BACK][0], textureBlockJson.texture[Face.BACK][1]))
+                    topLeft(blockJson.texture[Face.BACK][0], blockJson.texture[Face.BACK][1]))
             };
         }
         
@@ -104,17 +78,17 @@ namespace MinecraftCloneSilk.GameComponent
             return new[]
             {
                 new CubeVertex(new Vector3D<float>(-0.5f, -0.5f, 0.5f),
-                    bottomLeft(textureBlockJson.texture[Face.FRONT][0], textureBlockJson.texture[Face.FRONT][1])),
+                    bottomLeft(blockJson.texture[Face.FRONT][0], blockJson.texture[Face.FRONT][1])),
                 new CubeVertex(new Vector3D<float>(0.5f, -0.5f, 0.5f), 
-                    bottomRight(textureBlockJson.texture[Face.FRONT][0], textureBlockJson.texture[Face.FRONT][1])),
+                    bottomRight(blockJson.texture[Face.FRONT][0], blockJson.texture[Face.FRONT][1])),
                 new CubeVertex(new Vector3D<float>(0.5f, 0.5f, 0.5f), 
-                    topRight(textureBlockJson.texture[Face.FRONT][0], textureBlockJson.texture[Face.FRONT][1])),
+                    topRight(blockJson.texture[Face.FRONT][0], blockJson.texture[Face.FRONT][1])),
                 new CubeVertex(new Vector3D<float>(0.5f, 0.5f, 0.5f), 
-                    topRight(textureBlockJson.texture[Face.FRONT][0], textureBlockJson.texture[Face.FRONT][1])),
+                    topRight(blockJson.texture[Face.FRONT][0], blockJson.texture[Face.FRONT][1])),
                 new CubeVertex(new Vector3D<float>(-0.5f, 0.5f, 0.5f), 
-                    topLeft(textureBlockJson.texture[Face.FRONT][0], textureBlockJson.texture[Face.FRONT][1])),
+                    topLeft(blockJson.texture[Face.FRONT][0], blockJson.texture[Face.FRONT][1])),
                 new CubeVertex(new Vector3D<float>(-0.5f, -0.5f, 0.5f), 
-                    bottomLeft(textureBlockJson.texture[Face.FRONT][0], textureBlockJson.texture[Face.FRONT][1]))
+                    bottomLeft(blockJson.texture[Face.FRONT][0], blockJson.texture[Face.FRONT][1]))
             };
         }
 
@@ -124,17 +98,17 @@ namespace MinecraftCloneSilk.GameComponent
             {
 
                 new CubeVertex(new Vector3D<float>(-0.5f, 0.5f, 0.5f),
-                    topRight(textureBlockJson.texture[Face.RIGHT][0], textureBlockJson.texture[Face.RIGHT][1])),
+                    topRight(blockJson.texture[Face.RIGHT][0], blockJson.texture[Face.RIGHT][1])),
                 new CubeVertex(new Vector3D<float>(-0.5f, 0.5f, -0.5f), 
-                    topLeft(textureBlockJson.texture[Face.RIGHT][0], textureBlockJson.texture[Face.RIGHT][1])),
+                    topLeft(blockJson.texture[Face.RIGHT][0], blockJson.texture[Face.RIGHT][1])),
                 new CubeVertex(new Vector3D<float>(-0.5f, -0.5f, -0.5f), 
-                    bottomLeft(textureBlockJson.texture[Face.RIGHT][0], textureBlockJson.texture[Face.RIGHT][1])),
+                    bottomLeft(blockJson.texture[Face.RIGHT][0], blockJson.texture[Face.RIGHT][1])),
                 new CubeVertex(new Vector3D<float>(-0.5f, -0.5f, -0.5f), 
-                    bottomLeft(textureBlockJson.texture[Face.RIGHT][0], textureBlockJson.texture[Face.RIGHT][1])),
+                    bottomLeft(blockJson.texture[Face.RIGHT][0], blockJson.texture[Face.RIGHT][1])),
                 new CubeVertex(new Vector3D<float>(-0.5f, -0.5f, 0.5f), 
-                    bottomRight(textureBlockJson.texture[Face.RIGHT][0], textureBlockJson.texture[Face.RIGHT][1])),
+                    bottomRight(blockJson.texture[Face.RIGHT][0], blockJson.texture[Face.RIGHT][1])),
                 new CubeVertex(new Vector3D<float>(-0.5f, 0.5f, 0.5f), 
-                    topRight(textureBlockJson.texture[Face.RIGHT][0], textureBlockJson.texture[Face.RIGHT][1]))
+                    topRight(blockJson.texture[Face.RIGHT][0], blockJson.texture[Face.RIGHT][1]))
             };
         }
         
@@ -145,17 +119,17 @@ namespace MinecraftCloneSilk.GameComponent
             {
 
                 new CubeVertex(new Vector3D<float>(0.5f, 0.5f, 0.5f), 
-                    topLeft(textureBlockJson.texture[Face.LEFT][0], textureBlockJson.texture[Face.LEFT][1])),
+                    topLeft(blockJson.texture[Face.LEFT][0], blockJson.texture[Face.LEFT][1])),
                 new CubeVertex(new Vector3D<float>(0.5f, -0.5f, -0.5f), 
-                    bottomRight(textureBlockJson.texture[Face.LEFT][0], textureBlockJson.texture[Face.LEFT][1])),
+                    bottomRight(blockJson.texture[Face.LEFT][0], blockJson.texture[Face.LEFT][1])),
                 new CubeVertex(new Vector3D<float>(0.5f, 0.5f, -0.5f), 
-                    topRight(textureBlockJson.texture[Face.LEFT][0], textureBlockJson.texture[Face.LEFT][1])),
+                    topRight(blockJson.texture[Face.LEFT][0], blockJson.texture[Face.LEFT][1])),
                 new CubeVertex(new Vector3D<float>(0.5f, -0.5f, -0.5f), 
-                    bottomRight(textureBlockJson.texture[Face.LEFT][0], textureBlockJson.texture[Face.LEFT][1])),
+                    bottomRight(blockJson.texture[Face.LEFT][0], blockJson.texture[Face.LEFT][1])),
                 new CubeVertex(new Vector3D<float>(0.5f, 0.5f, 0.5f), 
-                    topLeft(textureBlockJson.texture[Face.LEFT][0], textureBlockJson.texture[Face.LEFT][1])),
+                    topLeft(blockJson.texture[Face.LEFT][0], blockJson.texture[Face.LEFT][1])),
                 new CubeVertex(new Vector3D<float>(0.5f, -0.5f, 0.5f), 
-                    bottomLeft(textureBlockJson.texture[Face.LEFT][0], textureBlockJson.texture[Face.LEFT][1]))
+                    bottomLeft(blockJson.texture[Face.LEFT][0], blockJson.texture[Face.LEFT][1]))
             };
         }
         private  CubeVertex[] calculateCubeBottomVertices()
@@ -164,17 +138,17 @@ namespace MinecraftCloneSilk.GameComponent
             {
 
                 new CubeVertex(new Vector3D<float>(-0.5f, -0.5f, -0.5f),
-                    topRight(textureBlockJson.texture[Face.BOTTOM][0], textureBlockJson.texture[Face.BOTTOM][1])),
+                    topRight(blockJson.texture[Face.BOTTOM][0], blockJson.texture[Face.BOTTOM][1])),
                 new CubeVertex(new Vector3D<float>(0.5f, -0.5f, -0.5f), 
-                    topLeft(textureBlockJson.texture[Face.BOTTOM][0], textureBlockJson.texture[Face.BOTTOM][1])),
+                    topLeft(blockJson.texture[Face.BOTTOM][0], blockJson.texture[Face.BOTTOM][1])),
                 new CubeVertex(new Vector3D<float>(0.5f, -0.5f, 0.5f), 
-                    bottomLeft(textureBlockJson.texture[Face.BOTTOM][0], textureBlockJson.texture[Face.BOTTOM][1])),
+                    bottomLeft(blockJson.texture[Face.BOTTOM][0], blockJson.texture[Face.BOTTOM][1])),
                 new CubeVertex(new Vector3D<float>(0.5f, -0.5f, 0.5f), 
-                    bottomLeft(textureBlockJson.texture[Face.BOTTOM][0], textureBlockJson.texture[Face.BOTTOM][1])),
+                    bottomLeft(blockJson.texture[Face.BOTTOM][0], blockJson.texture[Face.BOTTOM][1])),
                 new CubeVertex(new Vector3D<float>(-0.5f, -0.5f, 0.5f), 
-                    bottomRight(textureBlockJson.texture[Face.BOTTOM][0], textureBlockJson.texture[Face.BOTTOM][1])),
+                    bottomRight(blockJson.texture[Face.BOTTOM][0], blockJson.texture[Face.BOTTOM][1])),
                 new CubeVertex(new Vector3D<float>(-0.5f, -0.5f, -0.5f), 
-                    topRight(textureBlockJson.texture[Face.BOTTOM][0], textureBlockJson.texture[Face.BOTTOM][1])),
+                    topRight(blockJson.texture[Face.BOTTOM][0], blockJson.texture[Face.BOTTOM][1])),
 
             };
         }
@@ -183,17 +157,17 @@ namespace MinecraftCloneSilk.GameComponent
             return new[]
             {
                 new CubeVertex(new Vector3D<float>(-0.5f, 0.5f, -0.5f), 
-                    topLeft(textureBlockJson.texture[Face.TOP][0], textureBlockJson.texture[Face.TOP][1])),
+                    topLeft(blockJson.texture[Face.TOP][0], blockJson.texture[Face.TOP][1])),
                 new CubeVertex(new Vector3D<float>(0.5f, 0.5f, 0.5f), 
-                    bottomRight(textureBlockJson.texture[Face.TOP][0], textureBlockJson.texture[Face.TOP][1])),
+                    bottomRight(blockJson.texture[Face.TOP][0], blockJson.texture[Face.TOP][1])),
                 new CubeVertex(new Vector3D<float>(0.5f, 0.5f, -0.5f), 
-                    topRight(textureBlockJson.texture[Face.TOP][0], textureBlockJson.texture[Face.TOP][1])),
+                    topRight(blockJson.texture[Face.TOP][0], blockJson.texture[Face.TOP][1])),
                 new CubeVertex(new Vector3D<float>(0.5f, 0.5f, 0.5f), 
-                    bottomRight(textureBlockJson.texture[Face.TOP][0], textureBlockJson.texture[Face.TOP][1])),
+                    bottomRight(blockJson.texture[Face.TOP][0], blockJson.texture[Face.TOP][1])),
                 new CubeVertex(new Vector3D<float>(-0.5f, 0.5f, -0.5f), 
-                    topLeft(textureBlockJson.texture[Face.TOP][0], textureBlockJson.texture[Face.TOP][1])),
+                    topLeft(blockJson.texture[Face.TOP][0], blockJson.texture[Face.TOP][1])),
                 new CubeVertex(new Vector3D<float>(-0.5f, 0.5f, 0.5f), 
-                    bottomLeft(textureBlockJson.texture[Face.TOP][0], textureBlockJson.texture[Face.TOP][1]))
+                    bottomLeft(blockJson.texture[Face.TOP][0], blockJson.texture[Face.TOP][1]))
             };
         }
 

@@ -1,4 +1,6 @@
-﻿using Silk.NET.Maths;
+﻿using System.Collections.ObjectModel;
+using System.Text.Json;
+using Silk.NET.Maths;
 
 namespace MinecraftCloneSilk.GameComponent;
 
@@ -15,6 +17,9 @@ public class BlockFactory
     private Dictionary<int, string> blockIdToNameDictionnary;
     public string getBlockNameById(int id) => blockIdToNameDictionnary[id];
 
+
+    public ReadOnlyDictionary<int, Block> blocksReadOnly => new ReadOnlyDictionary<int, Block>(blocks);
+
     public static BlockFactory getInstance()
     {
         if (instance == null) {
@@ -30,15 +35,20 @@ public class BlockFactory
 
     public const string  AIR_BLOCK = "airblock";
     public readonly int AIR_BLOCK_ID;
+    private const string PATH_TO_JSON = "./Assets/blocks/json/";
 
+    
     private BlockFactory() {
         AIR_BLOCK_ID = AIR_BLOCK.GetHashCode();
         blockIdToNameDictionnary = new Dictionary<int, string>();
+        string[] files = Directory.GetFiles(PATH_TO_JSON);
         addBlock(new Block(Vector3D<int>.Zero, AIR_BLOCK, true));
-        addBlock(new Block(Vector3D<int>.Zero, "stone", false));
-        addBlock(new Block(Vector3D<int>.Zero, "grass", false));
-        addBlock(new Block(Vector3D<int>.Zero, "dirt", false));
-        addBlock(new Block(Vector3D<int>.Zero, "metal", false));
+        foreach(string filepath in files)
+        {
+            string jsonString = File.ReadAllText(filepath);
+            BlockJson blockJson = JsonSerializer.Deserialize<BlockJson>(jsonString)!;
+            addBlock(new Block(blockJson));
+        }
     }
 
 
