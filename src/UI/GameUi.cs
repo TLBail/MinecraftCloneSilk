@@ -11,7 +11,7 @@ public class GameUi : UiWindow
     private ImGuiWindowFlags windowFlags;
     
     public GameUi(Game game, Key? key) : base(game, key) {
-        windowFlags = ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoSavedSettings    | ImGuiWindowFlags.NoNav;
+        windowFlags = ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoSavedSettings;
     }
     public GameUi(Game game) : this(game, null) {}
 

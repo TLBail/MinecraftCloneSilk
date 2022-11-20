@@ -8,6 +8,7 @@ using MinecraftCloneSilk.UI;
 using Silk.NET.Input;
 using Silk.NET.Maths;
 using Silk.NET.Windowing;
+using Console = MinecraftCloneSilk.UI.Console;
 
 namespace MinecraftCloneSilk
 {
@@ -22,6 +23,7 @@ namespace MinecraftCloneSilk
                 new (typeof(World).FullName, new object[]{ WorldMode.DYNAMIC}),
                 new (typeof(DebugRayManager).FullName),
                 new (typeof(GameUi).FullName),
+                new (typeof(Console).FullName),
                 new (typeof(GeneralInfo).FullName)
             };
             Scene scene = new Scene(gameObjectNames);
