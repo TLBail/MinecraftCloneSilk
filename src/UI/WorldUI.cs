@@ -51,9 +51,9 @@ public class WorldUI
         
         
 
-        ImGui.InputInt("x", ref newBlockX);
-        ImGui.InputInt("y", ref newBlockY);
-        ImGui.InputInt("z", ref newBlockZ);
+        ImGui.InputInt("new block x", ref newBlockX);
+        ImGui.InputInt("new block y", ref newBlockY);
+        ImGui.InputInt("new block z", ref newBlockZ);
         if (ImGui.Button("set block")) {
             world.setBlock(newBlockName, new Vector3D<int>(newBlockX, newBlockY, newBlockZ));
         }
@@ -89,11 +89,14 @@ public class WorldUI
             WorldGeneration.generationParameters[i] = parameter;
         }
 
-
+        
         
         if (ImGui.Button("reload Chunks")) {
             world.setWorldMode(WorldMode.EMPTY);
             world.setWorldMode(WorldMode.DYNAMIC);
         }
+        
+        
+        
     }
 }
