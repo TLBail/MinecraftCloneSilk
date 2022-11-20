@@ -2,16 +2,10 @@
 
 namespace MinecraftCloneSilk.UI;
 
-public class DemoWindow : GameObject
+public class DemoWindow : UiWindow
 {
-    
-    public DemoWindow()
-    {
-        game.uiDrawables += UiDrawables;
-    }
-
-    private void UiDrawables()
-    {
+    public DemoWindow(Game game): base(game, null){}
+    protected override void drawUi() {
         ImGuiNET.ImGui.ShowDemoWindow();
     }
 }

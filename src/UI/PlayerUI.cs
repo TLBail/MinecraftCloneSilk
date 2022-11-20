@@ -21,9 +21,9 @@ public class PlayerUi
     }
     
     private Chunk lastChunkDebuged;
-    static float newX = 5;
-    static float newY = 5;
-    static float newZ = 5;
+    static float newPlayerX = 5;
+    static float newPlayerY = 5;
+    static float newPlayerZ = 5;
 
     static bool hoveredHiglihtMode = false;  // default value, the button is disabled 
     static bool isPlayerDebugEnabled = false;  // default value, the button is disabled 
@@ -39,12 +39,12 @@ public class PlayerUi
                    " ] y : [ " + player.position.Y.ToString("0.00") +
                    " ]  z : [ " + player.position.Z.ToString("0.00") + " ]");
 
-        ImGui.InputFloat("x", ref newX);
-        ImGui.InputFloat("y", ref newY);
-        ImGui.InputFloat("z", ref newZ);
+        ImGui.InputFloat("new player x", ref newPlayerX);
+        ImGui.InputFloat("new player y", ref newPlayerY);
+        ImGui.InputFloat("new player z", ref newPlayerZ);
         if (ImGui.Button("tp player to"))
         {
-            player.position = new Vector3(newX, newY, newZ);
+            player.position = new Vector3(newPlayerX, newPlayerY, newPlayerZ);
         }
         
         switchPlayerDebug();    

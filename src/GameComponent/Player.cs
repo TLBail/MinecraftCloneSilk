@@ -8,6 +8,7 @@ using Silk.NET.Input;
 using MinecraftCloneSilk.Core;
 using MinecraftCloneSilk.UI;
 using Silk.NET.Maths;
+using Console = MinecraftCloneSilk.UI.Console;
 
 
 namespace MinecraftCloneSilk.GameComponent
@@ -25,13 +26,16 @@ namespace MinecraftCloneSilk.GameComponent
         private string activeBlockName = "metal";
 
         private PlayerInteractionToWorld? playerInteractionToWorld;
-
+        private Console console;
+        
         public Vector3 position
         {
             get => camera.Position;
             set
             {
                 camera.Position = value;
+                console.log(
+                    "player position has been set at (" + position.X + "," + position.Y + "," + position.Z + ")");
             }
         }
         
@@ -90,6 +94,24 @@ namespace MinecraftCloneSilk.GameComponent
             world = (World)game.gameObjects[typeof(World).FullName];
             this.playerInteractionToWorld = new PlayerInteractionToWorld(world, this);
             playerUi.start(playerInteractionToWorld);
+            console = (Console)game.gameObjects[typeof(Console).FullName];
+            console.addCommand("/tp", (commandParams) =>
+            {
+                Vector3 newPosition = Vector3.Zero;
+                try {
+                    if (commandParams.Length >= 3) {
+                        newPosition.X = float.Parse(commandParams[0]);
+                        newPosition.Y = float.Parse(commandParams[1]);
+                        newPosition.Z = float.Parse(commandParams[2]);
+                    }
+                }
+                catch (Exception e) {
+                    newPosition = Vector3.Zero;
+                    console.log("Invalid parameters", Console.LogType.ERROR);
+                }
+                position = newPosition;
+
+            });
         }
 
         private void movePlayer(double deltaTime)
