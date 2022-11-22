@@ -1,6 +1,7 @@
 ﻿using System.Numerics;
 using System.Runtime.InteropServices;
 using ImGuiNET;
+using MinecraftCloneSilk.Core;
 using MinecraftCloneSilk.GameComponent;
 using Silk.NET.Input;
 
@@ -13,13 +14,16 @@ public class ItemBarUi : UiWindow
     private int activeIndex = 0;
     private ImGuiIOPtr imGuiIo;
     private static bool p_open;
+    private const string DNDCELL = "DND_CELL";
+    private Texture texture;
+    
     
     public ItemBarUi(Game game) : base(game, null) {
         mouse = game.getMouse();
-        
     }
 
     protected override void start() {
+        texture = new Texture(game.getGL(), "./Assets/blocks/stone.png");
         blockNames = new string[BlockFactory.getInstance().blocksReadOnly.Values.Count];
         int index = 0;
         foreach (var keyValue in BlockFactory.getInstance().blocksReadOnly) {
@@ -31,7 +35,14 @@ public class ItemBarUi : UiWindow
     }
 
     private void MouseOnScroll(IMouse mouse, ScrollWheel scrollWheel) {
-        activeIndex = (int)(scrollWheel.Y % blockNames.Length);
+        if (scrollWheel.Y > 0) {
+            activeIndex++;
+        } else {
+            activeIndex--;
+        }
+
+        if (activeIndex >= blockNames.Length) activeIndex = 1;
+        if (activeIndex <= 0) activeIndex = blockNames.Length - 1;
     }
 
     protected override void drawUi() {
@@ -71,27 +82,30 @@ public class ItemBarUi : UiWindow
         
         ImGui.BeginGroup();
 
+        //image
+        Vector2 uvMin = Vector2.Zero;
+        Vector2 uvMax = new Vector2(1.0f);
+        Vector4 tintCol = new Vector4(1.0f);
+        Vector4 borderCol = new Vector4(1.0f, 1.0f, 1.0f, 0.5f);
+        ImGui.Image((IntPtr)texture._handle, new Vector2(80, 80), uvMin, uvMax, tintCol, borderCol);
         ImGui.Button(blockNames[index], new Vector2(80, 20));
         
         ImGui.EndGroup();
 
 
         if (ImGui.BeginDragDropSource(ImGuiDragDropFlags.None | ImGuiDragDropFlags.SourceAllowNullID)) {
-            int* ptrPayload = (&index);
-            if (*ptrPayload != index) throw new Exception("sa marche pas");
-            ImGui.SetDragDropPayload("DND_DEMO_CELL", (IntPtr)(&index), sizeof(int));
+            ImGui.SetDragDropPayload(DNDCELL, (IntPtr)(&index), sizeof(int));
             ImGui.Text(blockNames[index]);
             ImGui.EndDragDropSource();
         }
 
         if (ImGui.BeginDragDropTarget()) {
-            ImGuiPayloadPtr payload = ImGui.AcceptDragDropPayload("DND_DEMO_CELL");
+            ImGuiPayloadPtr payload = ImGui.AcceptDragDropPayload(DNDCELL);
             
             if (payload.NativePtr != null && payload.DataSize == sizeof(int)) {
                 int* newIndex = (int*)payload.Data;
-                string tmp = blockNames[index];
-                blockNames[index] = blockNames[*newIndex];
-                blockNames[*newIndex] = tmp;
+                (blockNames[index], blockNames[*newIndex]) = 
+                    (blockNames[*newIndex], blockNames[index]);
             }
             ImGui.EndDragDropTarget();
         }
