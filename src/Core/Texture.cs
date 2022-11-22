@@ -10,9 +10,11 @@ namespace MinecraftCloneSilk.Core
 {
     public class Texture : IDisposable
     {
-        private uint _handle;
+        public uint _handle { get; private set; }
         private GL _gl;
         private bool disposed = false;
+        
+        
         public unsafe Texture(GL gl, string path)
         {
             _gl = gl;
