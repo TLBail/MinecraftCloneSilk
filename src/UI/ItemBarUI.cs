@@ -16,33 +16,41 @@ public class ItemBarUi : UiWindow
     private static bool p_open;
     private const string DNDCELL = "DND_CELL";
     private Texture texture;
-    
+    private Texture[] textures;
+    private Player player;
     
     public ItemBarUi(Game game) : base(game, null) {
         mouse = game.getMouse();
     }
 
     protected override void start() {
+        var dic = BlockFactory.getInstance().blocksReadOnly;
         texture = new Texture(game.getGL(), "./Assets/blocks/stone.png");
-        blockNames = new string[BlockFactory.getInstance().blocksReadOnly.Values.Count];
+        blockNames = new string[dic.Count - 1];
+        textures = new Texture[dic.Count - 1];
         int index = 0;
-        foreach (var keyValue in BlockFactory.getInstance().blocksReadOnly) {
+        foreach (var keyValue in dic) {
+            if(keyValue.Value.name.Equals(BlockFactory.AIR_BLOCK)) continue;
             blockNames[index] = keyValue.Value.name;
+            textures[index] = new Texture(game.getGL(),"./Assets/blocks/" + keyValue.Value.name + ".png");
             index++;
         }
+        
         mouse.Scroll += MouseOnScroll;
         imGuiIo = ImGui.GetIO();
+        player = (Player)game.gameObjects[typeof(Player).FullName];
     }
 
     private void MouseOnScroll(IMouse mouse, ScrollWheel scrollWheel) {
         if (scrollWheel.Y > 0) {
-            activeIndex++;
-        } else {
             activeIndex--;
+        } else {
+            activeIndex++;
         }
 
         if (activeIndex >= blockNames.Length) activeIndex = 1;
         if (activeIndex <= 0) activeIndex = blockNames.Length - 1;
+        player.activeBlockName = blockNames[activeIndex];
     }
 
     protected override void drawUi() {
@@ -87,7 +95,7 @@ public class ItemBarUi : UiWindow
         Vector2 uvMax = new Vector2(1.0f);
         Vector4 tintCol = new Vector4(1.0f);
         Vector4 borderCol = new Vector4(1.0f, 1.0f, 1.0f, 0.5f);
-        ImGui.Image((IntPtr)texture._handle, new Vector2(80, 80), uvMin, uvMax, tintCol, borderCol);
+        ImGui.Image((IntPtr)textures[index]._handle, new Vector2(80, 80), uvMin, uvMax, tintCol, borderCol);
         ImGui.Button(blockNames[index], new Vector2(80, 20));
         
         ImGui.EndGroup();
@@ -106,6 +114,9 @@ public class ItemBarUi : UiWindow
                 int* newIndex = (int*)payload.Data;
                 (blockNames[index], blockNames[*newIndex]) = 
                     (blockNames[*newIndex], blockNames[index]);
+                (textures[index], textures[*newIndex]) = 
+                    (textures[*newIndex], textures[index]);
+
             }
             ImGui.EndDragDropTarget();
         }

@@ -23,7 +23,7 @@ namespace MinecraftCloneSilk.GameComponent
         private bool debugActivated = false;
         private PlayerUi playerUi;
         private World world;
-        private string activeBlockName = "metal";
+        public string activeBlockName;
 
         private PlayerInteractionToWorld? playerInteractionToWorld;
         private Console console;
