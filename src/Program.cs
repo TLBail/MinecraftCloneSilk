@@ -24,7 +24,8 @@ namespace MinecraftCloneSilk
                 new (typeof(DebugRayManager).FullName),
                 new (typeof(GameUi).FullName),
                 new (typeof(Console).FullName),
-                new (typeof(GeneralInfo).FullName)
+                new (typeof(GeneralInfo).FullName),
+                new (typeof(ItemBarUi).FullName)
             };
             Scene scene = new Scene(gameObjectNames);
             Game game = Game.getInstance(scene);
