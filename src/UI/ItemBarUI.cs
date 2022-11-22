@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using System.Runtime.InteropServices;
 using ImGuiNET;
 using MinecraftCloneSilk.GameComponent;
 using Silk.NET.Input;
@@ -7,28 +8,30 @@ namespace MinecraftCloneSilk.UI;
 
 public class ItemBarUi : UiWindow
 {
-    private List<string> blockNames;
+    private string[] blockNames;
     private IMouse mouse;
-    private int index = 0;
+    private int activeIndex = 0;
     private ImGuiIOPtr imGuiIo;
     private static bool p_open;
     
     public ItemBarUi(Game game) : base(game, null) {
-        blockNames = new List<string>();
         mouse = game.getMouse();
         
     }
 
     protected override void start() {
+        blockNames = new string[BlockFactory.getInstance().blocksReadOnly.Values.Count];
+        int index = 0;
         foreach (var keyValue in BlockFactory.getInstance().blocksReadOnly) {
-            blockNames.Add(keyValue.Value.name);
+            blockNames[index] = keyValue.Value.name;
+            index++;
         }
         mouse.Scroll += MouseOnScroll;
         imGuiIo = ImGui.GetIO();
     }
 
     private void MouseOnScroll(IMouse mouse, ScrollWheel scrollWheel) {
-        index = (int)(scrollWheel.Y % blockNames.Count);
+        activeIndex = (int)(scrollWheel.Y % blockNames.Length);
     }
 
     protected override void drawUi() {
@@ -46,7 +49,7 @@ public class ItemBarUi : UiWindow
         windowFlags |= ImGuiWindowFlags.NoMove;
         ImGui.SetNextWindowBgAlpha(0.35f); // Transparent background
         if (ImGui.Begin("item bar", ref p_open, windowFlags)) {
-            for (int i = 0; i < blockNames.Count; i++) {
+            for (int i = 0; i < blockNames.Length; i++) {
                 itemUi(i);
             }
             ImGui.End();
@@ -54,9 +57,48 @@ public class ItemBarUi : UiWindow
 
     }
 
-    private void itemUi(int index) {
+    private unsafe void itemUi(int index) {
         ImGui.PushID(index);
+
+        if (activeIndex == index) {
+            ImGui.PushStyleColor(ImGuiCol.Button, new Vector4(0.7f,0.6f, 0.6f, 1.0f));
+            ImGui.PushStyleColor(ImGuiCol.ButtonHovered, new Vector4(0.7f,0.7f, 0.7f, 1.0f));
+            ImGui.PushStyleColor(ImGuiCol.ButtonActive, new Vector4(0.7f,0.8f, 0.8f, 1.0f));
+
+        }
         
+        ImGui.SameLine();
         
+        ImGui.BeginGroup();
+
+        ImGui.Button(blockNames[index], new Vector2(80, 20));
+        
+        ImGui.EndGroup();
+
+
+        if (ImGui.BeginDragDropSource(ImGuiDragDropFlags.None | ImGuiDragDropFlags.SourceAllowNullID)) {
+            int* ptrPayload = (&index);
+            if (*ptrPayload != index) throw new Exception("sa marche pas");
+            ImGui.SetDragDropPayload("DND_DEMO_CELL", (IntPtr)(&index), sizeof(int));
+            ImGui.Text(blockNames[index]);
+            ImGui.EndDragDropSource();
+        }
+
+        if (ImGui.BeginDragDropTarget()) {
+            ImGuiPayloadPtr payload = ImGui.AcceptDragDropPayload("DND_DEMO_CELL");
+            
+            if (payload.NativePtr != null && payload.DataSize == sizeof(int)) {
+                int* newIndex = (int*)payload.Data;
+                string tmp = blockNames[index];
+                blockNames[index] = blockNames[*newIndex];
+                blockNames[*newIndex] = tmp;
+            }
+            ImGui.EndDragDropTarget();
+        }
+
+        if (index == activeIndex) {
+            ImGui.PopStyleColor(3);
+        }
+        ImGui.PopID();
     }
 }
