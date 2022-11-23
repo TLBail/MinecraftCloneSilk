@@ -1,5 +1,6 @@
 {
     "name": "metal",
+    "transparent": false,
     "texture": {
         "TOP": [
             0,
