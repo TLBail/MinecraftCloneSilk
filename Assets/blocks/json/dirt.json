@@ -1,5 +1,6 @@
 {
     "name": "dirt",
+    "transparent": false,
     "texture": {
         "TOP": [
             3,

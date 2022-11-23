@@ -3,9 +3,8 @@
 [Serializable]
 public class BlockJson
 {
-    public bool transparent;
     public string? name { get; set; }
+    public bool transparent { get; set; }
     public Dictionary<Face, int[]>  texture { get; set; }
-    
     
 }
