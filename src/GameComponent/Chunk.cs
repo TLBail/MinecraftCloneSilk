@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using System.Net.Mime;
 using System.Numerics;
 using DotnetNoise;
 using MinecraftCloneSilk.Core;
@@ -222,7 +223,7 @@ public class Chunk : IDisposable
         }
 
         if (cubeTexture == null) {
-            cubeTexture = new Texture(Gl, "./Assets/spriteSheet.png");
+            cubeTexture = TextureManager.getInstance().textures["spriteSheet.png"];
         }
     }
 

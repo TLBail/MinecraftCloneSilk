@@ -33,6 +33,7 @@ namespace MinecraftCloneSilk.GameComponent
             this.name = name;
             this.transparent = transparent;
             this.textureBlock = textureBlock;
+            this.fullTexture = (!airBlock) ? TextureManager.getInstance().textures[name + ".png"] : null;
         }
         
 

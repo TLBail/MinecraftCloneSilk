@@ -10,6 +10,8 @@ using MinecraftCloneSilk.GameComponent;
 using MinecraftCloneSilk.Core;
 using MinecraftCloneSilk.UI;
 using Silk.NET.Maths;
+using Console = MinecraftCloneSilk.UI.Console;
+using Texture = MinecraftCloneSilk.Core.Texture;
 
 namespace MinecraftCloneSilk.GameComponent
 {
@@ -36,9 +38,13 @@ namespace MinecraftCloneSilk.GameComponent
         public List<DebugRay> debugRays = new List<DebugRay>();
 
         private Scene scene;
+
+        private TextureManager textureManager;
+        
         
         //game element
         public Dictionary<string, GameObject> gameObjects = new Dictionary<string, GameObject>();
+        private Console console;
         
         //frame count
         private TaskCompletionSource frameCountTaskSource = new TaskCompletionSource();
@@ -73,15 +79,26 @@ namespace MinecraftCloneSilk.GameComponent
 
         public void start(GL Gl)
         {
-            awake();
-            startables?.Invoke();
+            //load textures
+            textureManager = TextureManager.getInstance();
+            textureManager.load(Gl);
             
+            awake();
+            
+            if (gameObjects.ContainsKey(typeof(Console).FullName))
+                console = (Console)gameObjects[typeof(Console).FullName];
+            startables?.Invoke();
         }
 
 
         public void update(double deltaTime)
         {
-            updatables?.Invoke( deltaTime);
+            try {
+                updatables?.Invoke( deltaTime);
+            }
+            catch (GameException gameException) {
+                console?.log(gameException.ToString(), Console.LogType.ERROR);
+            }
         }
 
 
@@ -99,9 +116,11 @@ namespace MinecraftCloneSilk.GameComponent
             gl.BufferSubData(BufferTargetARB.UniformBuffer, sizeof(System.Numerics.Matrix4x4), (uint)sizeof(System.Numerics.Matrix4x4), viewMatrix);
             gl.BindBuffer(BufferTargetARB.UniformBuffer, 0);
 
-
+            try{   
             drawables?.Invoke(gl, deltaTime);
-            
+            }catch (GameException gameException) {
+                console?.log(gameException.ToString(), Console.LogType.ERROR);
+            }
             if(frameCountTaskSource.TrySetResult()) frameCount++;
         }
 

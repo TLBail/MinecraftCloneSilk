@@ -23,10 +23,12 @@ namespace MinecraftCloneSilk.GameComponent
         private bool debugActivated = false;
         private PlayerUi playerUi;
         private World world;
-        public string activeBlockName;
 
         private PlayerInteractionToWorld? playerInteractionToWorld;
         private Console console;
+        
+        
+        public Inventaire inventaire;
         
         public Vector3 position
         {
@@ -47,9 +49,8 @@ namespace MinecraftCloneSilk.GameComponent
             this.mouse = game.getMouse();
             this.playerUi = new PlayerUi(this);
             mouse.MouseDown += onMouseClick;
+            inventaire = new Inventaire(this);
         }
-
-        
 
         public Vector3D<float> getDirection3D()
         {
@@ -66,10 +67,9 @@ namespace MinecraftCloneSilk.GameComponent
                     Vector3D<int> position = ((Block)block).position + chunk.getPosition();
                     world.setBlock(BlockFactory.AIR_BLOCK, position);
                 }
-
-                if (mouseButton == MouseButton.Right && playerInteractionToWorld.getFace().HasValue) {
+                if (mouseButton == MouseButton.Right && playerInteractionToWorld.getFace().HasValue && inventaire.haveBlockToPlace()) {
                     Face face = (Face)playerInteractionToWorld.getFace();
-                    world.setBlock( activeBlockName,  chunk.getPosition() +  ((Block)block).position + FaceOffset.getOffsetOfFace(face));
+                    world.setBlock(inventaire.getActiveBlock().block.name,  chunk.getPosition() +  block.position + FaceOffset.getOffsetOfFace(face));
                 }
             }
             

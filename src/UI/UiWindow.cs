@@ -22,12 +22,19 @@ public abstract class UiWindow : GameObject
         visible = (key == null);
         openGl = game.openGl;
         game.uiDrawables += uiPipeline;
+        if (key.HasValue) {
+            keyboard = game.getKeyboard();
+            keyboard.KeyDown += setVisible;
+        }
+    }
+
+    private void setVisible(IKeyboard keyboard, Key key, int a) {
+        if (key == this.key) visible = !visible;
     }
 
     public UiWindow() : this(Game.getInstance(), DEFAUlT_KEY) {    }
 
     public void uiPipeline() {
-        if (key != null && keyboard.IsKeyPressed((Key)key)) visible = !visible;
         if(!visible) return;
         
         
