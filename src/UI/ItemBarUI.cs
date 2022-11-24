@@ -9,15 +9,14 @@ namespace MinecraftCloneSilk.UI;
 
 public class ItemBarUi : UiWindow
 {
-    private string[] blockNames;
     private IMouse mouse;
-    private int activeIndex = 0;
     private ImGuiIOPtr imGuiIo;
     private static bool p_open;
     private const string DNDCELL = "DND_CELL";
     private Texture texture;
     private Texture[] textures;
     private Player player;
+    private Inventaire inventaire;
     
     public ItemBarUi(Game game) : base(game, null) {
         mouse = game.getMouse();
@@ -26,12 +25,11 @@ public class ItemBarUi : UiWindow
     protected override void start() {
         var dic = BlockFactory.getInstance().blocksReadOnly;
         texture = new Texture(game.getGL(), "./Assets/blocks/stone.png");
-        blockNames = new string[dic.Count - 1];
         textures = new Texture[dic.Count - 1];
         int index = 0;
         foreach (var keyValue in dic) {
-            if(keyValue.Value.name.Equals(BlockFactory.AIR_BLOCK)) continue;
-            blockNames[index] = keyValue.Value.name;
+        if(keyValue.Value.name.Equals(BlockFactory.AIR_BLOCK)) continue;
+        //     blockNames[index] = keyValue.Value.name;
             textures[index] = new Texture(game.getGL(),"./Assets/blocks/" + keyValue.Value.name + ".png");
             index++;
         }
@@ -39,18 +37,11 @@ public class ItemBarUi : UiWindow
         mouse.Scroll += MouseOnScroll;
         imGuiIo = ImGui.GetIO();
         player = (Player)game.gameObjects[typeof(Player).FullName];
+        inventaire = player.inventaire;
     }
 
     private void MouseOnScroll(IMouse mouse, ScrollWheel scrollWheel) {
-        if (scrollWheel.Y > 0) {
-            activeIndex--;
-        } else {
-            activeIndex++;
-        }
-
-        if (activeIndex >= blockNames.Length) activeIndex = 1;
-        if (activeIndex <= 0) activeIndex = blockNames.Length - 1;
-        player.activeBlockName = blockNames[activeIndex];
+        inventaire.moveActiveIndexByScroolOffset(scrollWheel.Y);
     }
 
     protected override void drawUi() {
@@ -68,7 +59,7 @@ public class ItemBarUi : UiWindow
         windowFlags |= ImGuiWindowFlags.NoMove;
         ImGui.SetNextWindowBgAlpha(0.35f); // Transparent background
         if (ImGui.Begin("item bar", ref p_open, windowFlags)) {
-            for (int i = 0; i < blockNames.Length; i++) {
+            for (int i = Inventaire.STARTING_ITEM_BAR_INDEX; i <= Inventaire.ENDING_ITEM_BAR_INDEX; i++) {
                 itemUi(i);
             }
             ImGui.End();
@@ -77,9 +68,12 @@ public class ItemBarUi : UiWindow
     }
 
     private unsafe void itemUi(int index) {
+        string blockName = "";
+        if (inventaire.inventoryBlocks[index] != null) blockName = inventaire.inventoryBlocks[index].block.name;
+        
         ImGui.PushID(index);
-
-        if (activeIndex == index) {
+        
+        if (inventaire.activeIndex == index) {
             ImGui.PushStyleColor(ImGuiCol.Button, new Vector4(0.7f,0.6f, 0.6f, 1.0f));
             ImGui.PushStyleColor(ImGuiCol.ButtonHovered, new Vector4(0.7f,0.7f, 0.7f, 1.0f));
             ImGui.PushStyleColor(ImGuiCol.ButtonActive, new Vector4(0.7f,0.8f, 0.8f, 1.0f));
@@ -95,15 +89,21 @@ public class ItemBarUi : UiWindow
         Vector2 uvMax = new Vector2(1.0f);
         Vector4 tintCol = new Vector4(1.0f);
         Vector4 borderCol = new Vector4(1.0f, 1.0f, 1.0f, 0.5f);
-        ImGui.Image((IntPtr)textures[index]._handle, new Vector2(80, 80), uvMin, uvMax, tintCol, borderCol);
-        ImGui.Button(blockNames[index], new Vector2(80, 20));
+        if (blockName.Length > 0) {
+            if(inventaire.inventoryBlocks[index]!.block.fullTexture != null)
+                ImGui.Image((IntPtr)inventaire.inventoryBlocks[index]!.block.fullTexture._handle, new Vector2(80, 80), uvMin, uvMax, tintCol, borderCol);
+            ImGui.Button(blockName, new Vector2(80, 20));
+        } else {
+            // ImGui.Image((IntPtr)textures[index]._handle, new Vector2(80, 80), uvMin, uvMax, tintCol, borderCol);
+            ImGui.Button(blockName, new Vector2(80, 20));
+        }
         
         ImGui.EndGroup();
 
 
-        if (ImGui.BeginDragDropSource(ImGuiDragDropFlags.None | ImGuiDragDropFlags.SourceAllowNullID)) {
+        if (blockName.Length > 0 &&  ImGui.BeginDragDropSource(ImGuiDragDropFlags.None | ImGuiDragDropFlags.SourceAllowNullID)) {
             ImGui.SetDragDropPayload(DNDCELL, (IntPtr)(&index), sizeof(int));
-            ImGui.Text(blockNames[index]);
+            ImGui.Text(blockName);
             ImGui.EndDragDropSource();
         }
 
@@ -112,16 +112,15 @@ public class ItemBarUi : UiWindow
             
             if (payload.NativePtr != null && payload.DataSize == sizeof(int)) {
                 int* newIndex = (int*)payload.Data;
-                (blockNames[index], blockNames[*newIndex]) = 
-                    (blockNames[*newIndex], blockNames[index]);
-                (textures[index], textures[*newIndex]) = 
-                    (textures[*newIndex], textures[index]);
+                (inventaire.inventoryBlocks[index], inventaire.inventoryBlocks[*newIndex]) = (inventaire.inventoryBlocks[*newIndex], inventaire.inventoryBlocks[index]);
+                // (textures[index], textures[*newIndex]) = 
+                    // (textures[*newIndex], textures[index]);
 
             }
             ImGui.EndDragDropTarget();
         }
 
-        if (index == activeIndex) {
+        if (index == inventaire.activeIndex) {
             ImGui.PopStyleColor(3);
         }
         ImGui.PopID();

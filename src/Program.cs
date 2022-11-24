@@ -25,7 +25,10 @@ namespace MinecraftCloneSilk
                 new (typeof(GameUi).FullName),
                 new (typeof(Console).FullName),
                 new (typeof(GeneralInfo).FullName),
-                new (typeof(ItemBarUi).FullName)
+                new (typeof(ItemBarUi).FullName),
+                new (typeof(DemoWindow).FullName),
+                new (typeof(InventaireUi).FullName)
+                
             };
             Scene scene = new Scene(gameObjectNames);
             Game game = Game.getInstance(scene);
@@ -33,6 +36,8 @@ namespace MinecraftCloneSilk
             
             game.Run();
         }
+        
+        
         
     }
 }
