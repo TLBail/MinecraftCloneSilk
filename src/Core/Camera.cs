@@ -21,8 +21,9 @@ namespace MinecraftCloneSilk.Core
         private float Zoom = 45f;
         private Vector2 LastMousePosition;
         private Shader LightingShader;
-
-
+        private bool isZoomActive = false;
+        private IMouse mouse;
+        
         public Camera() : this(Vector3.UnitZ * 6, Vector3.UnitZ * -1, Vector3.UnitY, 800 / 600)
         {
             Game game = Game.getInstance();
@@ -31,11 +32,18 @@ namespace MinecraftCloneSilk.Core
             AspectRatio = (float)size.X / (float)size.Y;
             window.FramebufferResize += FrameBufferResize;
             game.mainCamera = this;
-            IMouse mouse = game.getMouse();
+            mouse = game.getMouse();
             mouse.Cursor.CursorMode = CursorMode.Normal;
             mouse.MouseMove += OnMouseMove;
-            mouse.Scroll += OnMouseWheel;
+        }
 
+        public void setZoomActive(bool active) {
+            if(isZoomActive == active) return;
+            if (active) {
+                mouse.Scroll += OnMouseWheel;
+            } else {
+                mouse.Scroll -= OnMouseWheel;
+            }
         }
 
         public Camera(Vector3 position, Vector3 front, Vector3 up, float aspectRatio)
