@@ -9,6 +9,7 @@ using System.Numerics;
 using System.Runtime.Serialization.Json;
 using MinecraftCloneSilk.UI;
 using Silk.NET.Maths;
+using Console = MinecraftCloneSilk.UI.Console;
 
 namespace MinecraftCloneSilk.GameComponent
 {
@@ -61,8 +62,8 @@ namespace MinecraftCloneSilk.GameComponent
       
 
 
-        public void setBlock(string blockName, Vector3D<int> position)
-        {
+        public void setBlock(string blockName, Vector3D<int> position) {
+            if (blockName == null) throw new GameException(this, "try to set a block with a name null");
             Vector3D<int> key = getChunkPosition(position);
             Vector3D<int> localPosition = getLocalPosition(position);
             if (worldChunks.ContainsKey(key)) {
