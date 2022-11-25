@@ -85,19 +85,14 @@ public class ItemBarUi : UiWindow
         ImGui.BeginGroup();
 
         //image
-        Vector2 uvMin = Vector2.Zero;
-        Vector2 uvMax = new Vector2(1.0f);
-        Vector4 tintCol = new Vector4(1.0f);
-        Vector4 borderCol = new Vector4(1.0f, 1.0f, 1.0f, 0.5f);
         if (blockName.Length > 0) {
             if(inventaire.inventoryBlocks[index]!.block.fullTexture != null)
-                ImGui.Image((IntPtr)inventaire.inventoryBlocks[index]!.block.fullTexture._handle, new Vector2(80, 80), uvMin, uvMax, tintCol, borderCol);
-            ImGui.Button(blockName, new Vector2(80, 20));
+                ImGui.ImageButton((IntPtr)inventaire.inventoryBlocks[index]!.block.fullTexture._handle,
+                    new Vector2(100, 100));
         } else {
-            // ImGui.Image((IntPtr)textures[index]._handle, new Vector2(80, 80), uvMin, uvMax, tintCol, borderCol);
-            ImGui.Button(blockName, new Vector2(80, 20));
+            ImGui.Button(blockName, new Vector2(100, 100));
         }
-        
+
         ImGui.EndGroup();
 
 
@@ -113,9 +108,6 @@ public class ItemBarUi : UiWindow
             if (payload.NativePtr != null && payload.DataSize == sizeof(int)) {
                 int* newIndex = (int*)payload.Data;
                 (inventaire.inventoryBlocks[index], inventaire.inventoryBlocks[*newIndex]) = (inventaire.inventoryBlocks[*newIndex], inventaire.inventoryBlocks[index]);
-                // (textures[index], textures[*newIndex]) = 
-                    // (textures[*newIndex], textures[index]);
-
             }
             ImGui.EndDragDropTarget();
         }
