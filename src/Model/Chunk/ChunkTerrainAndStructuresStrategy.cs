@@ -10,8 +10,13 @@ public class ChunkTerrainAndStructuresStrategy : ChunkStrategy
     }
 
     public ChunkTerrainAndStructuresStrategy(Chunk chunk, World world) : base(chunk, world) {
+    }
+
+    public override async Task init() {
         if (chunk.chunkState != ChunkState.Generatedterrain) {
             chunk.chunkStrategy = new ChunkTerrainGeneratedStrategy(chunk, world);
+            await chunk.chunkStrategy.init();
+            chunk.chunkStrategy = this;
         }
         chunk.chunkState = ChunkState.GENERATEDTERRAINANDSTRUCTURES;
     }

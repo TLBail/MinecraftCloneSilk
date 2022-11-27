@@ -46,11 +46,11 @@ public class World : GameObject
             createChunkAroundPlayer();
         }
 
-        foreach (var chunk in worldChunks.Values) chunk.Update(deltaTime);
+        foreach (var chunk in worldChunks.Values.ToList()) chunk.Update(deltaTime);
     }
 
 
-    public void setBlock(string blockName, Vector3D<int> position) {
+    public async Task setBlock(string blockName, Vector3D<int> position) {
         if (blockName == null) {
             throw new GameException(this, "try to set a block with a name null");
         }
@@ -61,37 +61,37 @@ public class World : GameObject
             worldChunks[key].setBlock(localPosition.X, localPosition.Y, localPosition.Z, blockName);
         } else {
             var chunk = new Chunk(key, this);
-            chunk.setWantedChunkState(ChunkState.GENERATEDTERRAINANDSTRUCTURES);
+            await chunk.setWantedChunkState(ChunkState.GENERATEDTERRAINANDSTRUCTURES);
             worldChunks.Add(key, chunk);
             worldChunks[key].setBlock(localPosition.X, localPosition.Y, localPosition.Z, blockName);
         }
     }
 
-    public Block getBlock(Vector3D<int> position) {
+    public async Task<Block> getBlock(Vector3D<int> position) {
         var key = getChunkPosition(position);
         var localPosition = getLocalPosition(position);
         if (worldChunks.ContainsKey(key)) {
-            return worldChunks[key].getBlock(localPosition);
+            return await worldChunks[key].getBlock(localPosition);
         }
 
         var chunk = new Chunk(key, this);
-        chunk.setWantedChunkState(ChunkState.GENERATEDTERRAINANDSTRUCTURES);
+        await chunk.setWantedChunkState(ChunkState.GENERATEDTERRAINANDSTRUCTURES);
         worldChunks.Add(key, chunk);
-        return chunk.getBlock(localPosition);
+        return await chunk.getBlock(localPosition);
     }
 
 
-    public BlockData getBlockData(Vector3D<int> position) {
+    public async Task<BlockData> getBlockData(Vector3D<int> position) {
         var key = getChunkPosition(position);
         var localPosition = getLocalPosition(position);
         if (worldChunks.ContainsKey(key)) {
-            return worldChunks[key].getBlockData(localPosition);
+            return await worldChunks[key].getBlockData(localPosition);
         }
 
         var chunk = new Chunk(key, this);
-        chunk.setWantedChunkState(ChunkState.GENERATEDTERRAINANDSTRUCTURES);
+        await chunk.setWantedChunkState(ChunkState.GENERATEDTERRAINANDSTRUCTURES);
         worldChunks.Add(key, chunk);
-        return chunk.getBlockData(localPosition);
+        return await chunk.getBlockData(localPosition);
     }
 
 
@@ -186,8 +186,10 @@ public class World : GameObject
         var chunksToDelete = worldChunks.Values.Except(chunkRelevant);
 
         foreach (var chunkToDelete in chunksToDelete) removeChunk(chunkToDelete);
-
-        foreach (var chunkReleva in chunkRelevant) chunkReleva.setWantedChunkState(ChunkState.DRAWABLE);
+        
+        foreach (var chunk in chunkRelevant) {
+                chunk.setWantedChunkState(ChunkState.DRAWABLE);
+        }
     }
 
 

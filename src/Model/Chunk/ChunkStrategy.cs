@@ -16,14 +16,14 @@ public abstract class ChunkStrategy
         this.world = world;
     }
     
-    public virtual BlockData getBlockData(Vector3D<int> localPosition) {
+    public virtual async Task<BlockData> getBlockData(Vector3D<int> localPosition) {
         if (localPosition.X < 0 || localPosition.X >= Chunk.CHUNK_SIZE ||
             localPosition.Y < 0 || localPosition.Y >= Chunk.CHUNK_SIZE ||
-            localPosition.Z < 0 || localPosition.Z >= Chunk.CHUNK_SIZE) return world.getBlockData(chunk.position + localPosition);
+            localPosition.Z < 0 || localPosition.Z >= Chunk.CHUNK_SIZE) return await world.getBlockData(chunk.position + localPosition);
         return chunk.blocks[localPosition.X, localPosition.Y, localPosition.Z];
     }
 
-    public virtual void updateChunkVertex() {
+    public virtual Task updateChunkVertex() {
         throw new Exception("try to update Chunk Vertex on a non initialized chunk");
     }
     
@@ -31,11 +31,15 @@ public abstract class ChunkStrategy
 
     public abstract void setBlock(int x, int y, int z, string name);
 
-    public virtual Block getBlock(int x, int y, int z) {
+    public virtual async Task<Block> getBlock(int x, int y, int z) {
         if (x >= Chunk.CHUNK_SIZE || x < 0 ||
             y >= Chunk.CHUNK_SIZE || y < 0 ||
-            z >= Chunk.CHUNK_SIZE || z < 0) return world.getBlock(chunk.position + new Vector3D<int>(x, y, z));
+            z >= Chunk.CHUNK_SIZE || z < 0) return await world.getBlock(chunk.position + new Vector3D<int>(x, y, z));
         var blockData = chunk.blocks[x, y, z];
         return Chunk.blockFactory.buildFromBlockData(new Vector3D<int>(x, y, z), blockData);
     }
+
+    public virtual void update(double deltaTime){}
+    
+    public async virtual Task init(){}
 }

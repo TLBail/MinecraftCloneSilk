@@ -47,29 +47,37 @@ public class Chunk : IDisposable
         initStaticMembers();
     }
 
-    public void setWantedChunkState(ChunkState wantedChunkState) {
+    public async Task setWantedChunkState(ChunkState wantedChunkState) {
         switch (wantedChunkState) {
             case ChunkState.EMPTY:
-                if (chunkStrategy is not ChunkEmptyStrategy)
+                if (chunkStrategy is not ChunkEmptyStrategy) {
                     chunkStrategy = new ChunkEmptyStrategy(this, world);
+                    await chunkStrategy.init();
+                }
                 return;
             case ChunkState.Generatedterrain:
-                if (chunkStrategy is not ChunkTerrainGeneratedStrategy)
+                if (chunkStrategy is not ChunkTerrainGeneratedStrategy) {
                     chunkStrategy = new ChunkTerrainGeneratedStrategy(this, world);
+                    await chunkStrategy.init();
+                }
                 break;
             case ChunkState.GENERATEDTERRAINANDSTRUCTURES:
-                if (chunkStrategy is not ChunkTerrainGeneratedStrategy)
+                if (chunkStrategy is not ChunkTerrainAndStructuresStrategy) {
                     chunkStrategy = new ChunkTerrainAndStructuresStrategy(this, world);
+                    await chunkStrategy.init();
+                }
                 break;
             case ChunkState.DRAWABLE:
-                if (chunkStrategy is not ChunkDrawableStrategy)
+                if (chunkStrategy is not ChunkDrawableStrategy) {
                     chunkStrategy = new ChunkDrawableStrategy(this, world);
+                    await chunkStrategy.init();
+                }
                 break;
         }
     }
-    public BlockData getBlockData(Vector3D<int> localPosition) => chunkStrategy.getBlockData(localPosition);
-    public Block getBlock(Vector3D<int> blockPosition) => getBlock(blockPosition.X, blockPosition.Y, blockPosition.Z);
-    public Block getBlock(int x, int y, int z) => chunkStrategy.getBlock(x, y, z);
+    public async Task<BlockData> getBlockData(Vector3D<int> localPosition) => await chunkStrategy.getBlockData(localPosition);
+    public async Task<Block> getBlock(Vector3D<int> blockPosition) =>await  getBlock(blockPosition.X, blockPosition.Y, blockPosition.Z);
+    public async Task<Block> getBlock(int x, int y, int z) => await chunkStrategy.getBlock(x, y, z);
     public void setBlock(int x, int y, int z, string name) => chunkStrategy.setBlock(x, y, z, name);
     public void updateChunkVertex() => chunkStrategy.updateChunkVertex();
     
@@ -135,9 +143,8 @@ public class Chunk : IDisposable
             cubeTexture = TextureManager.getInstance().textures["spriteSheet.png"];
         }
     }
-    public void Update(double deltaTime)
-    {
-    }
+
+    public void Update(double deltaTime) => chunkStrategy.update(deltaTime);
 
 
     public void Draw(GL Gl, double deltaTime) => chunkStrategy.draw(Gl, deltaTime);
