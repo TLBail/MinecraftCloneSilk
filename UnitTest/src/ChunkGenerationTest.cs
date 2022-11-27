@@ -1,6 +1,8 @@
 ﻿using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Running;
+using MinecraftCloneSilk.Core;
 using MinecraftCloneSilk.GameComponent;
+using MinecraftCloneSilk.Model;
 using MinecraftCloneSilk.UI;
 using NUnit.Framework.Interfaces;
 using Silk.NET.Maths;

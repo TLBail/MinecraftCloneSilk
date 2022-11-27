@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using System.Numerics;
 using Silk.NET.Input;
 using MinecraftCloneSilk.Core;
+using MinecraftCloneSilk.Model;
+using MinecraftCloneSilk.Model.Chunk;
 using MinecraftCloneSilk.UI;
 using Silk.NET.Maths;
 using Console = MinecraftCloneSilk.UI.Console;
@@ -64,12 +66,12 @@ namespace MinecraftCloneSilk.GameComponent
             Chunk chunk = playerInteractionToWorld.getChunk(); 
             if (block != null) {
                 if (mouseButton == MouseButton.Left) {
-                    Vector3D<int> position = ((Block)block).position + chunk.getPosition();
+                    Vector3D<int> position = ((Block)block).position + chunk.position;
                     world.setBlock(BlockFactory.AIR_BLOCK, position);
                 }
                 if (mouseButton == MouseButton.Right && playerInteractionToWorld.getFace().HasValue && inventaire.haveBlockToPlace()) {
                     Face face = (Face)playerInteractionToWorld.getFace();
-                    world.setBlock(inventaire.getActiveBlock().block.name,  chunk.getPosition() +  block.position + FaceOffset.getOffsetOfFace(face));
+                    world.setBlock(inventaire.getActiveBlock().block.name,  chunk.position +  block.position + FaceOffset.getOffsetOfFace(face));
                 }
             }
             

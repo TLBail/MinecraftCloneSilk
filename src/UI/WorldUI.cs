@@ -1,6 +1,7 @@
 ﻿using System.Numerics;
 using ImGuiNET;
 using MinecraftCloneSilk.GameComponent;
+using MinecraftCloneSilk.Model;
 using Silk.NET.Input;
 using Silk.NET.Maths;
 
