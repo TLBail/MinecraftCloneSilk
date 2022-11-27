@@ -103,11 +103,13 @@ public class World : GameObject
                     worldChunks.Clear();
                     GC.Collect();
                 }
+
                 break;
             case WorldMode.SIMPLE:
                 if (worldChunks.Count() == 0) {
                     addExempleChunk();
                 }
+
                 break;
             case WorldMode.DYNAMIC:
                 createChunkAroundPlayer();
@@ -119,13 +121,19 @@ public class World : GameObject
         return worldChunks.ToImmutableDictionary();
     }
 
+    public bool containChunkKey(Vector3D<int> key) {
+        return worldChunks.ContainsKey(key);
+    }
+
     public Chunk getChunk(Vector3D<int> position) {
         position = getChunkPosition(position);
         if (worldChunks.ContainsKey(position)) {
             return worldChunks[position];
         }
 
-        return null;
+        var chunk = new Chunk(position, this);
+        worldChunks.Add(position, chunk);
+        return chunk;
     }
 
 
@@ -186,10 +194,8 @@ public class World : GameObject
         var chunksToDelete = worldChunks.Values.Except(chunkRelevant);
 
         foreach (var chunkToDelete in chunksToDelete) removeChunk(chunkToDelete);
-        
-        foreach (var chunk in chunkRelevant) {
-                chunk.setWantedChunkState(ChunkState.DRAWABLE);
-        }
+
+        foreach (var chunk in chunkRelevant) chunk.setWantedChunkState(ChunkState.DRAWABLE);
     }
 
 
@@ -202,11 +208,11 @@ public class World : GameObject
         Vector3D<int>[] postions =
         {
             Vector3D<int>.Zero,
-            new (0, (int)Chunk.CHUNK_SIZE, 0),
-            new ((int)Chunk.CHUNK_SIZE, 0, 0)
+            new(0, (int)Chunk.CHUNK_SIZE, 0),
+            new((int)Chunk.CHUNK_SIZE, 0, 0)
         };
         foreach (var postion in postions) {
-            Chunk chunk = new Chunk(postion, this);
+            var chunk = new Chunk(postion, this);
             chunk.setWantedChunkState(ChunkState.DRAWABLE);
             worldChunks.Add(postion, chunk);
         }
