@@ -1,4 +1,5 @@
 ﻿using MinecraftCloneSilk.GameComponent;
+using Silk.NET.Maths;
 
 namespace MinecraftCloneSilk.Model.Chunk;
 
@@ -18,7 +19,9 @@ public class ChunkTerrainAndStructuresStrategy : ChunkStrategy
             await chunk.chunkStrategy.init();
             chunk.chunkStrategy = this;
         }
+        await updateNeighboorChunkState(ChunkState.Generatedterrain);
         chunk.chunkState = ChunkState.GENERATEDTERRAINANDSTRUCTURES;
     }
 
+    
 }

@@ -23,6 +23,7 @@ public class ChunkDrawableStrategy : ChunkStrategy
             await chunk.chunkStrategy.init();
             chunk.chunkStrategy = this;
         }
+        await updateNeighboorChunkState(ChunkState.GENERATEDTERRAINANDSTRUCTURES);
         await displayChunk();
         chunk.chunkState = ChunkState.DRAWABLE;
     }
@@ -167,10 +168,24 @@ public class ChunkDrawableStrategy : ChunkStrategy
     
     private async Task<bool> isBlockTransparent(int x, int y, int z) {
         BlockData blockData;
-        if (x >= Chunk.CHUNK_SIZE || x < 0 ||
-            y >= Chunk.CHUNK_SIZE || y < 0 ||
-            z >= Chunk.CHUNK_SIZE || z < 0) {
-            blockData = await world.getBlockData(chunk.position + new Vector3D<int>(x, y, z));
+        if (y < 0) {
+            blockData = await chunk.chunksNeighbors[(int)Face.BOTTOM]!
+                .getBlockData(new Vector3D<int>(x, y + (int)Chunk.CHUNK_SIZE, z));
+        }else if (y >= Chunk.CHUNK_SIZE) {
+            blockData = await chunk.chunksNeighbors[(int)Face.TOP]!
+                .getBlockData(new Vector3D<int>(x, y - (int)Chunk.CHUNK_SIZE, z));
+        }else if (x < 0) {
+            blockData = await chunk.chunksNeighbors[(int)Face.LEFT]!
+                .getBlockData(new Vector3D<int>(x + (int)Chunk.CHUNK_SIZE, y, z));
+        }else if (x >= Chunk.CHUNK_SIZE) {
+            blockData = await chunk.chunksNeighbors[(int)Face.RIGHT]!
+                .getBlockData(new Vector3D<int>(x - (int)Chunk.CHUNK_SIZE, y, z));
+        } else if (z < 0) {
+            blockData = await chunk.chunksNeighbors[(int)Face.BACK]!
+                .getBlockData(new Vector3D<int>(x, y, z + (int)Chunk.CHUNK_SIZE));
+        }else if (z >= Chunk.CHUNK_SIZE) {
+            blockData = await chunk.chunksNeighbors[(int)Face.FRONT]!
+                .getBlockData(new Vector3D<int>(x, y, z - (int)Chunk.CHUNK_SIZE));
         } else {
             blockData = chunk.blocks[x, y, z];
         }
