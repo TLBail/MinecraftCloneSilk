@@ -1,14 +1,15 @@
 ﻿using MinecraftCloneSilk.Collision;
+using MinecraftCloneSilk.GameComponent;
 using Silk.NET.Maths;
 
-namespace MinecraftCloneSilk.GameComponent;
+namespace MinecraftCloneSilk.Model;
 
 public class PlayerInteractionToWorld
 {
     private readonly World world;
     private readonly Player player;
     private Block block;
-    private Chunk chunk;
+    private Chunk.Chunk chunk;
     private Face? face;
 
     private bool haveUpdated;
@@ -89,7 +90,7 @@ public class PlayerInteractionToWorld
     private void updateFace(Ray ray) {
         //z-
         var rblock = block;
-        var position = rblock.position.As<float>() + chunk.getPosition().As<float>();
+        var position = rblock.position.As<float>() + chunk.position.As<float>();
         var collidingPlaneBackFace = new Square(
             new Vector3D<float>(position.X - 0.5f, position.Y - 0.5f, position.Z - 0.5f),
             new Vector3D<float>(position.X + 0.5f, position.Y - 0.5f, position.Z - 0.5f),
@@ -178,7 +179,7 @@ public class PlayerInteractionToWorld
         return block;
     }
 
-    public Chunk getChunk() {
+    public Chunk.Chunk getChunk() {
         updateBlock();
         return chunk;
     }

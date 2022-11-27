@@ -1,8 +1,9 @@
 ﻿using System.Collections.ObjectModel;
 using System.Text.Json;
+using MinecraftCloneSilk.GameComponent;
 using Silk.NET.Maths;
 
-namespace MinecraftCloneSilk.GameComponent;
+namespace MinecraftCloneSilk.Model;
 
 public class BlockFactory
 {

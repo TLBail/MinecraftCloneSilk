@@ -1,6 +1,8 @@
 ﻿using System.Numerics;
 using ImGuiNET;
 using MinecraftCloneSilk.GameComponent;
+using MinecraftCloneSilk.Model;
+using MinecraftCloneSilk.Model.Chunk;
 using Silk.NET.Input;
 
 namespace MinecraftCloneSilk.UI;
@@ -58,10 +60,10 @@ public class PlayerUi
             ImGui.Text(block.ToString());
             Chunk? chunkToDebug = playerInteraction.getChunk();
             if (chunkToDebug != null) {
-                ImGui.Text("world coord block " + (chunkToDebug.getPosition() + block.position));
+                ImGui.Text("world coord block " + (chunkToDebug.position + block.position));
             }
             if (chunkToDebug != null &&  chunkToDebug != lastChunkDebuged) {
-                ImGui.Text("world coord block " + chunkToDebug.getPosition() + block.position);
+                ImGui.Text("world coord block " + chunkToDebug.position + block.position);
                 if (hoveredHiglihtMode) {
                     lastChunkDebuged?.debug(false);
                     chunkToDebug?.debug(true);
