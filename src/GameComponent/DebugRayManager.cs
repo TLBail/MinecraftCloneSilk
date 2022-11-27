@@ -1,5 +1,7 @@
 ﻿using ImGuiNET;
 using MinecraftCloneSilk.Core;
+using MinecraftCloneSilk.Model;
+using MinecraftCloneSilk.Model.Chunk;
 using Silk.NET.Maths;
 
 namespace MinecraftCloneSilk.GameComponent;

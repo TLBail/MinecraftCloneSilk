@@ -1,6 +1,6 @@
 ﻿using Silk.NET.Maths;
 
-namespace MinecraftCloneSilk.GameComponent;
+namespace MinecraftCloneSilk.Model;
 
 public class InventoryBlock
 {

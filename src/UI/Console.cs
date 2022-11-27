@@ -46,9 +46,6 @@ public class Console : UiWindow
         commands.Add("/clear", (commandParams) => { logs.Clear(); });
 
         logs = new List<Log>();
-        logs.Add(new Log("super Info", LogType.INFO, DateTime.Now));
-        logs.Add(new Log("warning ! ", LogType.WARNING, DateTime.Now));
-        logs.Add(new Log("erreur ....", LogType.ERROR, DateTime.Now));
     }
 
     public void addCommand(string key, ExecCommand action) => commands.Add(key, action);

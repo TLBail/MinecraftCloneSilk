@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Silk.NET.OpenGL;
 using MinecraftCloneSilk.GameComponent;
 using MinecraftCloneSilk.Core;
+using MinecraftCloneSilk.Model;
 using MinecraftCloneSilk.UI;
 using Silk.NET.Maths;
 using Console = MinecraftCloneSilk.UI.Console;

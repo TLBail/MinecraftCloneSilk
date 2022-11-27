@@ -1,4 +1,4 @@
-﻿namespace MinecraftCloneSilk.GameComponent;
+﻿namespace MinecraftCloneSilk.Model;
 
 public struct BlockData
 {
