@@ -10,32 +10,48 @@ public class ChunkDrawableStrategy : ChunkStrategy
 {
     private bool displayable;
     private int nbVertex = 0;
+    private Action? delegateForUpdate;
+    private Action? actionSendVertices;
+    
     
     public ChunkDrawableStrategy(Chunk chunk, World world) : base(chunk, world) {
+    }
+
+    public override async Task init() {
         if (chunk.chunkState != ChunkState.GENERATEDTERRAINANDSTRUCTURES) {
             chunk.chunkStrategy = new ChunkTerrainAndStructuresStrategy(chunk, world);
+            await chunk.chunkStrategy.init();
+            chunk.chunkStrategy = this;
         }
-        displayChunk();
+        await displayChunk();
         chunk.chunkState = ChunkState.DRAWABLE;
     }
-    
+
     public override ChunkState getChunkStateOfStrategy() => ChunkState.DRAWABLE;
 
 
-    public override void updateChunkVertex() {
+    public override async Task updateChunkVertex() {
         if(!displayable) return;
-        List<CubeVertex> vertices = getCubeVertices();
+        List<CubeVertex> vertices = await getCubeVertices();
         nbVertex = vertices.Count;
         sendCubeVertices(vertices);
     }
 
+    public override void update(double deltaTime) {
+        delegateForUpdate?.Invoke();
+        delegateForUpdate = null;
+        actionSendVertices?.Invoke();
+        actionSendVertices = null;
+    }
+
     public override void draw(GL gl, double deltaTime) {
+
         if(!displayable) return;
         if(nbVertex == 0) return;
         chunk.Vao.Bind();
         Chunk.cubeShader.Use();
         Chunk.cubeTexture.Bind();
-
+        
         var model = Matrix4x4.Identity;
         model = Matrix4x4.CreateTranslation(new Vector3(chunk.position.X, chunk.position.Y, chunk.position.Z));
         Chunk.cubeShader.SetUniform("model", model);
@@ -51,45 +67,58 @@ public class ChunkDrawableStrategy : ChunkStrategy
     }
 
 
-    private void displayChunk()
+    private async Task displayChunk()
     {
         if(displayable) return;
         displayable = true;
-        setOpenGl();
-        List<CubeVertex> cubeVertices = getCubeVertices();
+        await setOpenGl();
+        List<CubeVertex> cubeVertices = await getCubeVertices();
         if (cubeVertices.Count == 0) {
             return;
-        } 
-        sendCubeVertices(cubeVertices);
+        }
+        await sendCubeVertices(cubeVertices);
     }
     
     
-    private void setOpenGl()
+    private async Task setOpenGl()
     {
-        const int nbFacePerBlock = 6;
-        const int nbVertexPerFace = 6;
-        int nbVertexMax = (int)(nbVertexPerFace * nbFacePerBlock * Chunk.CHUNK_SIZE * Chunk.CHUNK_SIZE * Chunk.CHUNK_SIZE);
-        chunk.Vbo = new BufferObject<CubeVertex>(chunk.Gl, nbVertexMax, BufferTargetARB.ArrayBuffer);
-        chunk.Vao = new VertexArrayObject<CubeVertex, uint>(chunk.Gl, chunk.Vbo);
-        
-        chunk.Vao.Bind();
-        chunk.Vao.VertexAttributePointer(0, 3, VertexAttribPointerType.Float, "position");
-        chunk.Vao.VertexAttributePointer(1, 2, VertexAttribPointerType.Float, "texCoords");
+        TaskCompletionSource taskSetOpenGl = new TaskCompletionSource();
+        delegateForUpdate = () =>
+        {
+            const int nbFacePerBlock = 6;
+            const int nbVertexPerFace = 6;
+            int nbVertexMax = (int)(nbVertexPerFace * nbFacePerBlock * Chunk.CHUNK_SIZE * Chunk.CHUNK_SIZE *
+                                    Chunk.CHUNK_SIZE);
+            chunk.Vbo = new BufferObject<CubeVertex>(chunk.Gl, nbVertexMax, BufferTargetARB.ArrayBuffer);
+            chunk.Vao = new VertexArrayObject<CubeVertex, uint>(chunk.Gl, chunk.Vbo);
+
+            chunk.Vao.Bind();
+            chunk.Vao.VertexAttributePointer(0, 3, VertexAttribPointerType.Float, "position");
+            chunk.Vao.VertexAttributePointer(1, 2, VertexAttribPointerType.Float, "texCoords");
+            taskSetOpenGl.SetResult();
+        };
+        await taskSetOpenGl.Task;
     }
     
-    private void sendCubeVertices(List<CubeVertex> vertices) {
-        chunk.Vbo.Bind();
-        chunk.Vbo.sendData(vertices.ToArray(), 0);
+    private async Task sendCubeVertices(List<CubeVertex> vertices) {
+        TaskCompletionSource taskSendVertices = new TaskCompletionSource();
+        actionSendVertices = () =>
+        {
+            chunk.Vbo.Bind();
+            chunk.Vbo.sendData(vertices.ToArray(), 0);
+            taskSendVertices.SetResult();
+        };
+        await taskSendVertices.Task;
     }
     
-    private List<CubeVertex> getCubeVertices() {
+    private async Task<List<CubeVertex>> getCubeVertices() {
         var listVertices = new List<CubeVertex>();
         for (int x = 0; x < Chunk.CHUNK_SIZE; x++) {
             for (int y = 0; y < Chunk.CHUNK_SIZE; y++) {
                 for (int z = 0; z < Chunk.CHUNK_SIZE; z++) {
                     BlockData block = chunk.blocks[x, y, z];
                     if(block.id == 0  || Chunk.blockFactory.getBlockNameById(block.id).Equals(BlockFactory.AIR_BLOCK)) continue;
-                    List<Face> faces = getFaces(x ,y, z);
+                    List<Face> faces = await getFaces(x ,y, z);
                     if (faces.Count > 0) {
                         listVertices.AddRange(Chunk.blockFactory.blocksReadOnly[block.id].textureBlock
                             .getCubeVertices(faces.ToArray(), new Vector3D<float>(x, y, z)));
@@ -101,34 +130,34 @@ public class ChunkDrawableStrategy : ChunkStrategy
         return listVertices;
     }
     
-    private List<Face> getFaces(int x, int y, int z)
+    private async Task<List<Face>> getFaces(int x, int y, int z)
     {
 
         var faces = new List<Face>();
         //X
-        if (isBlockTransparent(x - 1, y, z)) {
+        if (await isBlockTransparent(x - 1, y, z)) {
             faces.Add(Face.RIGHT);
         }
 
-        if (isBlockTransparent(x + 1, y, z)) {
+        if (await isBlockTransparent(x + 1, y, z)) {
             faces.Add(Face.LEFT);
         }
 
         //y
-        if (isBlockTransparent(x, y - 1, z)) {
+        if (await isBlockTransparent(x, y - 1, z)) {
             faces.Add(Face.BOTTOM);
         }
 
-        if (isBlockTransparent(x, y  + 1, z)) {
+        if (await isBlockTransparent(x, y  + 1, z)) {
             faces.Add(Face.TOP);
         }
 
         //z
-        if (isBlockTransparent(x, y, z - 1)) {
+        if (await isBlockTransparent(x, y, z - 1)) {
             faces.Add(Face.BACK);
         }
 
-        if (isBlockTransparent(x, y, z + 1)) {
+        if (await isBlockTransparent(x, y, z + 1)) {
             faces.Add(Face.FRONT);
         }
 
@@ -136,12 +165,12 @@ public class ChunkDrawableStrategy : ChunkStrategy
         return faces;
     }
     
-    private bool isBlockTransparent(int x, int y, int z) {
+    private async Task<bool> isBlockTransparent(int x, int y, int z) {
         BlockData blockData;
         if (x >= Chunk.CHUNK_SIZE || x < 0 ||
             y >= Chunk.CHUNK_SIZE || y < 0 ||
             z >= Chunk.CHUNK_SIZE || z < 0) {
-            blockData = world.getBlockData(chunk.position + new Vector3D<int>(x, y, z));
+            blockData = await world.getBlockData(chunk.position + new Vector3D<int>(x, y, z));
         } else {
             blockData = chunk.blocks[x, y, z];
         }
