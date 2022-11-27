@@ -29,7 +29,8 @@ public class Chunk : IDisposable
 
     internal static BlockFactory blockFactory;
 
-
+    internal Chunk?[] chunksNeighbors = new Chunk[6];
+    
     public ChunkState chunkState { get; internal set; }
     public const ChunkState DEFAULTSTARTINGCHUNKSTATE = ChunkState.EMPTY;
     internal ChunkStrategy chunkStrategy;
@@ -45,6 +46,12 @@ public class Chunk : IDisposable
         blocks = new BlockData[CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE];
         Gl = Game.getInstance().getGL();
         initStaticMembers();
+    }
+
+    public async Task setMinimumWantedChunkState(ChunkState wantedChunkState) {
+        if (wantedChunkState > this.chunkState) {
+            await setWantedChunkState(wantedChunkState);
+        } 
     }
 
     public async Task setWantedChunkState(ChunkState wantedChunkState) {

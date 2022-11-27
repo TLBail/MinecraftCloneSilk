@@ -38,7 +38,14 @@ public abstract class ChunkStrategy
         var blockData = chunk.blocks[x, y, z];
         return Chunk.blockFactory.buildFromBlockData(new Vector3D<int>(x, y, z), blockData);
     }
-
+    protected async Task updateNeighboorChunkState(ChunkState chunkState) {
+        foreach (Face face in Enum.GetValues(typeof(Face))) {
+            Chunk newChunk = world.getChunk(chunk.position + (FaceOffset.getOffsetOfFace(face) * 16));
+            await newChunk.setMinimumWantedChunkState(chunkState);
+            chunk.chunksNeighbors[(int)face] = newChunk;
+        }
+    }
+    
     public virtual void update(double deltaTime){}
     
     public async virtual Task init(){}

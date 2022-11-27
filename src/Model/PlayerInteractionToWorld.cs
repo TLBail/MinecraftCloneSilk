@@ -64,11 +64,8 @@ public class PlayerInteractionToWorld
             );
             var hit = aabbCube.intersect(ray);
             if (hit.haveHited) {
+                if(!world.containChunkKey(blockPosition)) continue;
                 var chunkTested = world.getChunk(blockPosition);
-                if (chunkTested == null) {
-                    continue;
-                }
-
                 var task = chunkTested.getBlock(World.getLocalPosition(blockPosition));
                 task.Wait();
                 var testedBlock = task.Result;
