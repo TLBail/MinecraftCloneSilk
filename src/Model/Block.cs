@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Numerics;
-using MinecraftCloneSilk.Core;
+﻿using MinecraftCloneSilk.Core;
+using MinecraftCloneSilk.GameComponent;
 using Silk.NET.Maths;
 
-namespace MinecraftCloneSilk.GameComponent
+namespace MinecraftCloneSilk.Model
 {
     public class Block : ICloneable
     {

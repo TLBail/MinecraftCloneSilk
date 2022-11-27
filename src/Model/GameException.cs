@@ -1,4 +1,6 @@
-﻿namespace MinecraftCloneSilk.GameComponent;
+﻿using MinecraftCloneSilk.GameComponent;
+
+namespace MinecraftCloneSilk.Model;
 
 public class GameException : Exception
 {

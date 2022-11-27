@@ -3,6 +3,7 @@ using System.Runtime.InteropServices;
 using ImGuiNET;
 using MinecraftCloneSilk.Core;
 using MinecraftCloneSilk.GameComponent;
+using MinecraftCloneSilk.Model;
 using Silk.NET.Input;
 
 namespace MinecraftCloneSilk.UI;
