@@ -11,16 +11,16 @@ public class ChunkEmptyStrategy : ChunkStrategy
     public override ChunkState getChunkStateOfStrategy() => ChunkState.EMPTY;
     
 
-    public override BlockData getBlockData(Vector3D<int> localPosition) {
-        chunk.setWantedChunkState(ChunkState.GENERATEDTERRAINANDSTRUCTURES);
-        return chunk.getBlockData(localPosition);
+    public override async Task<BlockData> getBlockData(Vector3D<int> localPosition) {
+        await chunk.setWantedChunkState(ChunkState.GENERATEDTERRAINANDSTRUCTURES);
+        return await chunk.getBlockData(localPosition);
     }
 
     public override void setBlock(int x, int y, int z, string name) {
         chunk.blocks[x, y, z].id = name.GetHashCode();
     }
 
-    public override Block getBlock(int x, int y, int z) {
+    public override Task<Block> getBlock(int x, int y, int z) {
         throw new Exception("try to get Block of a empty chunk");
     }
 }

@@ -69,7 +69,9 @@ public class PlayerInteractionToWorld
                     continue;
                 }
 
-                var testedBlock = chunkTested.getBlock(World.getLocalPosition(blockPosition));
+                var task = chunkTested.getBlock(World.getLocalPosition(blockPosition));
+                task.Wait();
+                var testedBlock = task.Result;
                 if (!testedBlock.airBlock) {
                     if (block == null || bestHitDistance > Math.Abs(hit.fNorm)) {
                         chunk = chunkTested;

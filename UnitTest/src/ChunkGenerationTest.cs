@@ -57,7 +57,9 @@ public class ChunkGenerationTest
         await game.waitForFrame(1);
         world = (World)game.gameObjects[typeof(World).FullName];
         world.setBlock(BlockFactory.AIR_BLOCK, Vector3D<int>.Zero);
-        Assert.True(world.getBlock(Vector3D<int>.Zero).name.Equals(BlockFactory.AIR_BLOCK));
+        var task = world.getBlock(Vector3D<int>.Zero);
+        task.Wait();
+        Assert.True(task.Result.name.Equals(BlockFactory.AIR_BLOCK));
     }
 
     
