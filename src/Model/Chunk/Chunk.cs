@@ -14,14 +14,10 @@ public class Chunk : IDisposable
     internal readonly BlockData[,,] blocks;
 
     public static readonly uint CHUNK_SIZE = 16;
-    internal static Shader cubeShader;
-    internal static Texture cubeTexture;
-    
-    internal BufferObject<CubeVertex> Vbo;
-    internal VertexArrayObject<CubeVertex, uint> Vao;
 
-    private World world;
-    internal readonly GL Gl;
+    internal ChunkProvider chunkProvider;
+    internal WorldGenerator worldGenerator;
+
     public bool displayable { get; private set; }
 
     private List<DebugRay> debugRays = new List<DebugRay>();
@@ -34,20 +30,32 @@ public class Chunk : IDisposable
     public ChunkState chunkState { get; internal set; }
     public const ChunkState DEFAULTSTARTINGCHUNKSTATE = ChunkState.EMPTY;
     internal ChunkStrategy chunkStrategy;
+    internal static Shader cubeShader;
+    internal GL Gl;
     
-    
-    public Chunk(Vector3D<int> position, World world) {
+    public Chunk(Vector3D<int> position, ChunkProvider chunkProvider, WorldGenerator worldGenerator) {
         this.chunkState = DEFAULTSTARTINGCHUNKSTATE;
-        this.chunkStrategy = new ChunkEmptyStrategy(this, world);
-        this.world = world;
+        this.chunkStrategy = new ChunkEmptyStrategy(this);
+        this.chunkProvider = chunkProvider;
+        this.worldGenerator = worldGenerator;
         this.position = position;
         this.displayable = false;
         if(blockFactory == null) blockFactory = BlockFactory.getInstance();
         blocks = new BlockData[CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE];
         Gl = Game.getInstance().getGL();
-        initStaticMembers();
+        if(Gl != null) initStaticMembers();
     }
-
+    
+    private void initStaticMembers()
+    {
+        if (cubeShader == null) {
+            cubeShader = new Shader(Gl, "./Shader/3dPosOneTextUni/VertexShader.hlsl",
+                "./Shader/3dPosOneTextUni/FragmentShader.hlsl");
+            cubeShader.Use();
+            cubeShader.SetUniform("texture1", 0);
+        }
+    }
+    
     public async Task setMinimumWantedChunkState(ChunkState wantedChunkState) {
         if (wantedChunkState > this.chunkState) {
             await setWantedChunkState(wantedChunkState);
@@ -58,31 +66,31 @@ public class Chunk : IDisposable
         switch (wantedChunkState) {
             case ChunkState.EMPTY:
                 if (chunkStrategy is not ChunkEmptyStrategy) {
-                    chunkStrategy = new ChunkEmptyStrategy(this, world);
+                    chunkStrategy = new ChunkEmptyStrategy(this);
                     await chunkStrategy.init();
                 }
                 return;
             case ChunkState.Generatedterrain:
                 if (chunkStrategy is not ChunkTerrainGeneratedStrategy) {
-                    chunkStrategy = new ChunkTerrainGeneratedStrategy(this, world);
+                    chunkStrategy = new ChunkTerrainGeneratedStrategy(this);
                     await chunkStrategy.init();
                 }
                 break;
-            case ChunkState.GENERATEDTERRAINANDSTRUCTURES:
-                if (chunkStrategy is not ChunkTerrainAndStructuresStrategy) {
-                    chunkStrategy = new ChunkTerrainAndStructuresStrategy(this, world);
+            case ChunkState.BLOCKGENERATED:
+                if (chunkStrategy is not ChunkBlockGeneratedStrategy) {
+                    chunkStrategy = new ChunkBlockGeneratedStrategy(this);
                     await chunkStrategy.init();
                 }
                 break;
             case ChunkState.DRAWABLE:
                 if (chunkStrategy is not ChunkDrawableStrategy) {
-                    chunkStrategy = new ChunkDrawableStrategy(this, world);
+                    chunkStrategy = new ChunkDrawableStrategy(this);
                     await chunkStrategy.init();
                 }
                 break;
         }
     }
-    public async Task<BlockData> getBlockData(Vector3D<int> localPosition) => await chunkStrategy.getBlockData(localPosition);
+    public BlockData getBlockData(Vector3D<int> localPosition) => chunkStrategy.getBlockData(localPosition);
     public async Task<Block> getBlock(Vector3D<int> blockPosition) =>await  getBlock(blockPosition.X, blockPosition.Y, blockPosition.Z);
     public async Task<Block> getBlock(int x, int y, int z) => await chunkStrategy.getBlock(x, y, z);
     public void setBlock(int x, int y, int z, string name) => chunkStrategy.setBlock(x, y, z, name);
@@ -137,19 +145,7 @@ public class Chunk : IDisposable
 
     }
 
-    private void initStaticMembers()
-    {
-        if (cubeShader == null) {
-            cubeShader = new Shader(Gl, "./Shader/3dPosOneTextUni/VertexShader.hlsl",
-                "./Shader/3dPosOneTextUni/FragmentShader.hlsl");
-            cubeShader.Use();
-            cubeShader.SetUniform("texture1", 0);
-        }
-
-        if (cubeTexture == null) {
-            cubeTexture = TextureManager.getInstance().textures["spriteSheet.png"];
-        }
-    }
+  
 
     public void Update(double deltaTime) => chunkStrategy.update(deltaTime);
 
@@ -177,10 +173,8 @@ public class Chunk : IDisposable
 
     protected virtual void Dispose(bool disposing) {
         if (!disposed) {
-
             if (disposing) {
-                Vao?.Dispose();
-                Vbo?.Dispose();
+                chunkStrategy.Dispose();
             }
             disposed = true;
         }

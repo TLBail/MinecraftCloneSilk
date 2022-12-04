@@ -13,19 +13,22 @@ namespace MinecraftCloneSilk.Model
         public TextureBlock(BlockJson blockJson) {
             this.blockJson = blockJson;
             cubeVertices = new CubeVertex[6][];
-            cubeVertices[(int)Face.BACK]  = calculateCubeBackVertices();
-            cubeVertices[(int)Face.FRONT]  = calculateCubeFrontVertices();
+            cubeVertices[(int)Face.TOP]  = calculateCubeTopVertices();
+            cubeVertices[(int)Face.BOTTOM]  = calculateCubeBottomVertices();
             cubeVertices[(int)Face.LEFT]  = calculateCubeLeftVertices();
             cubeVertices[(int)Face.RIGHT]  = calculateCubeRightVertices();
-            cubeVertices[(int)Face.BOTTOM]  = calculateCubeBottomVertices();
-            cubeVertices[(int)Face.TOP]  = calculateCubeTopVertices();
+            cubeVertices[(int)Face.FRONT]  = calculateCubeFrontVertices();
+            cubeVertices[(int)Face.BACK]  = calculateCubeBackVertices();
+
         }
 
-        public IEnumerable<CubeVertex> getCubeVertices(Face[] faces, Vector3D<float> blockPosition)
+        public IEnumerable<CubeVertex> getCubeVertices(FaceFlag faceFlag, Vector3D<float> blockPosition)
         {
-            CubeVertex[] vertices = new CubeVertex[6 * faces.Length];
+            CubeVertex[] vertices = new CubeVertex[6 * FaceFlagUtils.nbFaces(faceFlag)];
             int index = 0;
-            foreach (var face in faces) {
+            IEnumerator<Face> enumerator = FaceFlagUtils.getFaces(faceFlag);
+            while(enumerator.MoveNext()) {
+                Face face = enumerator.Current;
                 foreach (var vertex in cubeVertices[(int)face]) {
                     vertices[index] = vertex;
                     vertices[index].position += blockPosition;

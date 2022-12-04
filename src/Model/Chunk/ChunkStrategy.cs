@@ -9,18 +9,33 @@ public abstract class ChunkStrategy
     public abstract ChunkState getChunkStateOfStrategy();
     
     protected Chunk chunk;
-    protected World world;
-
-    public ChunkStrategy(Chunk chunk, World world) {
+    
+    public ChunkStrategy(Chunk chunk) {
         this.chunk = chunk;
-        this.world = world;
     }
     
-    public virtual async Task<BlockData> getBlockData(Vector3D<int> localPosition) {
-        if (localPosition.X < 0 || localPosition.X >= Chunk.CHUNK_SIZE ||
-            localPosition.Y < 0 || localPosition.Y >= Chunk.CHUNK_SIZE ||
-            localPosition.Z < 0 || localPosition.Z >= Chunk.CHUNK_SIZE) return await world.getBlockData(chunk.position + localPosition);
-        return chunk.blocks[localPosition.X, localPosition.Y, localPosition.Z];
+    public virtual BlockData getBlockData(Vector3D<int> localPosition) {
+        if (localPosition.Y < 0) {
+            return chunk.chunksNeighbors[(int)Face.BOTTOM]!
+                .getBlockData(new Vector3D<int>(localPosition.X, localPosition.Y + (int)Chunk.CHUNK_SIZE, localPosition.Z));
+        }else if (localPosition.Y >= Chunk.CHUNK_SIZE) {
+            return chunk.chunksNeighbors[(int)Face.TOP]!
+                .getBlockData(new Vector3D<int>(localPosition.X, localPosition.Y - (int)Chunk.CHUNK_SIZE, localPosition.Z));
+        }else if (localPosition.X < 0) {
+            return chunk.chunksNeighbors[(int)Face.LEFT]!
+                .getBlockData(new Vector3D<int>(localPosition.X + (int)Chunk.CHUNK_SIZE, localPosition.Y, localPosition.Z));
+        }else if (localPosition.X >= Chunk.CHUNK_SIZE) {
+            return chunk.chunksNeighbors[(int)Face.RIGHT]!
+                .getBlockData(new Vector3D<int>(localPosition.X - (int)Chunk.CHUNK_SIZE, localPosition.Y, localPosition.Z));
+        } else if (localPosition.Z < 0) {
+            return chunk.chunksNeighbors[(int)Face.BACK]!
+                .getBlockData(new Vector3D<int>(localPosition.X, localPosition.Y, localPosition.Z + (int)Chunk.CHUNK_SIZE));
+        }else if (localPosition.Z >= Chunk.CHUNK_SIZE) {
+            return chunk.chunksNeighbors[(int)Face.FRONT]!
+                .getBlockData(new Vector3D<int>(localPosition.X, localPosition.Y, localPosition.Z - (int)Chunk.CHUNK_SIZE));
+        } else {
+            return chunk.blocks[localPosition.X, localPosition.Y, localPosition.Z];
+        }
     }
 
     public virtual Task updateChunkVertex() {
@@ -32,21 +47,23 @@ public abstract class ChunkStrategy
     public abstract void setBlock(int x, int y, int z, string name);
 
     public virtual async Task<Block> getBlock(int x, int y, int z) {
-        if (x >= Chunk.CHUNK_SIZE || x < 0 ||
-            y >= Chunk.CHUNK_SIZE || y < 0 ||
-            z >= Chunk.CHUNK_SIZE || z < 0) return await world.getBlock(chunk.position + new Vector3D<int>(x, y, z));
-        var blockData = chunk.blocks[x, y, z];
+        await chunk.setMinimumWantedChunkState(ChunkState.BLOCKGENERATED);
+        var blockData = getBlockData(new Vector3D<int>(x, y, z));
         return Chunk.blockFactory.buildFromBlockData(new Vector3D<int>(x, y, z), blockData);
     }
     protected async Task updateNeighboorChunkState(ChunkState chunkState) {
         foreach (Face face in Enum.GetValues(typeof(Face))) {
-            Chunk newChunk = world.getChunk(chunk.position + (FaceOffset.getOffsetOfFace(face) * 16));
+            Chunk newChunk = chunk.chunkProvider.getChunk(chunk.position + (FaceOffset.getOffsetOfFace(face) * 16));
             await newChunk.setMinimumWantedChunkState(chunkState);
             chunk.chunksNeighbors[(int)face] = newChunk;
         }
     }
+
+    public virtual void Dispose(){}
     
     public virtual void update(double deltaTime){}
     
     public async virtual Task init(){}
+    
+    
 }

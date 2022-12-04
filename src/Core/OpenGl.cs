@@ -84,7 +84,7 @@ namespace MinecraftCloneSilk.Core
             }
             
             enableFaceCulling();
-            
+            Thread.CurrentThread.Priority = ThreadPriority.Highest;
             game.start(Gl);
         }
 
@@ -110,6 +110,7 @@ namespace MinecraftCloneSilk.Core
         
         private void OnUpdate(double deltaTime)
         {
+
             if (!running) {
                 closeWindow();
                 return;
@@ -120,6 +121,7 @@ namespace MinecraftCloneSilk.Core
 
         private unsafe void OnRender(double delta)
         {
+
             Gl.Enable(EnableCap.DepthTest);
             Gl.ClearColor(CLEAR_COLOR);
             Gl.Clear((uint)(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit));

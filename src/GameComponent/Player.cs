@@ -59,7 +59,7 @@ namespace MinecraftCloneSilk.GameComponent
             return new Vector3D<float>(camera.Front.X, camera.Front.Y, camera.Front.Z);
         }
 
-        private void onMouseClick(IMouse mouse, MouseButton mouseButton)
+        public void onMouseClick(IMouse mouse, MouseButton mouseButton)
         {
             if(debugActivated) showDebugRayOnClick();
             Block block = playerInteractionToWorld.getBlock();
@@ -74,7 +74,6 @@ namespace MinecraftCloneSilk.GameComponent
                     world.setBlock(inventaire.getActiveBlock().block.name,  chunk.position +  block.position + FaceOffset.getOffsetOfFace(face));
                 }
             }
-            
         }
 
        
