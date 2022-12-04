@@ -39,6 +39,25 @@ public class TextureManager
         textures = new Dictionary<string, Texture>();
     }
 
+    public void fakeLoad() {
+        string jsonString = File.ReadAllText(pathToTexturesJson);
+        TexturesJson? textJson = JsonSerializer.Deserialize<TexturesJson>(jsonString);
+        foreach(string filepath in textJson.texturesPath) {
+            FileAttributes attr = File.GetAttributes(filepath);
+            if ((attr & FileAttributes.Directory) == FileAttributes.Directory) {
+                string[] files = Directory.GetFiles(filepath);
+                foreach(string subfilepath in files)
+                {
+                    if (Path.GetExtension(subfilepath).Equals(".png"))
+                        textures.Add(Path.GetFileName(subfilepath), null);
+                }
+
+            } else {
+                textures.Add(Path.GetFileName(filepath), null);
+            }
+        }
+    }
+
     public void load(GL gl) {
         string jsonString = File.ReadAllText(pathToTexturesJson);
         TexturesJson? textJson = JsonSerializer.Deserialize<TexturesJson>(jsonString);
