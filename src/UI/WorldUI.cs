@@ -32,7 +32,7 @@ public class WorldUI
     private static string worldMode = "EMPTY";
 
     private string previousWorldMode;
-    private static WorldGeneration.GenerationParameter parameter;
+    private static WorldNaturalGeneration.GenerationParameter parameter;
     
     public void drawUi()
     {
@@ -80,14 +80,14 @@ public class WorldUI
             previousWorldMode = worldMode;
         }
         
-        ImGui.InputInt("seed", ref WorldGeneration.seed);
+        ImGui.InputInt("seed", ref WorldNaturalGeneration.seed);
         ImGui.Separator();
-        for (int i = 0; i < WorldGeneration.generationParameters.Count; i++) {
-            parameter = WorldGeneration.generationParameters[i];
+        for (int i = 0; i < WorldNaturalGeneration.generationParameters.Count; i++) {
+            parameter = WorldNaturalGeneration.generationParameters[i];
             ImGui.InputFloat("freq" + i, ref parameter.freq);
             ImGui.InputFloat("amp"+ i, ref parameter.amp);
             ImGui.Separator();
-            WorldGeneration.generationParameters[i] = parameter;
+            WorldNaturalGeneration.generationParameters[i] = parameter;
         }
 
         

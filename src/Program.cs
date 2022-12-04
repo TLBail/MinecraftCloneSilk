@@ -22,9 +22,9 @@ namespace MinecraftCloneSilk
             {
                 new (typeof(Player).FullName),
                 new (typeof(World).FullName, new object[]{ WorldMode.DYNAMIC}),
+                new (typeof(Console).FullName),
                 new (typeof(DebugRayManager).FullName),
                 new (typeof(GameUi).FullName),
-                new (typeof(Console).FullName),
                 new (typeof(GeneralInfo).FullName),
                 new (typeof(ItemBarUi).FullName),
                 new (typeof(DemoWindow).FullName),

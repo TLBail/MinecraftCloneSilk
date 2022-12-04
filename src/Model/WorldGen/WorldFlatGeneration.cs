@@ -3,13 +3,13 @@ using Silk.NET.Maths;
 
 namespace MinecraftCloneSilk.Model;
 
-public class WorldGeneration
+public class WorldFlatGeneration : WorldGenerator
 {
-    private FastNoise noiseGenerator;
-    public static int seed = 1234;
+    public const int GROUND_LEVEL = 0;
+    
     private static BlockFactory blockFactory;
 
-    public WorldGeneration()
+    public WorldFlatGeneration()
     {
         if(blockFactory == null) blockFactory = BlockFactory.getInstance();
     }
@@ -17,14 +17,13 @@ public class WorldGeneration
     
     public void generateTerrain(Vector3D<int> position, BlockData[,,] blocks)
     {
-        noiseGenerator = new FastNoise(seed);
 
         for (int i = 0; i < Chunk.Chunk.CHUNK_SIZE; i++) {
             for (int j = 0; j < Chunk.Chunk.CHUNK_SIZE; j++) {
                 double x = (double)j / ((double)Chunk.Chunk.CHUNK_SIZE);
                 double z = (double)i / ((double)Chunk.Chunk.CHUNK_SIZE);
 
-                int globalY =calculateGlobalY(position, x, z);
+                int globalY = GROUND_LEVEL;
                 x *= Chunk.Chunk.CHUNK_SIZE;
                 z *= Chunk.Chunk.CHUNK_SIZE;
 
@@ -53,39 +52,6 @@ public class WorldGeneration
             }
         }
         
-    }
-
-    public struct GenerationParameter
-    {
-        public float freq;
-        public float amp;
-
-        public GenerationParameter(float freq, float amp)
-        {
-            this.freq = freq;
-            this.amp = amp;
-        }
-    }
-
-    public static List<GenerationParameter> generationParameters = new List<GenerationParameter>()
-    {
-        new (10, 1000),        //plateau global
-        new (0.1f, 25),       //moyen variation
-        new (0.01f, 3)        //petit variation
-    };
-    
-    private int calculateGlobalY(Vector3D<int> position, double x, double z)
-    {
-        float baseX = (float)((position.X / Chunk.Chunk.CHUNK_SIZE) + x);
-        float baseZ = (float)((position.Z / Chunk.Chunk.CHUNK_SIZE) + z);
-
-        float y = 0;
-        foreach (GenerationParameter parameter in generationParameters) {
-            y += noiseGenerator.GetPerlin( baseX / parameter.freq, baseZ / parameter.freq) * parameter.amp;
-        }
-        int i = (int)MathF.Floor(y);
-        return i;
-
     }
 
     
