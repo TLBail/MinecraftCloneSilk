@@ -22,16 +22,23 @@
   <ItemGroup>
     <Compile Remove="UnitTest\**" />
     <Compile Remove="Benchmarker\**" />
+    <Compile Remove="Benchmark\**" />
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Remove="UnitTest\**" />
     <EmbeddedResource Remove="Benchmarker\**" />
+    <EmbeddedResource Remove="Benchmark\**" />
   </ItemGroup>
 
   <ItemGroup>
     <None Remove="UnitTest\**" />
     <None Remove="Benchmarker\**" />
+    <None Remove="Benchmark\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Worlds\newWorld" />
   </ItemGroup>
 
 </Project>

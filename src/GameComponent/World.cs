@@ -16,12 +16,12 @@ public enum WorldMode
     DYNAMIC // chunks generated around player
 }
 
-public class World : GameObject
+public class World : GameObject, ChunkProvider
 {
     private Player player;
     private const int RADIUS = 6;
     private readonly WorldUI worldUi;
-    public WorldGeneration worldGeneration;
+    public WorldNaturalGeneration worldNaturalGeneration;
 
     private readonly object worldChunksLock = new object();
     public readonly ConcurrentDictionary<Vector3D<int>, Chunk> worldChunks;
@@ -33,7 +33,7 @@ public class World : GameObject
         this.worldMode = worldMode;
         worldChunks = new ConcurrentDictionary<Vector3D<int>, Chunk>(Environment.ProcessorCount * 2, (RADIUS + 1) * (RADIUS + 1) * (RADIUS + 1));
         worldUi = new WorldUI(this);
-        worldGeneration = new WorldGeneration();
+        worldNaturalGeneration = new WorldNaturalGeneration();
     }
 
 
@@ -50,7 +50,7 @@ public class World : GameObject
         }
 
         lock (worldChunksLock) {
-            foreach (var chunk in worldChunks.Values.ToList()) chunk.Update(deltaTime);
+            foreach (var chunk in worldChunks.Values) chunk.Update(deltaTime);
         }
     }
 
@@ -65,8 +65,8 @@ public class World : GameObject
         if (worldChunks.ContainsKey(key)) {
             worldChunks[key].setBlock(localPosition.X, localPosition.Y, localPosition.Z, blockName);
         } else {
-            var chunk = new Chunk(key, this);
-            await chunk.setWantedChunkState(ChunkState.GENERATEDTERRAINANDSTRUCTURES);
+            var chunk = new Chunk(key, this, worldNaturalGeneration);
+            await chunk.setWantedChunkState(ChunkState.BLOCKGENERATED);
             worldChunks.TryAdd(key, chunk);
             worldChunks[key].setBlock(localPosition.X, localPosition.Y, localPosition.Z, blockName);
         }
@@ -79,8 +79,8 @@ public class World : GameObject
             return await worldChunks[key].getBlock(localPosition);
         }
 
-        var chunk = new Chunk(key, this);
-        await chunk.setWantedChunkState(ChunkState.GENERATEDTERRAINANDSTRUCTURES);
+        var chunk = new Chunk(key, this, worldNaturalGeneration);
+        await chunk.setWantedChunkState(ChunkState.BLOCKGENERATED);
         worldChunks.TryAdd(key, chunk);
         return await chunk.getBlock(localPosition);
     }
@@ -90,13 +90,13 @@ public class World : GameObject
         var key = getChunkPosition(position);
         var localPosition = getLocalPosition(position);
         if (worldChunks.ContainsKey(key)) {
-            return await worldChunks[key].getBlockData(localPosition);
+            return worldChunks[key].getBlockData(localPosition);
         }
 
-        var chunk = new Chunk(key, this);
-        await chunk.setWantedChunkState(ChunkState.GENERATEDTERRAINANDSTRUCTURES);
+        var chunk = new Chunk(key, this, worldNaturalGeneration);
+        await chunk.setWantedChunkState(ChunkState.BLOCKGENERATED);
         worldChunks.TryAdd(key, chunk);
-        return await chunk.getBlockData(localPosition);
+        return chunk.getBlockData(localPosition);
     }
 
 
@@ -136,7 +136,7 @@ public class World : GameObject
             return worldChunks[position];
         }
 
-        var chunk = new Chunk(position, this);
+        var chunk = new Chunk(position, this, worldNaturalGeneration);
         worldChunks.TryAdd(position, chunk);
         return chunk;
     }
@@ -144,7 +144,7 @@ public class World : GameObject
 
     public void Draw(GL gl, double deltaTime) {
         lock (worldChunksLock) {
-            foreach (var chunk in worldChunks.Values.ToList()) chunk.Draw(gl, deltaTime);
+            foreach (var chunk in worldChunks.Values) chunk.Draw(gl, deltaTime);
         }
     }
 
@@ -193,7 +193,7 @@ public class World : GameObject
                 var key = rootChunk + new Vector3D<int>((int)(x * Chunk.CHUNK_SIZE), (int)(y * Chunk.CHUNK_SIZE),
                     (int)(z * Chunk.CHUNK_SIZE));
                 if (!worldChunks.ContainsKey(key)) {
-                    worldChunks.TryAdd(key, new Chunk(key, this));
+                    worldChunks.TryAdd(key, new Chunk(key, this, worldNaturalGeneration));
                 }
 
                 chunkRelevant.Add(worldChunks[key]);
@@ -224,7 +224,7 @@ public class World : GameObject
             new((int)Chunk.CHUNK_SIZE, 0, 0)
         };
         foreach (var postion in postions) {
-            var chunk = new Chunk(postion, this);
+            var chunk = new Chunk(postion, this, worldNaturalGeneration);
             chunk.setWantedChunkState(ChunkState.DRAWABLE);
             worldChunks.TryAdd(postion, chunk);
         }

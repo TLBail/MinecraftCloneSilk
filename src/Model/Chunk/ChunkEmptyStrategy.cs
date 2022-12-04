@@ -5,15 +5,14 @@ namespace MinecraftCloneSilk.Model.Chunk;
 
 public class ChunkEmptyStrategy : ChunkStrategy
 {
-    public ChunkEmptyStrategy(Chunk chunk, World world) : base(chunk, world) {
+    public ChunkEmptyStrategy(Chunk chunk) : base(chunk) {
     }
 
     public override ChunkState getChunkStateOfStrategy() => ChunkState.EMPTY;
     
 
-    public override async Task<BlockData> getBlockData(Vector3D<int> localPosition) {
-        await chunk.setWantedChunkState(ChunkState.GENERATEDTERRAINANDSTRUCTURES);
-        return await chunk.getBlockData(localPosition);
+    public override BlockData getBlockData(Vector3D<int> localPosition) {
+        throw new Exception("try to access to block data but the chunk is empty");
     }
 
     public override void setBlock(int x, int y, int z, string name) {

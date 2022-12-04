@@ -6,30 +6,23 @@ using MinecraftCloneSilk.Model;
 using MinecraftCloneSilk.UI;
 using NUnit.Framework.Interfaces;
 using Silk.NET.Maths;
+using Console = MinecraftCloneSilk.UI.Console;
 
 namespace UnitTest;
 
-[MemoryDiagnoser]
 public class ChunkGenerationTest
 {
     private Game game;
     private Thread gameThread;
     private World world;
-    
-    private Scene fullScene = new Scene(new List<InitGameData>()
-    {
-        new(typeof(Player).FullName),
-        new(typeof(World).FullName, new object[] { WorldMode.DYNAMIC }),
-        new(typeof(GameUi).FullName),
-        new(typeof(GeneralInfo).FullName)
-    });
-    
+
     [OneTimeSetUp]
     public  void initGame() {
         Scene scene = new Scene(new List<InitGameData>()
             {
                 new (typeof(Player).FullName),
                 new (typeof(World).FullName, new object[]{WorldMode.EMPTY}),
+                new (typeof(Console).FullName)
             }
         );
         game = Game.getInstance(scene, false);
