@@ -11,7 +11,10 @@ public abstract class GameObject
         this.game = game;
         game.startables += start;
         game.updatables += update;
+        game.stopable += stop;
     }
+
+    protected virtual void stop() { }
 
     protected GameObject() : this(Game.getInstance()){    }
 

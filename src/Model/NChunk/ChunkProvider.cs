@@ -1,6 +1,6 @@
 ﻿using Silk.NET.Maths;
 
-namespace MinecraftCloneSilk.Model.Chunk;
+namespace MinecraftCloneSilk.Model.NChunk;
 
 public interface ChunkProvider
 {

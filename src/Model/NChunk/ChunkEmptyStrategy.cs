@@ -1,7 +1,6 @@
-﻿using MinecraftCloneSilk.GameComponent;
-using Silk.NET.Maths;
+﻿using Silk.NET.Maths;
 
-namespace MinecraftCloneSilk.Model.Chunk;
+namespace MinecraftCloneSilk.Model.NChunk;
 
 public class ChunkEmptyStrategy : ChunkStrategy
 {
@@ -16,10 +15,12 @@ public class ChunkEmptyStrategy : ChunkStrategy
     }
 
     public override void setBlock(int x, int y, int z, string name) {
-        chunk.blocks[x, y, z].id = name.GetHashCode();
+        lock (chunk.blocksLock) {
+            chunk.blocks[x, y, z].id = name.GetHashCode();
+        }
     }
 
-    public override Task<Block> getBlock(int x, int y, int z) {
+    public override Block getBlock(int x, int y, int z) {
         throw new Exception("try to get Block of a empty chunk");
     }
 }

@@ -2,7 +2,7 @@
 using System.Collections.Immutable;
 using System.Xml.Linq;
 using MinecraftCloneSilk.Model;
-using MinecraftCloneSilk.Model.Chunk;
+using MinecraftCloneSilk.Model.NChunk;
 using MinecraftCloneSilk.UI;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL;
@@ -22,18 +22,15 @@ public class World : GameObject, ChunkProvider
     private const int RADIUS = 6;
     private readonly WorldUI worldUi;
     public WorldNaturalGeneration worldNaturalGeneration;
-
-    private readonly object worldChunksLock = new object();
-    public readonly ConcurrentDictionary<Vector3D<int>, Chunk> worldChunks;
-
     public WorldMode worldMode { get; set; }
+    public ChunkManager chunkManager;
 
     public World(Game game, WorldMode worldMode = WorldMode.EMPTY) : base(game) {
         game.drawables += Draw;
         this.worldMode = worldMode;
-        worldChunks = new ConcurrentDictionary<Vector3D<int>, Chunk>(Environment.ProcessorCount * 2, (RADIUS + 1) * (RADIUS + 1) * (RADIUS + 1));
         worldUi = new WorldUI(this);
         worldNaturalGeneration = new WorldNaturalGeneration();
+        chunkManager = new ChunkManager(RADIUS, worldNaturalGeneration);
     }
 
 
@@ -49,54 +46,32 @@ public class World : GameObject, ChunkProvider
             createChunkAroundPlayer();
         }
 
-        lock (worldChunksLock) {
-            foreach (var chunk in worldChunks.Values) chunk.Update(deltaTime);
+        foreach (var chunk in chunkManager.getChunks()) {
+            chunk.Update(deltaTime);
         }
+        chunkManager.update();
+    }
+
+    protected override void stop() {
+        chunkManager.Dispose();
     }
 
 
-    public async Task setBlock(string blockName, Vector3D<int> position) {
+    public void setBlock(string blockName, Vector3D<int> position) {
         if (blockName == null) {
             throw new GameException(this, "try to set a block with a name null");
         }
-
         var key = getChunkPosition(position);
+        var chunk = chunkManager.getChunk(key);
         var localPosition = getLocalPosition(position);
-        if (worldChunks.ContainsKey(key)) {
-            worldChunks[key].setBlock(localPosition.X, localPosition.Y, localPosition.Z, blockName);
-        } else {
-            var chunk = new Chunk(key, this, worldNaturalGeneration);
-            await chunk.setWantedChunkState(ChunkState.BLOCKGENERATED);
-            worldChunks.TryAdd(key, chunk);
-            worldChunks[key].setBlock(localPosition.X, localPosition.Y, localPosition.Z, blockName);
-        }
+        chunk.setBlock(localPosition.X, localPosition.Y, localPosition.Z, blockName);
     }
 
-    public async Task<Block> getBlock(Vector3D<int> position) {
+    public Block getBlock(Vector3D<int> position) {
         var key = getChunkPosition(position);
         var localPosition = getLocalPosition(position);
-        if (worldChunks.ContainsKey(key)) {
-            return await worldChunks[key].getBlock(localPosition);
-        }
-
-        var chunk = new Chunk(key, this, worldNaturalGeneration);
-        await chunk.setWantedChunkState(ChunkState.BLOCKGENERATED);
-        worldChunks.TryAdd(key, chunk);
-        return await chunk.getBlock(localPosition);
-    }
-
-
-    public async Task<BlockData> getBlockData(Vector3D<int> position) {
-        var key = getChunkPosition(position);
-        var localPosition = getLocalPosition(position);
-        if (worldChunks.ContainsKey(key)) {
-            return worldChunks[key].getBlockData(localPosition);
-        }
-
-        var chunk = new Chunk(key, this, worldNaturalGeneration);
-        await chunk.setWantedChunkState(ChunkState.BLOCKGENERATED);
-        worldChunks.TryAdd(key, chunk);
-        return chunk.getBlockData(localPosition);
+        var chunk = chunkManager.getChunk(key);
+        return chunk.getBlock(localPosition);
     }
 
 
@@ -104,14 +79,14 @@ public class World : GameObject, ChunkProvider
         this.worldMode = worldMode;
         switch (worldMode) {
             case WorldMode.EMPTY:
-                if (worldChunks.Count() > 0) {
-                    worldChunks.Clear();
+                if (chunkManager.count() > 0) {
+                    chunkManager.clear();
                     GC.Collect();
                 }
 
                 break;
             case WorldMode.SIMPLE:
-                if (worldChunks.Count() == 0) {
+                if (chunkManager.count() == 0) {
                     addExempleChunk();
                 }
 
@@ -123,37 +98,23 @@ public class World : GameObject, ChunkProvider
     }
 
     public ImmutableDictionary<Vector3D<int>, Chunk> getWorldChunks() {
-        return worldChunks.ToImmutableDictionary();
+        return chunkManager.getImmutableDictionary();
     }
 
     public bool containChunkKey(Vector3D<int> key) {
-        return worldChunks.ContainsKey(key);
+        return chunkManager.ContainsKey(key);
     }
 
     public Chunk getChunk(Vector3D<int> position) {
         position = getChunkPosition(position);
-        if (worldChunks.ContainsKey(position)) {
-            return worldChunks[position];
-        }
-
-        var chunk = new Chunk(position, this, worldNaturalGeneration);
-        worldChunks.TryAdd(position, chunk);
-        return chunk;
+        return chunkManager.getChunk(position);
     }
 
 
     public void Draw(GL gl, double deltaTime) {
-        lock (worldChunksLock) {
-            foreach (var chunk in worldChunks.Values) chunk.Draw(gl, deltaTime);
-        }
+            foreach (var chunk in chunkManager.getChunks()) chunk.Draw(gl, deltaTime);
     }
-
-    public void updateChunkVertex(Vector3D<int> chunkPosition) {
-        if (worldChunks.ContainsKey(chunkPosition)) {
-            worldChunks[chunkPosition].updateChunkVertex();
-        }
-    }
-
+    
     public static Vector3D<int> getChunkPosition(Vector3D<int> blockPosition) {
         return new Vector3D<int>(
             (int)((int)MathF.Floor((float)blockPosition.X / Chunk.CHUNK_SIZE) * Chunk.CHUNK_SIZE),
@@ -182,51 +143,40 @@ public class World : GameObject, ChunkProvider
 
 
     private void createChunkAroundPlayer() {
-        var chunkRelevant = new List<Chunk>();
-        lock (worldChunksLock) {
-            var centerChunk =
-                getChunkPosition(new Vector3D<int>((int)player.position.X, (int)player.position.Y, (int)player.position.Z));
-            var rootChunk = centerChunk + new Vector3D<int>((int)(-RADIUS * Chunk.CHUNK_SIZE));
-            for (var x = 0; x < 2 * RADIUS; x++)
-            for (var y = 0; y < 2 * RADIUS; y++)
-            for (var z = 0; z < 2 * RADIUS; z++) {
-                var key = rootChunk + new Vector3D<int>((int)(x * Chunk.CHUNK_SIZE), (int)(y * Chunk.CHUNK_SIZE),
-                    (int)(z * Chunk.CHUNK_SIZE));
-                if (!worldChunks.ContainsKey(key)) {
-                    worldChunks.TryAdd(key, new Chunk(key, this, worldNaturalGeneration));
-                }
-
-                chunkRelevant.Add(worldChunks[key]);
-            }
-
-            var chunksToDelete = worldChunks.Values.Except(chunkRelevant).ToList();
-
-            foreach (var chunkToDelete in chunksToDelete) removeChunk(chunkToDelete);
+        var chunkRelevant = new List<Vector3D<int>>();
+        var centerChunk =
+            getChunkPosition(new Vector3D<int>((int)player.position.X, (int)player.position.Y, (int)player.position.Z));
+        var rootChunk = centerChunk + new Vector3D<int>((int)(-RADIUS * Chunk.CHUNK_SIZE));
+        for (var x = 0; x < 2 * RADIUS; x++)
+        for (var y = 0; y < 2 * RADIUS; y++)
+        for (var z = 0; z < 2 * RADIUS; z++) {
+            var key = rootChunk + new Vector3D<int>((int)(x * Chunk.CHUNK_SIZE), (int)(y * Chunk.CHUNK_SIZE),
+                (int)(z * Chunk.CHUNK_SIZE));
+            chunkRelevant.Add(key);
         }
-        
-        Parallel.ForEachAsync(chunkRelevant, async (chunk, token) =>
-        {
-            await chunk.setWantedChunkState(ChunkState.DRAWABLE);
-        });
+        chunkManager.updateRelevantChunks(chunkRelevant);
     }
 
 
-    private void removeChunk(Chunk chunk) {
-        chunk.Dispose();
-        worldChunks.TryRemove(chunk.position, out chunk);
-    }
+    
 
     private void addExempleChunk() {
         Vector3D<int>[] postions =
         {
             Vector3D<int>.Zero,
             new(0, (int)Chunk.CHUNK_SIZE, 0),
-            new((int)Chunk.CHUNK_SIZE, 0, 0)
+            new((int)Chunk.CHUNK_SIZE, 0, 0),
+            new(0, 0, (int)Chunk.CHUNK_SIZE),
+            new((int)Chunk.CHUNK_SIZE, 0, (int)Chunk.CHUNK_SIZE),
+            new(-(int)Chunk.CHUNK_SIZE, 0, 0),
+            new(0, 0, -(int)Chunk.CHUNK_SIZE),
+            new(-(int)Chunk.CHUNK_SIZE, 0, (int)Chunk.CHUNK_SIZE),
+            new((int)Chunk.CHUNK_SIZE, 0, -(int)Chunk.CHUNK_SIZE),
         };
         foreach (var postion in postions) {
             var chunk = new Chunk(postion, this, worldNaturalGeneration);
             chunk.setWantedChunkState(ChunkState.DRAWABLE);
-            worldChunks.TryAdd(postion, chunk);
+            chunkManager.addOrSet(chunk);
         }
     }
 

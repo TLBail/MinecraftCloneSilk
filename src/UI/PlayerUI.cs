@@ -2,7 +2,7 @@
 using ImGuiNET;
 using MinecraftCloneSilk.GameComponent;
 using MinecraftCloneSilk.Model;
-using MinecraftCloneSilk.Model.Chunk;
+using MinecraftCloneSilk.Model.NChunk;
 using Silk.NET.Input;
 
 namespace MinecraftCloneSilk.UI;

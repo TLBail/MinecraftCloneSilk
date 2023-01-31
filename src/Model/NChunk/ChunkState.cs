@@ -1,4 +1,4 @@
-﻿namespace MinecraftCloneSilk.Model.Chunk;
+﻿namespace MinecraftCloneSilk.Model.NChunk;
 
 public enum ChunkState
 {
