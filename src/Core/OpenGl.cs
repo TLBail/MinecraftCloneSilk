@@ -1,18 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using MinecraftCloneSilk.GameComponent;
+using Silk.NET.Core;
 using Silk.NET.GLFW;
 using Silk.NET.Input;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL;
 using Silk.NET.Windowing;
 using Silk.NET.OpenGL.Extensions.ImGui;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats.Png;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
+using Color = System.Drawing.Color;
 using Glfw = Silk.NET.GLFW.Glfw;
+using Image = SixLabors.ImageSharp.Image;
 
 namespace MinecraftCloneSilk.Core
 {
@@ -35,6 +42,7 @@ namespace MinecraftCloneSilk.Core
         private Glfw glfw;
 
         private bool running = true;
+        private const string PATHICON = "Assets/minecraftLogo.png";
         
         public OpenGl(Game game)
         {
@@ -73,6 +81,8 @@ namespace MinecraftCloneSilk.Core
             input = window.CreateInput();
             Gl = window.CreateOpenGL();
 
+            loadIcon();
+            
             imGuiController = new ImGuiController(Gl, window, input);
             
             primaryKeyboard = input.Keyboards.FirstOrDefault();
@@ -88,8 +98,21 @@ namespace MinecraftCloneSilk.Core
             game.start(Gl);
         }
 
-        
-        
+        private void loadIcon() {
+            Configuration configuration = Configuration.Default;
+            configuration.PreferContiguousImageBuffers = true;
+            using (var img = Image.Load<Rgba32>(configuration, PATHICON))
+            {
+                img.DangerousTryGetSinglePixelMemory(out var imageSpan);
+                var imageBytes = MemoryMarshal.AsBytes(imageSpan.Span).ToArray();
+                RawImage[] iconsApp = new[] { new RawImage(img.Width, img.Height, imageBytes)};
+                ReadOnlySpan<RawImage> span = new ReadOnlySpan<RawImage>(iconsApp); 
+                window.SetWindowIcon(span);
+            }
+        }
+
+
+
         private unsafe void initUniformBuffers()
         {
             uboWorld = Gl.GenBuffer();
