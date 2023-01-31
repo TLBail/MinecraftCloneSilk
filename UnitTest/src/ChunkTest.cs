@@ -1,6 +1,6 @@
 ﻿using MinecraftCloneSilk.Core;
 using MinecraftCloneSilk.Model;
-using MinecraftCloneSilk.Model.Chunk;
+using MinecraftCloneSilk.Model.NChunk;
 using Silk.NET.Maths;
 using UnitTest.fakeClass;
 
@@ -22,11 +22,11 @@ public class ChunkTest
     }
     
     [Test]
-    public async Task testChunkLoadTerrain() {
+    public void testChunkLoadTerrain() {
         ChunkProviderEmpty chunkProviderEmpty = new ChunkProviderEmpty(new WorldFlatGeneration());
         Chunk chunk = chunkProviderEmpty.getChunk(Vector3D<int>.Zero);
-        await chunk.setWantedChunkState(ChunkState.Generatedterrain);
-        Block block = await chunk.getBlock(Vector3D<int>.Zero);
+        chunk.setWantedChunkState(ChunkState.Generatedterrain);
+        Block block = chunk.getBlock(Vector3D<int>.Zero);
         Assert.IsNotNull(block);
         Assert.True(block.name.Equals("grass"));
     }

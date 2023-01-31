@@ -1,5 +1,5 @@
 ﻿using MinecraftCloneSilk.Model;
-using MinecraftCloneSilk.Model.Chunk;
+using MinecraftCloneSilk.Model.NChunk;
 using Silk.NET.Maths;
 
 namespace UnitTest.fakeClass;

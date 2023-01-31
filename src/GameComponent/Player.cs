@@ -1,17 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Numerics;
+﻿using System.Numerics;
 using Silk.NET.Input;
 using MinecraftCloneSilk.Core;
 using MinecraftCloneSilk.Model;
-using MinecraftCloneSilk.Model.Chunk;
+using MinecraftCloneSilk.Model.NChunk;
 using MinecraftCloneSilk.UI;
 using Silk.NET.Maths;
 using Console = MinecraftCloneSilk.UI.Console;
-
 
 namespace MinecraftCloneSilk.GameComponent
 {
