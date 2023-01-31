@@ -22,6 +22,7 @@ namespace MinecraftCloneSilk.GameComponent
     public delegate void Update(double deltaTime);
     public delegate void Draw(GL gl,double deltaTime);
 
+
     public delegate void DrawUI();
 
     public sealed class Game
@@ -34,6 +35,9 @@ namespace MinecraftCloneSilk.GameComponent
         public Draw drawables;
         public DrawUI uiDrawables;
         public Startable startables;
+        public Action stopable;
+        
+        
         public Camera mainCamera { get; set; }
 
         public List<DebugRay> debugRays = new List<DebugRay>();
@@ -63,6 +67,7 @@ namespace MinecraftCloneSilk.GameComponent
         }
 
         public void Stop() {
+            stopable?.Invoke();
             openGl.Stop();
         }
 

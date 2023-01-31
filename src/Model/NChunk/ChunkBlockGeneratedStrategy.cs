@@ -1,8 +1,4 @@
-﻿using System.Text.RegularExpressions;
-using MinecraftCloneSilk.GameComponent;
-using Silk.NET.Maths;
-
-namespace MinecraftCloneSilk.Model.Chunk;
+﻿namespace MinecraftCloneSilk.Model.NChunk;
 
 public class ChunkBlockGeneratedStrategy : ChunkStrategy
 {
@@ -10,12 +6,14 @@ public class ChunkBlockGeneratedStrategy : ChunkStrategy
     
     public override ChunkState getChunkStateOfStrategy() => ChunkState.BLOCKGENERATED;
     public override void setBlock(int x, int y, int z, string name) {
-        chunk.blocks[x, y, z].id = name.GetHashCode();
+        lock (chunk.blocksLock) {
+            chunk.blocks[x, y, z].id = name.GetHashCode();
+        }
     }
 
     public ChunkBlockGeneratedStrategy(Chunk chunk) : base(chunk) {    }
 
-    public override async Task init() {
+    public override void init() {
         
         //check if we have chunk in memory
         //if yes load it
@@ -27,10 +25,10 @@ public class ChunkBlockGeneratedStrategy : ChunkStrategy
         
         if (chunk.chunkState != ChunkState.Generatedterrain) {
             chunk.chunkStrategy = new ChunkTerrainGeneratedStrategy(chunk);
-            await chunk.chunkStrategy.init();
+            chunk.chunkStrategy.init();
             chunk.chunkStrategy = this;
         }
-        await updateNeighboorChunkState(ChunkState.Generatedterrain);
+        updateNeighboorChunkState(ChunkState.Generatedterrain);
         chunk.chunkState = ChunkState.BLOCKGENERATED;
     }
 

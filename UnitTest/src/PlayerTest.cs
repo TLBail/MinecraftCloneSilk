@@ -42,10 +42,10 @@ public class PlayerTest
         Player player = (Player)game.gameObjects[typeof(Player).FullName];
         world = (World)game.gameObjects[typeof(World).FullName];
         world.setBlock("stone", Vector3D<int>.Zero);
-        Assert.True((await world.getBlock(Vector3D<int>.Zero)).name.Equals("stone"));
+        Assert.True((world.getBlock(Vector3D<int>.Zero)).name.Equals("stone"));
         player.position = Vector3.Zero;
         player.onMouseClick(null, MouseButton.Left);
-        Assert.True((await world.getBlock(Vector3D<int>.Zero)).name.Equals(BlockFactory.AIR_BLOCK));
+        Assert.True((world.getBlock(Vector3D<int>.Zero)).name.Equals(BlockFactory.AIR_BLOCK));
     }
     
     [Test]
@@ -54,10 +54,10 @@ public class PlayerTest
         Player player = (Player)game.gameObjects[typeof(Player).FullName];
         world = (World)game.gameObjects[typeof(World).FullName];
         world.setBlock("stone", Vector3D<int>.Zero);
-        Assert.True((await world.getBlock(Vector3D<int>.Zero)).name.Equals("stone"));
+        Assert.True((world.getBlock(Vector3D<int>.Zero)).name.Equals("stone"));
         player.position = Vector3.Zero;
         player.onMouseClick(null, MouseButton.Left);
-        Assert.True((await world.getBlock(Vector3D<int>.Zero)).name.Equals(BlockFactory.AIR_BLOCK));
+        Assert.True((world.getBlock(Vector3D<int>.Zero)).name.Equals(BlockFactory.AIR_BLOCK));
     }
 
 }

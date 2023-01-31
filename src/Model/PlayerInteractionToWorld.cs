@@ -1,5 +1,6 @@
 ﻿using MinecraftCloneSilk.Collision;
 using MinecraftCloneSilk.GameComponent;
+using MinecraftCloneSilk.Model.NChunk;
 using Silk.NET.Maths;
 
 namespace MinecraftCloneSilk.Model;
@@ -9,7 +10,7 @@ public class PlayerInteractionToWorld
     private readonly World world;
     private readonly Player player;
     private Block block;
-    private Chunk.Chunk chunk;
+    private Chunk chunk;
     private Face? face;
 
     private bool haveUpdated;
@@ -66,9 +67,7 @@ public class PlayerInteractionToWorld
             if (hit.haveHited) {
                 if(!world.containChunkKey(World.getChunkPosition(blockPosition))) continue;
                 var chunkTested = world.getChunk(blockPosition);
-                var task = chunkTested.getBlock(World.getLocalPosition(blockPosition));
-                task.Wait();
-                var testedBlock = task.Result;
+                var testedBlock = chunkTested.getBlock(World.getLocalPosition(blockPosition));
                 if (!testedBlock.airBlock) {
                     if (block == null || bestHitDistance > Math.Abs(hit.fNorm)) {
                         chunk = chunkTested;
@@ -178,7 +177,7 @@ public class PlayerInteractionToWorld
         return block;
     }
 
-    public Chunk.Chunk getChunk() {
+    public Chunk getChunk() {
         updateBlock();
         return chunk;
     }
