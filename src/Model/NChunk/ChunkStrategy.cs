@@ -1,8 +1,7 @@
-﻿using MinecraftCloneSilk.GameComponent;
-using Silk.NET.Maths;
+﻿using Silk.NET.Maths;
 using Silk.NET.OpenGL;
 
-namespace MinecraftCloneSilk.Model.Chunk;
+namespace MinecraftCloneSilk.Model.NChunk;
 
 public abstract class ChunkStrategy
 {
@@ -38,24 +37,26 @@ public abstract class ChunkStrategy
         }
     }
 
-    public virtual Task updateChunkVertex() {
-        throw new Exception("try to update Chunk Vertex on a non initialized chunk");
+    public virtual void updateChunkVertex() {
+        throw new GameException( "try to update Chunk Vertex on a non initialized chunk");
     }
     
     public virtual void draw(GL gl, double deltaTime){}
 
     public abstract void setBlock(int x, int y, int z, string name);
 
-    public virtual async Task<Block> getBlock(int x, int y, int z) {
-        await chunk.setMinimumWantedChunkState(ChunkState.BLOCKGENERATED);
+    public virtual Block getBlock(int x, int y, int z) {
+        chunk.setMinimumWantedChunkState(ChunkState.BLOCKGENERATED);
         var blockData = getBlockData(new Vector3D<int>(x, y, z));
         return Chunk.blockFactory.buildFromBlockData(new Vector3D<int>(x, y, z), blockData);
     }
-    protected async Task updateNeighboorChunkState(ChunkState chunkState) {
-        foreach (Face face in Enum.GetValues(typeof(Face))) {
-            Chunk newChunk = chunk.chunkProvider.getChunk(chunk.position + (FaceOffset.getOffsetOfFace(face) * 16));
-            await newChunk.setMinimumWantedChunkState(chunkState);
-            chunk.chunksNeighbors[(int)face] = newChunk;
+    protected void updateNeighboorChunkState(ChunkState chunkState) {
+        lock (chunk.chunksNeighborsLock) {
+            foreach (Face face in Enum.GetValues(typeof(Face))) {
+                Chunk newChunk = chunk.chunkProvider.getChunk(chunk.position + (FaceOffset.getOffsetOfFace(face) * 16));
+                newChunk.setMinimumWantedChunkState(chunkState);
+                chunk.chunksNeighbors[(int)face] = newChunk;
+            }   
         }
     }
 
@@ -63,7 +64,7 @@ public abstract class ChunkStrategy
     
     public virtual void update(double deltaTime){}
     
-    public async virtual Task init(){}
+    public virtual void init(){}
     
     
 }

@@ -1,24 +1,22 @@
-﻿using System.Numerics;
-using MinecraftCloneSilk.Core;
+﻿using MinecraftCloneSilk.Core;
 using MinecraftCloneSilk.GameComponent;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL;
 using Shader = MinecraftCloneSilk.Core.Shader;
 using Texture = MinecraftCloneSilk.Core.Texture;
 
-namespace MinecraftCloneSilk.Model.Chunk;
+namespace MinecraftCloneSilk.Model.NChunk;
 
 public class Chunk : IDisposable
 {
     public readonly Vector3D<int> position;
     internal readonly BlockData[,,] blocks;
-
+    internal object blocksLock = new object();
+    
     public static readonly uint CHUNK_SIZE = 16;
 
     internal ChunkProvider chunkProvider;
     internal WorldGenerator worldGenerator;
-
-    public bool displayable { get; private set; }
 
     private List<DebugRay> debugRays = new List<DebugRay>();
     private bool debugMode = false;
@@ -26,10 +24,12 @@ public class Chunk : IDisposable
     internal static BlockFactory blockFactory;
 
     internal Chunk?[] chunksNeighbors = new Chunk[6];
+    internal object chunksNeighborsLock = new object();
     
     public ChunkState chunkState { get; internal set; }
     public const ChunkState DEFAULTSTARTINGCHUNKSTATE = ChunkState.EMPTY;
     internal ChunkStrategy chunkStrategy;
+    internal object chunkStrategyLock = new object();
     internal static Shader cubeShader;
     internal GL Gl;
     
@@ -39,7 +39,6 @@ public class Chunk : IDisposable
         this.chunkProvider = chunkProvider;
         this.worldGenerator = worldGenerator;
         this.position = position;
-        this.displayable = false;
         if(blockFactory == null) blockFactory = BlockFactory.getInstance();
         blocks = new BlockData[CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE];
         Gl = Game.getInstance().getGL();
@@ -56,43 +55,48 @@ public class Chunk : IDisposable
         }
     }
     
-    public async Task setMinimumWantedChunkState(ChunkState wantedChunkState) {
-        if (wantedChunkState > this.chunkState) {
-            await setWantedChunkState(wantedChunkState);
-        } 
+    public void setMinimumWantedChunkState(ChunkState wantedChunkState) {
+        if (wantedChunkState > this.chunkState) { 
+                setWantedChunkState(wantedChunkState);
+        }   
     }
 
-    public async Task setWantedChunkState(ChunkState wantedChunkState) {
-        switch (wantedChunkState) {
-            case ChunkState.EMPTY:
-                if (chunkStrategy is not ChunkEmptyStrategy) {
-                    chunkStrategy = new ChunkEmptyStrategy(this);
-                    await chunkStrategy.init();
-                }
-                return;
-            case ChunkState.Generatedterrain:
-                if (chunkStrategy is not ChunkTerrainGeneratedStrategy) {
-                    chunkStrategy = new ChunkTerrainGeneratedStrategy(this);
-                    await chunkStrategy.init();
-                }
-                break;
-            case ChunkState.BLOCKGENERATED:
-                if (chunkStrategy is not ChunkBlockGeneratedStrategy) {
-                    chunkStrategy = new ChunkBlockGeneratedStrategy(this);
-                    await chunkStrategy.init();
-                }
-                break;
-            case ChunkState.DRAWABLE:
-                if (chunkStrategy is not ChunkDrawableStrategy) {
-                    chunkStrategy = new ChunkDrawableStrategy(this);
-                    await chunkStrategy.init();
-                }
-                break;
+    public void setWantedChunkState(ChunkState wantedChunkState) {
+        lock (chunkStrategy) {
+            switch (wantedChunkState) {
+                case ChunkState.EMPTY:
+                    if (chunkStrategy is not ChunkEmptyStrategy) {
+                        chunkStrategy = new ChunkEmptyStrategy(this);
+                        chunkStrategy.init();
+                    }
+                    return;
+                case ChunkState.Generatedterrain:
+                    if (chunkStrategy is not ChunkTerrainGeneratedStrategy) {
+                        chunkStrategy = new ChunkTerrainGeneratedStrategy(this);
+                        chunkStrategy.init();
+                    }
+                    break;
+                case ChunkState.BLOCKGENERATED:
+                    if (chunkStrategy is not ChunkBlockGeneratedStrategy) {
+                        chunkStrategy = new ChunkBlockGeneratedStrategy(this);
+                        chunkStrategy.init();
+                    }
+                    break;
+                case ChunkState.DRAWABLE:
+                    if (chunkStrategy is not ChunkDrawableStrategy) {
+                        chunkStrategy = new ChunkDrawableStrategy(this);
+                        chunkStrategy.init();
+                    }
+                    break;
+            }   
         }
     }
-    public BlockData getBlockData(Vector3D<int> localPosition) => chunkStrategy.getBlockData(localPosition);
-    public async Task<Block> getBlock(Vector3D<int> blockPosition) =>await  getBlock(blockPosition.X, blockPosition.Y, blockPosition.Z);
-    public async Task<Block> getBlock(int x, int y, int z) => await chunkStrategy.getBlock(x, y, z);
+
+    public BlockData getBlockData(Vector3D<int> localPosition) {
+        return chunkStrategy.getBlockData(localPosition);
+    }
+    public Block getBlock(Vector3D<int> blockPosition) => getBlock(blockPosition.X, blockPosition.Y, blockPosition.Z);
+    public Block getBlock(int x, int y, int z) => chunkStrategy.getBlock(x, y, z);
     public void setBlock(int x, int y, int z, string name) => chunkStrategy.setBlock(x, y, z, name);
     public void updateChunkVertex() => chunkStrategy.updateChunkVertex();
     
@@ -159,7 +163,6 @@ public class Chunk : IDisposable
             (int)((int)(MathF.Floor((float)blockPosition.Y/ Chunk.CHUNK_SIZE)) * Chunk.CHUNK_SIZE),
             (int)((int)(MathF.Floor((float)blockPosition.Z / Chunk.CHUNK_SIZE)) * Chunk.CHUNK_SIZE)
         );
-
     }
 
     protected bool disposed = false;
@@ -167,7 +170,6 @@ public class Chunk : IDisposable
     public void Dispose() {
         Dispose(true);  
         GC.SuppressFinalize(this);
-
     } 
     ~Chunk() => Dispose(false);
 

@@ -166,7 +166,8 @@ namespace MinecraftCloneSilk.Core
         {
             if (key == Key.Escape)
             {
-                closeWindow();
+                game.Stop();
+                return;
             }
 
             if (key == Key.F1)
