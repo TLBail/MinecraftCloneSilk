@@ -51,6 +51,7 @@ public class ChunkDrawableStrategy : ChunkStrategy
         initStaticMembers();
         initVertices();
         chunk.chunkState = ChunkState.DRAWABLE;
+        chunk.chunkManager.addChunkToUpdate(chunk); 
     }
 
     public override ChunkState getChunkStateOfStrategy() => ChunkState.DRAWABLE;
@@ -282,6 +283,9 @@ public class ChunkDrawableStrategy : ChunkStrategy
         lock (chunk.chunkStrategyLock) {
             Vao?.Dispose();
             Vbo?.Dispose();
+            chunk.chunkManager.removeChunkToUpdate(chunk);
+            chunk.chunkManager.removeChunkToDraw(chunk);
+            
             chunk.chunkStrategy = new ChunkBlockGeneratedStrategy(chunk);
             chunk.chunkState = ChunkState.BLOCKGENERATED;
             

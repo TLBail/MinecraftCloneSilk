@@ -27,4 +27,10 @@ public class ChunkManagerEmpty : IChunkManager
 
     public void addChunkToUpdate(Chunk chunk) {
     }
+
+    public void removeChunkToUpdate(Chunk chunk) {
+    }
+
+    public void removeChunkToDraw(Chunk chunk) {
+    }
 }
