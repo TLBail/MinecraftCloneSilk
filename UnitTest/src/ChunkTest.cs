@@ -16,15 +16,15 @@ public class ChunkTest
     
     [Test]
     public void testChunkIsNotNull() {
-        ChunkProviderEmpty chunkProviderEmpty = new ChunkProviderEmpty(new WorldFlatGeneration());
-        Chunk chunk = chunkProviderEmpty.getChunk(Vector3D<int>.Zero);
+        ChunkManagerEmpty chunkManagerEmpty = new ChunkManagerEmpty(new WorldFlatGeneration());
+        Chunk chunk = chunkManagerEmpty.getChunk(Vector3D<int>.Zero);
         Assert.NotNull(chunk);
     }
     
     [Test]
     public void testChunkLoadTerrain() {
-        ChunkProviderEmpty chunkProviderEmpty = new ChunkProviderEmpty(new WorldFlatGeneration());
-        Chunk chunk = chunkProviderEmpty.getChunk(Vector3D<int>.Zero);
+        ChunkManagerEmpty chunkManagerEmpty = new ChunkManagerEmpty(new WorldFlatGeneration());
+        Chunk chunk = chunkManagerEmpty.getChunk(Vector3D<int>.Zero);
         chunk.setWantedChunkState(ChunkState.Generatedterrain);
         Block block = chunk.getBlock(Vector3D<int>.Zero);
         Assert.IsNotNull(block);

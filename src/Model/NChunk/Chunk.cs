@@ -1,4 +1,5 @@
-﻿using MinecraftCloneSilk.Core;
+﻿using System.Numerics;
+using MinecraftCloneSilk.Core;
 using MinecraftCloneSilk.GameComponent;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL;
@@ -9,17 +10,17 @@ namespace MinecraftCloneSilk.Model.NChunk;
 
 public class Chunk : IDisposable
 {
-    public readonly Vector3D<int> position;
+    public Vector3D<int> position;
     internal readonly BlockData[,,] blocks;
     internal object blocksLock = new object();
     
     public static readonly uint CHUNK_SIZE = 16;
 
-    internal ChunkProvider chunkProvider;
+    internal IChunkManager chunkManager;
     internal WorldGenerator worldGenerator;
 
-    private List<DebugRay> debugRays = new List<DebugRay>();
-    private bool debugMode = false;
+    internal List<DebugRay> debugRays = new List<DebugRay>();
+    internal bool debugMode = false;
 
     internal static BlockFactory blockFactory;
 
@@ -33,10 +34,10 @@ public class Chunk : IDisposable
     internal static Shader cubeShader;
     internal GL Gl;
     
-    public Chunk(Vector3D<int> position, ChunkProvider chunkProvider, WorldGenerator worldGenerator) {
+    public Chunk(Vector3D<int> position, IChunkManager chunkManager, WorldGenerator worldGenerator) {
         this.chunkState = DEFAULTSTARTINGCHUNKSTATE;
         this.chunkStrategy = new ChunkEmptyStrategy(this);
-        this.chunkProvider = chunkProvider;
+        this.chunkManager = chunkManager;
         this.worldGenerator = worldGenerator;
         this.position = position;
         if(blockFactory == null) blockFactory = BlockFactory.getInstance();
@@ -95,78 +96,34 @@ public class Chunk : IDisposable
     public BlockData getBlockData(Vector3D<int> localPosition) {
         return chunkStrategy.getBlockData(localPosition);
     }
+
+    public ChunkState getMinimumChunkStateOfNeighbors() => chunkStrategy.minimumChunkStateOfNeighbors();
     public Block getBlock(Vector3D<int> blockPosition) => getBlock(blockPosition.X, blockPosition.Y, blockPosition.Z);
     public Block getBlock(int x, int y, int z) => chunkStrategy.getBlock(x, y, z);
     public void setBlock(int x, int y, int z, string name) => chunkStrategy.setBlock(x, y, z, name);
     public void updateChunkVertex() => chunkStrategy.updateChunkVertex();
-    
-    public void debug(bool? setDebug = null)
-    {
-        debugMode = setDebug ?? !debugMode;
-
-        
-        if (!debugMode) {
-            foreach (var debugRay in debugRays) {
-                debugRay.remove();
-            }
-            debugRays.Clear();
-        }
-        else {
-            //base
-            debugRays.Add( new DebugRay(new Vector3D<float>(position.X - 0.5f, position.Y -0.5f, position.Z - 0.5f),
-                new Vector3D<float>(position.X + Chunk.CHUNK_SIZE - 0.5f, position.Y - 0.5f, position.Z - 0.5f)));
-            debugRays.Add( new DebugRay(new Vector3D<float>(position.X - 0.5f, position.Y - 0.5f, position.Z - 0.5f),
-                new Vector3D<float>(position.X - 0.5f, position.Y - 0.5f , position.Z +  Chunk.CHUNK_SIZE - 0.5f)));
-
-            debugRays.Add( new DebugRay(new Vector3D<float>(position.X - 0.5f, position.Y - 0.5f, position.Z +  Chunk.CHUNK_SIZE - 0.5f),
-                new Vector3D<float>(position.X + CHUNK_SIZE - 0.5f, position.Y - 0.5f, position.Z +  Chunk.CHUNK_SIZE - 0.5f)));
-            debugRays.Add( new DebugRay(new Vector3D<float>(position.X + CHUNK_SIZE - 0.5f, position.Y - 0.5f, position.Z - 0.5f),
-                new Vector3D<float>(position.X + CHUNK_SIZE - 0.5f, position.Y  - 0.5f, position.Z +  Chunk.CHUNK_SIZE- 0.5f)));
-            
-            //top base
-
-            debugRays.Add( new DebugRay(new Vector3D<float>(position.X - 0.5f, position.Y + CHUNK_SIZE - 0.5f, position.Z - 0.5f),
-                new Vector3D<float>(position.X + Chunk.CHUNK_SIZE - 0.5f, position.Y + CHUNK_SIZE - 0.5f, position.Z - 0.5f)));
-            debugRays.Add( new DebugRay(new Vector3D<float>(position.X - 0.5f, position.Y + CHUNK_SIZE - 0.5f, position.Z - 0.5f),
-                new Vector3D<float>(position.X - 0.5f , position.Y + CHUNK_SIZE - 0.5f , position.Z +  Chunk.CHUNK_SIZE - 0.5f)));
-
-            
-            debugRays.Add( new DebugRay(new Vector3D<float>(position.X - 0.5f, position.Y + CHUNK_SIZE - 0.5f, position.Z +  Chunk.CHUNK_SIZE - 0.5f),
-                new Vector3D<float>(position.X + CHUNK_SIZE - 0.5f, position.Y +CHUNK_SIZE - 0.5f, position.Z +  Chunk.CHUNK_SIZE - 0.5f)));
-            debugRays.Add( new DebugRay(new Vector3D<float>(position.X + CHUNK_SIZE - 0.5f, position.Y + CHUNK_SIZE - 0.5f, position.Z - 0.5f),
-                new Vector3D<float>(position.X + CHUNK_SIZE - 0.5f, position.Y + CHUNK_SIZE - 0.5f, position.Z +  Chunk.CHUNK_SIZE - 0.5f)));
-            
-            //between
-            debugRays.Add( new DebugRay(new Vector3D<float>(position.X - 0.5f, position.Y - 0.5f, position.Z - 0.5f),
-                new Vector3D<float>(position.X  - 0.5f, position.Y +  Chunk.CHUNK_SIZE - 0.5f, position.Z - 0.5f)));
-            debugRays.Add( new DebugRay(new Vector3D<float>(position.X + CHUNK_SIZE - 0.5f, position.Y - 0.5f, position.Z - 0.5f),
-                new Vector3D<float>(position.X + CHUNK_SIZE - 0.5f, position.Y +  Chunk.CHUNK_SIZE - 0.5f, position.Z- 0.5f)));
-            debugRays.Add( new DebugRay(new Vector3D<float>(position.X + CHUNK_SIZE - 0.5f, position.Y - 0.5f, position.Z + CHUNK_SIZE - 0.5f),
-                new Vector3D<float>(position.X + CHUNK_SIZE - 0.5f, position.Y +  Chunk.CHUNK_SIZE - 0.5f, position.Z+ CHUNK_SIZE - 0.5f)));
-            debugRays.Add( new DebugRay(new Vector3D<float>(position.X - 0.5f, position.Y - 0.5f, position.Z + CHUNK_SIZE - 0.5f),
-                new Vector3D<float>(position.X - 0.5f , position.Y +  Chunk.CHUNK_SIZE - 0.5f, position.Z+ CHUNK_SIZE - 0.5f)));
-        }
-
-    }
-
-  
-
+    public void debug(bool? setDebug = null) => chunkStrategy.debug(setDebug);
     public void Update(double deltaTime) => chunkStrategy.update(deltaTime);
-
-
     public void Draw(GL Gl, double deltaTime) => chunkStrategy.draw(Gl, deltaTime);
+    public void reset(Vector3D<int> position, IChunkManager chunkManager, WorldGenerator worldGenerator) {
+        this.position = position;
+        this.chunkManager = chunkManager;
+        this.worldGenerator = worldGenerator;
+        debug(false);
+        chunksNeighbors = new Chunk[6];
+        chunkState = DEFAULTSTARTINGCHUNKSTATE;
+        this.chunkStrategy = new ChunkEmptyStrategy(this);
 
-
-    internal Vector3D<int> getChunkPosition(Vector3D<int> blockPosition) {
-        return new Vector3D<int>(
-            (int)((int)(MathF.Floor((float)blockPosition.X / Chunk.CHUNK_SIZE)) * Chunk.CHUNK_SIZE),
-            (int)((int)(MathF.Floor((float)blockPosition.Y/ Chunk.CHUNK_SIZE)) * Chunk.CHUNK_SIZE),
-            (int)((int)(MathF.Floor((float)blockPosition.Z / Chunk.CHUNK_SIZE)) * Chunk.CHUNK_SIZE)
-        );
+        for (int x = 0; x < CHUNK_SIZE; x++) {
+            for (int y = 0; y < CHUNK_SIZE; y++) {
+                for (int z = 0; z < CHUNK_SIZE; z++) {
+                    blocks[x, y, z] = default(BlockData);
+                }
+            }
+        }
     }
-
+    
     protected bool disposed = false;
-
     public void Dispose() {
         Dispose(true);  
         GC.SuppressFinalize(this);

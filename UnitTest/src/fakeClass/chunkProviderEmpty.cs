@@ -4,13 +4,13 @@ using Silk.NET.Maths;
 
 namespace UnitTest.fakeClass;
 
-public class ChunkProviderEmpty : ChunkProvider
+public class ChunkManagerEmpty : IChunkManager
 {
     public Dictionary<Vector3D<int>, Chunk> chunks = new Dictionary<Vector3D<int>, Chunk>();
 
     public WorldGenerator worldGenerator;
 
-    public ChunkProviderEmpty(WorldGenerator worldGenerator) {
+    public ChunkManagerEmpty(WorldGenerator worldGenerator) {
         this.worldGenerator = worldGenerator;
     }
 
@@ -20,5 +20,11 @@ public class ChunkProviderEmpty : ChunkProvider
         }    
         chunks.Add(position, new Chunk(position, this, worldGenerator));
         return chunks[position];
+    }
+
+    public void addChunkToDraw(Chunk chunk) {
+    }
+
+    public void addChunkToUpdate(Chunk chunk) {
     }
 }
