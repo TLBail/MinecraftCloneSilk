@@ -113,7 +113,7 @@ public class World : GameObject
 
 
     public void Draw(GL gl, double deltaTime) {
-        foreach (var chunk in chunkManager.getChunksToDraw()) chunk.Draw(gl, deltaTime);
+        chunkManager.Draw(gl, deltaTime);
     }
     
     public static Vector3D<int> getChunkPosition(Vector3D<int> blockPosition) {

@@ -4,6 +4,7 @@ using System.Collections.Immutable;
 using MinecraftCloneSilk.Model;
 using MinecraftCloneSilk.Model.NChunk;
 using Silk.NET.Maths;
+using Silk.NET.OpenGL;
 
 namespace MinecraftCloneSilk.Model;
 
@@ -33,8 +34,9 @@ public class ChunkManager : IChunkManager, IDisposable
     private SemaphoreSlim semaphore;
 
     private List<Chunk> chunksToUpdate = new List<Chunk>();
+    private object chunksToUpdateLock = new object();
     private List<Chunk> chunksToDraw = new List<Chunk>();
-    public List<Chunk> getChunksToDraw() => chunksToDraw;
+    private object chunksToDrawLock = new object();
 
     private List<Chunk> chunksToUnload = new List<Chunk>();
     private object chunksToUnloadLock = new object();
@@ -76,10 +78,18 @@ public class ChunkManager : IChunkManager, IDisposable
         }
     }
 
-
+    public void Draw(GL gl, double deltaTime) {
+        lock (chunksToDrawLock) {
+            foreach (var chunk in chunksToDraw) chunk.Draw(gl, deltaTime);
+        }
+    }
+    
+    
     public void update(double deltatime) {
-        foreach (Chunk chunk in chunksToUpdate) {
-            chunk.Update(deltatime);
+        lock (chunksToUpdateLock) {
+            foreach (Chunk chunk in chunksToUpdate) {
+                chunk.Update(deltatime);
+            }   
         }
     }
 
@@ -102,13 +112,22 @@ public class ChunkManager : IChunkManager, IDisposable
         }
     }
 
+
     public void addChunkToDraw(Chunk chunk) {
-        chunksToDraw.Add(chunk);
+        lock (chunksToDrawLock) {
+            chunksToDraw.Add(chunk);
+        }
     }
 
     public void addChunkToUpdate(Chunk chunk) {
-        chunksToUpdate.Add(chunk);
+        lock (chunksToUpdateLock) {
+            chunksToUpdate.Add(chunk);
+        }
     }
+
+    public void removeChunkToUpdate(Chunk chunk) => chunksToUpdate.Remove(chunk);
+
+    public void removeChunkToDraw(Chunk chunk) => chunksToDraw.Remove(chunk);
 
     public void updateRelevantChunks(List<Vector3D<int>> chunkRelevant) {
         lock (chunksLock) {
@@ -134,10 +153,8 @@ public class ChunkManager : IChunkManager, IDisposable
             Chunk chunk;
             if (chunks.TryGetValue(position, out Chunk existingChunk)) {
                 chunk = existingChunk;
-                if(!chunksToUpdate.Contains(chunk)) chunksToUpdate.Add(chunk);
             } else {
                 chunk = chunkPool.get(position);
-                chunksToUpdate.Add(chunk);
                 chunks.Add(chunk.position, chunk);
             }
             ChunkLoadingTask chunkLoadingTask = new ChunkLoadingTask(chunk, ChunkState.DRAWABLE); 
@@ -161,15 +178,11 @@ public class ChunkManager : IChunkManager, IDisposable
             chunks.Remove(position);
             chunkToUnload.Dispose();
             chunksToUnload.Add(chunkToUnload);
-            chunksToDraw.Remove(chunkToUnload);
-            chunksToUpdate.Remove(chunkToUnload);
             if (semaphore.CurrentCount <= 0) semaphore.Release();
             Console.WriteLine("chunk deleted");
             return true;
         } else if(chunkToUnload.chunkState == ChunkState.DRAWABLE) {
             chunkToUnload.setWantedChunkState(minimumChunkState);
-            chunksToUpdate.Remove(chunkToUnload);
-            chunksToDraw.Remove(chunkToUnload);
             return true;
         }
         return false;
@@ -208,4 +221,5 @@ public class ChunkManager : IChunkManager, IDisposable
         chunkPool.Dispose();
     }
 
+ 
 }
