@@ -78,6 +78,12 @@ public class Chunk : IDisposable
                     }
                     break;
                 case ChunkState.BLOCKGENERATED:
+                    if (chunkState == ChunkState.DRAWABLE) {
+                        chunkStrategy.Dispose();
+                        chunkStrategy = new ChunkBlockGeneratedStrategy(this);
+                        chunkState = ChunkState.BLOCKGENERATED;
+                        break;
+                    }
                     if (chunkStrategy is not ChunkBlockGeneratedStrategy) {
                         chunkStrategy = new ChunkBlockGeneratedStrategy(this);
                         chunkStrategy.init();
