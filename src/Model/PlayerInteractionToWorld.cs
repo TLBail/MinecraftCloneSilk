@@ -67,6 +67,7 @@ public class PlayerInteractionToWorld
             if (hit.haveHited) {
                 if(!world.containChunkKey(World.getChunkPosition(blockPosition))) continue;
                 var chunkTested = world.getChunk(blockPosition);
+                if(chunkTested.chunkState < ChunkState.BLOCKGENERATED) continue;
                 var testedBlock = chunkTested.getBlock(World.getLocalPosition(blockPosition));
                 if (!testedBlock.airBlock) {
                     if (block == null || bestHitDistance > Math.Abs(hit.fNorm)) {

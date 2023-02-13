@@ -42,12 +42,12 @@ public class ChunkDrawableStrategy : ChunkStrategy
     }
 
     public override void init() {
-        if (chunk.chunkState != ChunkState.BLOCKGENERATED) {
+        if (chunk.chunkState != minimumChunkStateOfNeighbors()) {
             chunk.chunkStrategy = new ChunkBlockGeneratedStrategy(chunk);
             chunk.chunkStrategy.init();
             chunk.chunkStrategy = this;
         }
-        updateNeighboorChunkState(ChunkState.BLOCKGENERATED);
+        updateNeighboorChunkState(minimumChunkStateOfNeighbors());
         initStaticMembers();
         initVertices();
         chunk.chunkState = ChunkState.DRAWABLE;
@@ -94,7 +94,8 @@ public class ChunkDrawableStrategy : ChunkStrategy
         needToUpdateChunkVertices = true;
     }
 
-
+    public override ChunkState minimumChunkStateOfNeighbors() => ChunkState.BLOCKGENERATED;
+    
     private void initVertices()
     {
         updateCubeVertices();
@@ -117,6 +118,8 @@ public class ChunkDrawableStrategy : ChunkStrategy
         Vao.Bind();
         Vao.VertexAttributePointer(0, 3, VertexAttribPointerType.Float, "position");
         Vao.VertexAttributePointer(1, 2, VertexAttribPointerType.Float, "texCoords");
+        
+        chunk.chunkManager.addChunkToDraw(chunk);
         openGlSetup = true;
     }
     
@@ -220,6 +223,57 @@ public class ChunkDrawableStrategy : ChunkStrategy
 
             if(z == 0) chunk.chunksNeighbors[(int)Face.BACK]!.updateChunkVertex();
             if(z == Chunk.CHUNK_SIZE - 1) chunk.chunksNeighbors[(int)Face.FRONT]!.updateChunkVertex();
+        }
+    }
+
+    public override void debug(bool? setDebug = null) {
+        chunk.debugMode = setDebug ?? !chunk.debugMode;
+
+        
+        if (!chunk.debugMode) {
+            foreach (var debugRay in chunk.debugRays) {
+                debugRay.remove();
+            }
+            chunk.debugRays.Clear();
+        }
+        else {
+            //base
+            chunk.debugRays.Add( new DebugRay(new Vector3D<float>(chunk.position.X - 0.5f, chunk.position.Y -0.5f, chunk.position.Z - 0.5f),
+                new Vector3D<float>(chunk.position.X + Chunk.CHUNK_SIZE - 0.5f, chunk.position.Y - 0.5f, chunk.position.Z - 0.5f), new Vector3D<float>(1.0f, 1.0f, 0.0f)));
+            chunk.debugRays.Add( new DebugRay(new Vector3D<float>(chunk.position.X - 0.5f, chunk.position.Y - 0.5f, chunk.position.Z - 0.5f),
+                new Vector3D<float>(chunk.position.X - 0.5f, chunk.position.Y - 0.5f , chunk.position.Z +  Chunk.CHUNK_SIZE - 0.5f), new Vector3D<float>(1.0f, 1.0f, 0.0f)));
+
+            chunk.debugRays.Add( new DebugRay(new Vector3D<float>(chunk.position.X - 0.5f, chunk.position.Y - 0.5f, chunk.position.Z +  Chunk.CHUNK_SIZE - 0.5f),
+                new Vector3D<float>(chunk.position.X + Chunk.CHUNK_SIZE - 0.5f, chunk.position.Y - 0.5f, chunk.position.Z +  Chunk.CHUNK_SIZE - 0.5f), new Vector3D<float>(1.0f, 1.0f, 0.0f)));
+            chunk.debugRays.Add( new DebugRay(new Vector3D<float>(chunk.position.X + Chunk.CHUNK_SIZE - 0.5f, chunk.position.Y - 0.5f, chunk.position.Z - 0.5f),
+                new Vector3D<float>(chunk.position.X + Chunk.CHUNK_SIZE - 0.5f, chunk.position.Y  - 0.5f, chunk.position.Z +  Chunk.CHUNK_SIZE- 0.5f), new Vector3D<float>(1.0f, 1.0f, 0.0f)));
+            
+            //top base
+
+            chunk.debugRays.Add( new DebugRay(new Vector3D<float>(chunk.position.X - 0.5f, chunk.position.Y + Chunk.CHUNK_SIZE - 0.5f, chunk.position.Z - 0.5f),
+                new Vector3D<float>(chunk.position.X + Chunk.CHUNK_SIZE - 0.5f, chunk.position.Y + Chunk.CHUNK_SIZE - 0.5f, chunk.position.Z - 0.5f), new Vector3D<float>(1.0f, 1.0f, 0.0f)));
+            chunk.debugRays.Add( new DebugRay(new Vector3D<float>(chunk.position.X - 0.5f, chunk.position.Y + Chunk.CHUNK_SIZE - 0.5f, chunk.position.Z - 0.5f),
+                new Vector3D<float>(chunk.position.X - 0.5f , chunk.position.Y + Chunk.CHUNK_SIZE - 0.5f , chunk.position.Z +  Chunk.CHUNK_SIZE - 0.5f), new Vector3D<float>(1.0f, 1.0f, 0.0f)));
+
+            
+            chunk.debugRays.Add( new DebugRay(new Vector3D<float>(chunk.position.X - 0.5f, chunk.position.Y + Chunk.CHUNK_SIZE - 0.5f, chunk.position.Z +  Chunk.CHUNK_SIZE - 0.5f),
+                new Vector3D<float>(chunk.position.X + Chunk.CHUNK_SIZE - 0.5f, chunk.position.Y +Chunk.CHUNK_SIZE - 0.5f, chunk.position.Z +  Chunk.CHUNK_SIZE - 0.5f), new Vector3D<float>(1.0f, 1.0f, 0.0f)));
+            chunk.debugRays.Add( new DebugRay(new Vector3D<float>(chunk.position.X + Chunk.CHUNK_SIZE - 0.5f, chunk.position.Y + Chunk.CHUNK_SIZE - 0.5f, chunk.position.Z - 0.5f),
+                new Vector3D<float>(chunk.position.X + Chunk.CHUNK_SIZE - 0.5f, chunk.position.Y + Chunk.CHUNK_SIZE - 0.5f, chunk.position.Z +  Chunk.CHUNK_SIZE - 0.5f), new Vector3D<float>(1.0f, 1.0f, 0.0f)));
+            
+            //between
+            chunk.debugRays.Add( new DebugRay(new Vector3D<float>(chunk.position.X - 0.5f, chunk.position.Y - 0.5f, chunk.position.Z - 0.5f),
+                new Vector3D<float>(chunk.position.X  - 0.5f, chunk.position.Y +  Chunk.CHUNK_SIZE - 0.5f, chunk.position.Z - 0.5f), new Vector3D<float>(1.0f, 1.0f, 0.0f)));
+            chunk.debugRays.Add( new DebugRay(new Vector3D<float>(chunk.position.X + Chunk.CHUNK_SIZE - 0.5f, chunk.position.Y - 0.5f, chunk.position.Z - 0.5f),
+                new Vector3D<float>(chunk.position.X + Chunk.CHUNK_SIZE - 0.5f, chunk.position.Y +  Chunk.CHUNK_SIZE - 0.5f, chunk.position.Z- 0.5f), new Vector3D<float>(1.0f, 1.0f, 0.0f)));
+            chunk.debugRays.Add( new DebugRay(new Vector3D<float>(chunk.position.X + Chunk.CHUNK_SIZE - 0.5f, chunk.position.Y - 0.5f, chunk.position.Z + Chunk.CHUNK_SIZE - 0.5f),
+                new Vector3D<float>(chunk.position.X + Chunk.CHUNK_SIZE - 0.5f, chunk.position.Y +  Chunk.CHUNK_SIZE - 0.5f, chunk.position.Z+ Chunk.CHUNK_SIZE - 0.5f), new Vector3D<float>(1.0f, 1.0f, 0.0f)));
+            chunk.debugRays.Add( new DebugRay(new Vector3D<float>(chunk.position.X - 0.5f, chunk.position.Y - 0.5f, chunk.position.Z + Chunk.CHUNK_SIZE - 0.5f),
+                new Vector3D<float>(chunk.position.X - 0.5f , chunk.position.Y +  Chunk.CHUNK_SIZE - 0.5f, chunk.position.Z+ Chunk.CHUNK_SIZE - 0.5f), new Vector3D<float>(1.0f, 1.0f, 0.0f)));
+            
+            // diagonal
+            chunk.debugRays.Add(new DebugRay(new Vector3D<float>(chunk.position.X - 0.5f, chunk.position.Y -0.5f, chunk.position.Z - 0.5f),
+                new Vector3D<float>(chunk.position.X + Chunk.CHUNK_SIZE - 0.5f , chunk.position.Y + Chunk.CHUNK_SIZE - 0.5f , chunk.position.Z +  Chunk.CHUNK_SIZE - 0.5f), new Vector3D<float>(1.0f, 1.0f, 0.0f)));
         }
     }
 
