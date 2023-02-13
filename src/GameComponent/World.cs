@@ -1,11 +1,13 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Immutable;
+using System.Numerics;
 using System.Xml.Linq;
 using MinecraftCloneSilk.Model;
 using MinecraftCloneSilk.Model.NChunk;
 using MinecraftCloneSilk.UI;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL;
+using Console = MinecraftCloneSilk.UI.Console;
 
 namespace MinecraftCloneSilk.GameComponent;
 
@@ -16,7 +18,7 @@ public enum WorldMode
     DYNAMIC // chunks generated around player
 }
 
-public class World : GameObject, ChunkProvider
+public class World : GameObject
 {
     private Player player;
     private const int RADIUS = 6;
@@ -39,17 +41,16 @@ public class World : GameObject, ChunkProvider
         if (worldMode == WorldMode.SIMPLE) {
             addExempleChunk();
         }
+        addCommand();
     }
+
+   
 
     protected override void update(double deltaTime) {
         if (worldMode == WorldMode.DYNAMIC) {
             createChunkAroundPlayer();
         }
-
-        foreach (var chunk in chunkManager.getChunks()) {
-            chunk.Update(deltaTime);
-        }
-        chunkManager.update();
+        chunkManager.update(deltaTime);
     }
 
     protected override void stop() {
@@ -112,7 +113,7 @@ public class World : GameObject, ChunkProvider
 
 
     public void Draw(GL gl, double deltaTime) {
-            foreach (var chunk in chunkManager.getChunks()) chunk.Draw(gl, deltaTime);
+        foreach (var chunk in chunkManager.getChunksToDraw()) chunk.Draw(gl, deltaTime);
     }
     
     public static Vector3D<int> getChunkPosition(Vector3D<int> blockPosition) {
@@ -141,6 +142,44 @@ public class World : GameObject, ChunkProvider
         return localPosition;
     }
 
+    private void addCommand() {
+        Console console = (Console)game.gameObjects[typeof(Console).FullName];
+        console.addCommand("/addChunk", (commandParams) =>
+        {
+            Vector3D<int> newPosition;
+            try {
+                if (commandParams.Length >= 3) {
+                    newPosition.X = int.Parse(commandParams[0]);
+                    newPosition.Y = int.Parse(commandParams[1]);
+                    newPosition.Z = int.Parse(commandParams[2]);
+                    chunkManager.addChunkToLoad(newPosition);
+
+                }
+            }
+            catch (Exception e) {
+                console.log(e.Message, Console.LogType.ERROR);
+            }
+        });
+        
+        console.addCommand("/rmChunk", (commandParams) =>
+        {
+            try {
+                if (commandParams.Length >= 3) {
+                    Vector3D<int> position = new Vector3D<int>(
+                        int.Parse(commandParams[0]),
+                        int.Parse(commandParams[1]),
+                        int.Parse(commandParams[2])
+                    );
+                    console.log("chunk at " + position + " unloaded " + (
+                            chunkManager.tryToUnloadChunk(position) ?  "succefuly": "failed")
+                    );
+                }
+            }
+            catch (Exception e) {
+                console.log(e.Message, Console.LogType.ERROR);
+            }
+        });
+    }
 
     private void createChunkAroundPlayer() {
         var chunkRelevant = new List<Vector3D<int>>();
@@ -164,19 +203,19 @@ public class World : GameObject, ChunkProvider
         Vector3D<int>[] postions =
         {
             Vector3D<int>.Zero,
-            new(0, (int)Chunk.CHUNK_SIZE, 0),
-            new((int)Chunk.CHUNK_SIZE, 0, 0),
-            new(0, 0, (int)Chunk.CHUNK_SIZE),
-            new((int)Chunk.CHUNK_SIZE, 0, (int)Chunk.CHUNK_SIZE),
-            new(-(int)Chunk.CHUNK_SIZE, 0, 0),
-            new(0, 0, -(int)Chunk.CHUNK_SIZE),
-            new(-(int)Chunk.CHUNK_SIZE, 0, (int)Chunk.CHUNK_SIZE),
-            new((int)Chunk.CHUNK_SIZE, 0, -(int)Chunk.CHUNK_SIZE),
+            new Vector3D<int>(0, 0, (int)Chunk.CHUNK_SIZE),
+            new Vector3D<int>(0, 0, -(int)Chunk.CHUNK_SIZE),
+
+            new Vector3D<int>((int)Chunk.CHUNK_SIZE, 0, 0),
+            new Vector3D<int>((int)Chunk.CHUNK_SIZE, 0, (int)Chunk.CHUNK_SIZE),
+            new Vector3D<int>((int)Chunk.CHUNK_SIZE, 0, -(int)Chunk.CHUNK_SIZE),
+            new Vector3D<int>(-(int)Chunk.CHUNK_SIZE, 0, 0),
+            new Vector3D<int>(-(int)Chunk.CHUNK_SIZE, 0, (int)Chunk.CHUNK_SIZE),
+            new Vector3D<int>(-(int)Chunk.CHUNK_SIZE, 0, -(int)Chunk.CHUNK_SIZE)
+
         };
-        foreach (var postion in postions) {
-            var chunk = new Chunk(postion, this, worldNaturalGeneration);
-            chunk.setWantedChunkState(ChunkState.DRAWABLE);
-            chunkManager.addOrSet(chunk);
+        foreach (var position in postions) {
+            chunkManager.addChunkToLoad(position);
         }
     }
 
