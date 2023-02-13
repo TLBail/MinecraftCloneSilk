@@ -78,7 +78,6 @@ public class ChunkManager : IChunkManager, IDisposable
 
 
     public void update(double deltatime) {
-        
         foreach (Chunk chunk in chunksToUpdate) {
             chunk.Update(deltatime);
         }
@@ -132,10 +131,17 @@ public class ChunkManager : IChunkManager, IDisposable
 
     public void addChunkToLoad(Vector3D<int> position) {
         lock (chunksToLoadLock) {
-            ChunkLoadingTask chunkLoadingTask = new ChunkLoadingTask(chunkPool.get(position), ChunkState.DRAWABLE); 
+            Chunk chunk;
+            if (chunks.TryGetValue(position, out Chunk existingChunk)) {
+                chunk = existingChunk;
+                if(!chunksToUpdate.Contains(chunk)) chunksToUpdate.Add(chunk);
+            } else {
+                chunk = chunkPool.get(position);
+                chunksToUpdate.Add(chunk);
+                chunks.Add(chunk.position, chunk);
+            }
+            ChunkLoadingTask chunkLoadingTask = new ChunkLoadingTask(chunk, ChunkState.DRAWABLE); 
             chunksToLoad.Add(chunkLoadingTask);
-            chunks.Add(chunkLoadingTask.chunk.position, chunkLoadingTask.chunk);
-            chunksToUpdate.Add(chunkLoadingTask.chunk);
             if (semaphore.CurrentCount <= 0) semaphore.Release();
         }
     }
@@ -159,6 +165,11 @@ public class ChunkManager : IChunkManager, IDisposable
             chunksToUpdate.Remove(chunkToUnload);
             if (semaphore.CurrentCount <= 0) semaphore.Release();
             Console.WriteLine("chunk deleted");
+            return true;
+        } else if(chunkToUnload.chunkState == ChunkState.DRAWABLE) {
+            chunkToUnload.setWantedChunkState(minimumChunkState);
+            chunksToUpdate.Remove(chunkToUnload);
+            chunksToDraw.Remove(chunkToUnload);
             return true;
         }
         return false;
