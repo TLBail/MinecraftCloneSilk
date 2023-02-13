@@ -22,6 +22,10 @@ public class ChunkTerrainGeneratedStrategy : ChunkStrategy
             chunk.blocks[x, y, z].id = name.GetHashCode();
         }
     }
+    
+    public override Block getBlock(int x, int y, int z) {
+        throw new Exception("try to get Block of a terrain generated only chunk");
+    }
 
     private void generateTerrain()
     {

@@ -15,18 +15,18 @@ public class ChunkGenerationBenchmark
     WorldNaturalGeneration worldNaturalGeneration;
     BlockData[,,] blocks;
     Vector3D<int> position = Vector3D<int>.Zero;
-    private ChunkProvider chunkProvider;
+    private IChunkManager chunkManager;
     public ChunkGenerationBenchmark() {
         TextureManager textureManager = TextureManager.getInstance();
         textureManager.fakeLoad();
         blocks = new BlockData[16, 16, 16];
         worldNaturalGeneration = new WorldNaturalGeneration();
-        chunkProvider = new ChunkProviderEmpty(worldNaturalGeneration);
+        chunkManager = new ChunkManagerEmpty(worldNaturalGeneration);
     }
 
     [Benchmark]
     public void createAllBlockForAChunk() {
-        Chunk chunk = new Chunk(position, chunkProvider, worldNaturalGeneration);
+        Chunk chunk = new Chunk(position, chunkManager, worldNaturalGeneration);
     }
     
 }
