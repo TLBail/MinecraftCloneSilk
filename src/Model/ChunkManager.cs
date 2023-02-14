@@ -139,11 +139,15 @@ public class ChunkManager : IChunkManager, IDisposable
 
     public void updateRelevantChunks(List<Vector3D<int>> chunkRelevant) {
         lock (chunksLock) {
+            List<Vector3D<int>> chunkNotContainInChunks = new List<Vector3D<int>>();
             foreach (Vector3D<int> position in chunkRelevant) {
-                if (!chunks.ContainsKey(position)) {
-                    chunks.Add(position, new Chunk(position,this, worldGenerator));
+                if (!chunks.TryGetValue(position, out Chunk chunk) || chunk.chunkState < ChunkState.DRAWABLE) {
+                    chunkNotContainInChunks.Add(position);        
                 }
             }
+            addChunksToLoad(chunkNotContainInChunks);
+            
+            /*
             IEnumerable<Vector3D<int>> chunksToDeletePosition = chunks.Keys.Except(chunkRelevant);
             foreach (var chunkToDeletePosition in chunksToDeletePosition) removeChunk(chunks[chunkToDeletePosition]);
 
@@ -152,7 +156,8 @@ public class ChunkManager : IChunkManager, IDisposable
                 if (chunk.chunkState < ChunkState.DRAWABLE) { 
                     chunksToLoad.Add(new ChunkLoadingTask(chunk, ChunkState.DRAWABLE));
                 }
-            }   
+            } 
+            */  
         }
     }
 
@@ -172,6 +177,23 @@ public class ChunkManager : IChunkManager, IDisposable
         }
     }
 
+    public void addChunksToLoad(List<Vector3D<int>> positions) {
+        lock (chunksToLoadLock) {
+            foreach (Vector3D<int> position in positions) {
+                Chunk chunk;
+                if (chunks.TryGetValue(position, out Chunk existingChunk)) {
+                    chunk = existingChunk;
+                } else {
+                    chunk = chunkPool.get(position);
+                    chunks.Add(chunk.position, chunk);
+                }
+                ChunkLoadingTask chunkLoadingTask = new ChunkLoadingTask(chunk, ChunkState.DRAWABLE); 
+                chunksToLoad.Add(chunkLoadingTask);
+            }
+        }
+        if (semaphore.CurrentCount <= 0) semaphore.Release();
+    }
+    
     public bool tryToUnloadChunk(Vector3D<int> position) {
         Chunk chunkToUnload = null;
         lock (chunksToUnloadLock) {
@@ -221,11 +243,6 @@ public class ChunkManager : IChunkManager, IDisposable
             chunkState = chunk.getMinimumChunkStateOfNeighbors();
         
         return chunkState;
-    }
-    
-    private void removeChunk(Chunk chunk) {
-        chunk.Dispose();
-        chunks.Remove(chunk.position);
     }
 
     public void Dispose() {
