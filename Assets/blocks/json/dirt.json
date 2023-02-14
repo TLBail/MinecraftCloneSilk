@@ -1,6 +1,7 @@
 {
     "name": "dirt",
     "transparent": false,
+    "id": 9,
     "texture": {
         "TOP": [
             3,

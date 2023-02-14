@@ -11,7 +11,7 @@ namespace MinecraftCloneSilk.Model.NChunk;
 public class Chunk : IDisposable
 {
     public Vector3D<int> position;
-    internal readonly BlockData[,,] blocks;
+    internal BlockData[,,] blocks;
     internal object blocksLock = new object();
     
     public static readonly uint CHUNK_SIZE = 16;
@@ -33,6 +33,8 @@ public class Chunk : IDisposable
     internal object chunkStrategyLock = new object();
     internal static Shader cubeShader;
     internal GL Gl;
+    protected bool disposed = false;
+
     
     public Chunk(Vector3D<int> position, IChunkManager chunkManager, WorldGenerator worldGenerator) {
         this.chunkState = DEFAULTSTARTINGCHUNKSTATE;
@@ -119,7 +121,7 @@ public class Chunk : IDisposable
         chunksNeighbors = new Chunk[6];
         chunkState = DEFAULTSTARTINGCHUNKSTATE;
         this.chunkStrategy = new ChunkEmptyStrategy(this);
-
+        disposed = false;
         for (int x = 0; x < CHUNK_SIZE; x++) {
             for (int y = 0; y < CHUNK_SIZE; y++) {
                 for (int z = 0; z < CHUNK_SIZE; z++) {
@@ -129,7 +131,6 @@ public class Chunk : IDisposable
         }
     }
     
-    protected bool disposed = false;
     public void Dispose() {
         Dispose(true);  
         GC.SuppressFinalize(this);

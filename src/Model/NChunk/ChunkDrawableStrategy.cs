@@ -89,7 +89,7 @@ public class ChunkDrawableStrategy : ChunkStrategy
 
     public override void setBlock(int x, int y, int z, string name) {
         lock (chunk.blocksLock) {
-            chunk.blocks[x, y, z].id = name.GetHashCode();
+            chunk.blocks[x, y, z].id = Chunk.blockFactory.getBlockIdByName(name);
         }
         updateBlocksAround(x, y, z);
         needToUpdateChunkVertices = true;
@@ -280,21 +280,11 @@ public class ChunkDrawableStrategy : ChunkStrategy
 
 
     public override void Dispose() {
-        lock (chunk.chunkStrategyLock) {
-            Vao?.Dispose();
-            Vbo?.Dispose();
-            chunk.chunkManager.removeChunkToUpdate(chunk);
-            chunk.chunkManager.removeChunkToDraw(chunk);
-            
-            chunk.chunkStrategy = new ChunkBlockGeneratedStrategy(chunk);
-            chunk.chunkState = ChunkState.BLOCKGENERATED;
-            
-            lock (chunk.chunksNeighborsLock) {
-                for (int i = 0; i < chunk.chunksNeighbors.Length; i++) { 
-                    chunk.chunksNeighbors[i] = null;
-                }   
-            }
-        }
-
+        Vao?.Dispose();
+        Vbo?.Dispose();
+        chunk.chunkManager.removeChunkToUpdate(chunk);
+        chunk.chunkManager.removeChunkToDraw(chunk);
+        chunk.chunksNeighbors = null;
+        saveBlockInMemory();
     }
 }

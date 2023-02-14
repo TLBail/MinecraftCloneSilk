@@ -1,6 +1,7 @@
 {
     "name": "sand",
     "transparent": false,
+    "id": 4,
     "texture": {
         "TOP": [
             1,

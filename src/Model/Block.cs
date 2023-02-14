@@ -10,23 +10,22 @@ namespace MinecraftCloneSilk.Model
         public string name = "air";
         public bool airBlock = true;
         public bool transparent = true;
+        public int id;
         public TextureBlock textureBlock;
         public Texture fullTexture { get; private set; } 
 
-        public Block(Vector3D<int> position) : this(position, BlockFactory.AIR_BLOCK, true) { }
-
-        public Block(Vector3D<int> position, string name) : this(position, name, false){}
-        public Block(Vector3D<int> position, string name, bool transparent) : this(position, name, transparent, null){}
-
+        public Block(Vector3D<int> position) : this(position, BlockFactory.AIR_BLOCK, true, 0, null) { }
         
-        public Block(BlockJson blockJson) : this(Vector3D<int>.Zero, blockJson.name, blockJson.transparent, new TextureBlock(blockJson)) {}
+        
+        public Block(BlockJson blockJson) : this(Vector3D<int>.Zero, blockJson.name,  blockJson.transparent, blockJson.id, new TextureBlock(blockJson)) {}
 
-        public Block(Vector3D<int> position, string name, bool transparent, TextureBlock textureBlock)
+        public Block(Vector3D<int> position, string name, bool transparent,int id, TextureBlock textureBlock)
         {
-            airBlock = BlockFactory.AIR_BLOCK.Equals(name); 
+            airBlock = BlockFactory.AIR_BLOCK.Equals(name) || id == 0; 
             this.position = position;
             this.name = name;
             this.transparent = transparent;
+            this.id = id;
             this.textureBlock = textureBlock;
             this.fullTexture = (!airBlock) ? TextureManager.getInstance().textures[name + ".png"] : null;
         }
@@ -34,7 +33,7 @@ namespace MinecraftCloneSilk.Model
 
         public BlockData toBlockData()
         {
-            return new BlockData(name);
+            return new BlockData(id);
         }
         
         public override string ToString()
@@ -44,9 +43,7 @@ namespace MinecraftCloneSilk.Model
 
         public object Clone()
         {
-            Block block = new Block(position, this.name);
-            block.transparent = this.transparent;
-            block.airBlock = this.airBlock;
+            Block block = new Block(position, this.name, this.transparent, this.id, this.textureBlock);
             return block;
         }
     }
