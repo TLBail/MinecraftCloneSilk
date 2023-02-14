@@ -46,7 +46,7 @@ public class DebugRayManager : GameObject
 
 
         if (ImGui.Button("add ray around chunk")) {
-            foreach(Chunk chunk in world.getWorldChunks().Values)
+            foreach(Chunk chunk in world.getWorldChunks())
             {
                 chunk.debug();
             }
