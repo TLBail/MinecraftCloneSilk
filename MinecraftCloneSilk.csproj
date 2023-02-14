@@ -25,22 +25,33 @@
     <Compile Remove="UnitTest\**" />
     <Compile Remove="Benchmarker\**" />
     <Compile Remove="Benchmark\**" />
+    <Compile Remove="Worlds\**" />
+    <Compile Remove="Shader\**" />
+    <Compile Remove="Assets\**" />
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Remove="UnitTest\**" />
     <EmbeddedResource Remove="Benchmarker\**" />
     <EmbeddedResource Remove="Benchmark\**" />
+    <EmbeddedResource Remove="Worlds\**" />
+    <EmbeddedResource Remove="Shader\**" />
+    <EmbeddedResource Remove="Assets\**" />
   </ItemGroup>
 
   <ItemGroup>
     <None Remove="UnitTest\**" />
     <None Remove="Benchmarker\**" />
     <None Remove="Benchmark\**" />
+    <None Remove="Worlds\**" />
+    <None Remove="Shader\**" />
+    <None Remove="Assets\**" />
+    <None Remove=".gitattributes" />
+    <None Remove=".gitignore" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Worlds\newWorld" />
+    <_DeploymentManifestIconFile Remove="Assets\icons8_minecraft_logo.ico" />
   </ItemGroup>
 
 </Project>

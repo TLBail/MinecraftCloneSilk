@@ -45,23 +45,7 @@ public class WorldUI
     }
 
     private void chunkManager() {
-        if (ImGui.Button("reload Chunks")) {
-            world.chunkManager.clear();
-        }
-
-        if (ImGui.CollapsingHeader("chunks", ImGuiTreeNodeFlags.Bullet)) {
-            if (ImGui.BeginChild("chunksRegion", new Vector2(0, 300), false,
-                    ImGuiWindowFlags.HorizontalScrollbar)) {
-                ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(4, 1));
-                foreach (Chunk chunk in world.getWorldChunks()) {
-                    ImGui.Text("chunk " + chunk.position + " " + chunk.chunkState);
-                }
-
-                ImGui.PopStyleVar();
-            }
-
-            ImGui.EndChild();
-        }
+        world.chunkManager.toImGui();
     }
     
     

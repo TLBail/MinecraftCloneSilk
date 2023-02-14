@@ -1,6 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Immutable;
+using System.Numerics;
+using ImGuiNET;
 using MinecraftCloneSilk.GameComponent;
 using MinecraftCloneSilk.Model;
 using MinecraftCloneSilk.Model.NChunk;
@@ -73,6 +75,7 @@ public class ChunkManager : IChunkManager, IDisposable
             }
 
             foreach (Chunk chunk in chunksToUnloadCopy) {
+                chunk.save();
                 chunkPool.returnChunk(chunk);
             }
             
@@ -111,13 +114,15 @@ public class ChunkManager : IChunkManager, IDisposable
     
     public Chunk getChunk(Vector3D<int> position) {
         lock (chunksLock) {
-            if (chunks.ContainsKey(position)) {
-                return chunks[position];
-            }
-            Chunk chunk = new Chunk(position, this, worldGenerator);
-            chunks.Add(position, chunk);
+            Chunk chunk = chunks.TryGetValue(position, out Chunk value) ? value : askForNewChunk(position);
             return chunk;
         }
+    }
+
+    private Chunk askForNewChunk(Vector3D<int> position) {
+        Chunk chunk = chunkPool.get(position);
+        chunks.Add(position, chunk);
+        return chunk;
     }
 
 
@@ -147,17 +152,9 @@ public class ChunkManager : IChunkManager, IDisposable
             }
             addChunksToLoad(chunkNotContainInChunks);
             
-            /*
+            
             IEnumerable<Vector3D<int>> chunksToDeletePosition = chunks.Keys.Except(chunkRelevant);
-            foreach (var chunkToDeletePosition in chunksToDeletePosition) removeChunk(chunks[chunkToDeletePosition]);
-
-            foreach (Vector3D<int> position  in chunkRelevant) {
-                Chunk chunk = chunks[position];
-                if (chunk.chunkState < ChunkState.DRAWABLE) { 
-                    chunksToLoad.Add(new ChunkLoadingTask(chunk, ChunkState.DRAWABLE));
-                }
-            } 
-            */  
+            foreach (var chunkToDeletePosition in chunksToDeletePosition) tryToUnloadChunk(chunkToDeletePosition);
         }
     }
 
@@ -217,7 +214,7 @@ public class ChunkManager : IChunkManager, IDisposable
     }
 
     private void forceUnloadChunk(Chunk chunkToUnload) {
-        lock (chunksToUnload) {
+        lock (chunksToUnloadLock) {
             chunks.Remove(chunkToUnload.position);
             chunkToUnload.Dispose();
             chunksToUnload.Add(chunkToUnload);
@@ -243,6 +240,27 @@ public class ChunkManager : IChunkManager, IDisposable
             chunkState = chunk.getMinimumChunkStateOfNeighbors();
         
         return chunkState;
+    }
+
+    public void toImGui() {
+        ImGui.Text("number of chunks " + chunks.Count);
+        ImGui.Text("number of chunks in pool " + chunkPool.count());
+        if (ImGui.Button("reload Chunks")) {
+            clear();
+        }
+
+        if (ImGui.CollapsingHeader("chunks", ImGuiTreeNodeFlags.Bullet)) {
+            if (ImGui.BeginChild("chunksRegion", new Vector2(0, 300), false,
+                    ImGuiWindowFlags.HorizontalScrollbar)) {
+                ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(4, 1));
+                foreach (Chunk chunk in getChunksList()) {
+                    ImGui.Text("chunk " + chunk.position + " " + chunk.chunkState);
+                }
+                ImGui.PopStyleVar();
+            }
+
+            ImGui.EndChild();
+        }
     }
 
     public void Dispose() {
