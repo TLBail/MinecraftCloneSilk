@@ -1,4 +1,5 @@
-﻿using MinecraftCloneSilk.Core;
+﻿using System.IO.Compression;
+using MinecraftCloneSilk.Core;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL;
 
@@ -114,12 +115,11 @@ public abstract class ChunkStrategy
     public virtual void init(){}
 
     protected const string PATHTOWORLDSAVE = "./Worlds/newWorld";
-
+    protected const CompressionLevel COMPRESSION_LEVEL = CompressionLevel.Fastest;
     protected string pathToChunk() =>  PATHTOWORLDSAVE + "/" + chunk.position.X + "  " + chunk.position.Y  + "  " + chunk.position.Z;
 
-    protected void saveBlockInMemory() {
+    internal virtual void saveBlockInMemory() {
         if(!chunk.blockModified) return;
-        Console.WriteLine("saving " + chunk.position);
         using Stream stream = File.Create(pathToChunk());
         for (int x = 0; x < Chunk.CHUNK_SIZE; x++) {
             for (int y = 0; y < Chunk.CHUNK_SIZE; y++) {

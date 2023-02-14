@@ -17,11 +17,12 @@ public class ChunkPool : IDisposable
         this.worldGenerator = worldGenerator;
     }
 
+    public int count() => chunkPool.Count;
     public Chunk get(Vector3D<int> position) {
       Chunk chunk = chunkPool.TryTake(out Chunk result) ? result : buildChunk(position);
       chunk.reset(position, chunkManager, worldGenerator);
       return chunk;
-    } 
+    }
 
     public void returnChunk(Chunk chunk) => chunkPool.Add(chunk);
     

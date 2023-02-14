@@ -21,7 +21,7 @@ public enum WorldMode
 public class World : GameObject
 {
     private Player player;
-    private const int RADIUS = 6;
+    private const int RADIUS = 12;
     private readonly WorldUI worldUi;
     public WorldNaturalGeneration worldNaturalGeneration;
     public WorldMode worldMode { get; set; }
