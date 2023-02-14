@@ -31,6 +31,7 @@ public class ChunkBlockGeneratedStrategy : ChunkStrategy
                 chunk.chunkStrategy = this;
             }
             updateNeighboorChunkState(ChunkState.Generatedterrain);
+            chunk.blockModified = true;
         }
         chunk.chunkState = ChunkState.BLOCKGENERATED;
     }

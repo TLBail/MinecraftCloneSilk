@@ -22,18 +22,22 @@ public class Chunk : IDisposable
     internal List<DebugRay> debugRays = new List<DebugRay>();
     internal bool debugMode = false;
 
-    internal static BlockFactory blockFactory;
-
     internal Chunk?[] chunksNeighbors = new Chunk[6];
     internal object chunksNeighborsLock = new object();
     
     public ChunkState chunkState { get; internal set; }
     public const ChunkState DEFAULTSTARTINGCHUNKSTATE = ChunkState.EMPTY;
+    
     internal ChunkStrategy chunkStrategy;
     internal object chunkStrategyLock = new object();
+    
     internal static Shader cubeShader;
-    internal GL Gl;
-    protected bool disposed = false;
+    internal static BlockFactory blockFactory;
+    internal static GL Gl;
+
+    private bool disposed = false;
+
+    internal bool blockModified = false;
 
     
     public Chunk(Vector3D<int> position, IChunkManager chunkManager, WorldGenerator worldGenerator) {
@@ -44,12 +48,14 @@ public class Chunk : IDisposable
         this.position = position;
         if(blockFactory == null) blockFactory = BlockFactory.getInstance();
         blocks = new BlockData[CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE];
-        Gl = Game.getInstance().getGL();
-        if(Gl != null) initStaticMembers();
+        initStaticMembers();
     }
     
     private void initStaticMembers()
     {
+        if(Gl != null) return;
+        Gl = Game.getInstance().getGL();
+
         if (cubeShader == null) {
             cubeShader = new Shader(Gl, "./Shader/3dPosOneTextUni/VertexShader.hlsl",
                 "./Shader/3dPosOneTextUni/FragmentShader.hlsl");
@@ -108,7 +114,11 @@ public class Chunk : IDisposable
     public ChunkState getMinimumChunkStateOfNeighbors() => chunkStrategy.minimumChunkStateOfNeighbors();
     public Block getBlock(Vector3D<int> blockPosition) => getBlock(blockPosition.X, blockPosition.Y, blockPosition.Z);
     public Block getBlock(int x, int y, int z) => chunkStrategy.getBlock(x, y, z);
-    public void setBlock(int x, int y, int z, string name) => chunkStrategy.setBlock(x, y, z, name);
+    public void setBlock(int x, int y, int z, string name) {
+        blockModified = true;
+        chunkStrategy.setBlock(x, y, z, name);
+    }
+
     public void updateChunkVertex() => chunkStrategy.updateChunkVertex();
     public void debug(bool? setDebug = null) => chunkStrategy.debug(setDebug);
     public void Update(double deltaTime) => chunkStrategy.update(deltaTime);
@@ -122,6 +132,7 @@ public class Chunk : IDisposable
         chunkState = DEFAULTSTARTINGCHUNKSTATE;
         this.chunkStrategy = new ChunkEmptyStrategy(this);
         disposed = false;
+        blockModified = false;
         for (int x = 0; x < CHUNK_SIZE; x++) {
             for (int y = 0; y < CHUNK_SIZE; y++) {
                 for (int z = 0; z < CHUNK_SIZE; z++) {

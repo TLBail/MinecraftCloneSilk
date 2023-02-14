@@ -118,6 +118,7 @@ public abstract class ChunkStrategy
     protected string pathToChunk() =>  PATHTOWORLDSAVE + "/" + chunk.position.X + "  " + chunk.position.Y  + "  " + chunk.position.Z;
 
     protected void saveBlockInMemory() {
+        if(!chunk.blockModified) return;
         Console.WriteLine("saving " + chunk.position);
         using Stream stream = File.Create(pathToChunk());
         for (int x = 0; x < Chunk.CHUNK_SIZE; x++) {

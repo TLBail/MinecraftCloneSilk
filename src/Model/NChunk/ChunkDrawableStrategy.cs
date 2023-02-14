@@ -113,8 +113,8 @@ public class ChunkDrawableStrategy : ChunkStrategy
         const int nbVertexPerFace = 6;
         int nbVertexMax = (int)(nbVertexPerFace * nbFacePerBlock * Chunk.CHUNK_SIZE * Chunk.CHUNK_SIZE *
                                 Chunk.CHUNK_SIZE);
-        Vbo = new BufferObject<CubeVertex>(chunk.Gl, nbVertexMax, BufferTargetARB.ArrayBuffer);
-        Vao = new VertexArrayObject<CubeVertex, uint>(chunk.Gl, Vbo);
+        Vbo = new BufferObject<CubeVertex>(Chunk.Gl, nbVertexMax, BufferTargetARB.ArrayBuffer);
+        Vao = new VertexArrayObject<CubeVertex, uint>(Chunk.Gl, Vbo);
 
         Vao.Bind();
         Vao.VertexAttributePointer(0, 3, VertexAttribPointerType.Float, "position");
