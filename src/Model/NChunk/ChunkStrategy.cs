@@ -113,6 +113,23 @@ public abstract class ChunkStrategy
     
     public virtual void init(){}
 
+    protected const string PATHTOWORLDSAVE = "./Worlds/newWorld";
+
+    protected string pathToChunk() =>  PATHTOWORLDSAVE + "/" + chunk.position.X + "  " + chunk.position.Y  + "  " + chunk.position.Z;
+
+    protected void saveBlockInMemory() {
+        Console.WriteLine("saving " + chunk.position);
+        using Stream stream = File.Create(pathToChunk());
+        for (int x = 0; x < Chunk.CHUNK_SIZE; x++) {
+            for (int y = 0; y < Chunk.CHUNK_SIZE; y++) {
+                for (int z = 0; z < Chunk.CHUNK_SIZE; z++) {
+                    BlockData blockData = chunk.blocks[x, y, z];
+                    stream.Write(blockData.tobyte());
+                }
+            }
+        }
+    }
+
 
     public virtual ChunkState minimumChunkStateOfNeighbors() => ChunkState.EMPTY;
 }

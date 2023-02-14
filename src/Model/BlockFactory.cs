@@ -15,9 +15,12 @@ public class BlockFactory
 
     private List<int> transparentBlockId = new List<int>();
 
-    private Dictionary<int, string> blockIdToNameDictionnary;
-    public string getBlockNameById(int id) => blockIdToNameDictionnary[id];
+    public string getBlockNameById(int id) => blocks.TryGetValue(id, out Block value) ? value.name : null;
 
+    private Dictionary<string, Block> blockNameToBlockDictionary = new Dictionary<string, Block>();
+
+    public int getBlockIdByName(string name) =>
+        blockNameToBlockDictionary.TryGetValue(name, out Block value) ? value.id : 0;
 
     public ReadOnlyDictionary<int, Block> blocksReadOnly => new ReadOnlyDictionary<int, Block>(blocks);
 
@@ -35,15 +38,13 @@ public class BlockFactory
     
 
     public const string  AIR_BLOCK = "airblock";
-    public readonly int AIR_BLOCK_ID;
+    public const  int AIR_BLOCK_ID = 0;
     private const string PATH_TO_JSON = "./Assets/blocks/json/";
 
     
     private BlockFactory() {
-        AIR_BLOCK_ID = AIR_BLOCK.GetHashCode();
-        blockIdToNameDictionnary = new Dictionary<int, string>();
         string[] files = Directory.GetFiles(PATH_TO_JSON);
-        addBlock(new Block(Vector3D<int>.Zero, AIR_BLOCK, true));
+        addBlock(new Block(Vector3D<int>.Zero));
         foreach(string filepath in files)
         {
             string jsonString = File.ReadAllText(filepath);
@@ -70,8 +71,8 @@ public class BlockFactory
 
     public BlockData buildData(string name)
     {
-        if (blocks.ContainsKey(name.GetHashCode())) {
-            return blocks[name.GetHashCode()].toBlockData();
+        if (blockNameToBlockDictionary.ContainsKey(name)) {
+            return blockNameToBlockDictionary[name].toBlockData();
         }
         return blocks[AIR_BLOCK_ID].toBlockData();
     }
@@ -92,10 +93,10 @@ public class BlockFactory
 
     private void addBlock(Block block)
     {
-        blocks.Add(block.name.GetHashCode(), block);
-        blockIdToNameDictionnary.Add(block.name.GetHashCode(), block.name);
+        blocks.Add(block.id, block);
+        blockNameToBlockDictionary.Add(block.name, block);
         if (block.transparent) {
-            transparentBlockId.Add(block.name.GetHashCode());
+            transparentBlockId.Add(block.id);
         }
     }
 }

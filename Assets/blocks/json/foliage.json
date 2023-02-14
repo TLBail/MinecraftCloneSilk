@@ -1,6 +1,7 @@
 {
     "name": "foliage",
     "transparent": true,
+    "id": 18,
     "texture": {
         "TOP": [
             3,
