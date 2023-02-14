@@ -100,16 +100,11 @@ public class ChunkManager : IChunkManager, IDisposable
     
     public void clear() {
         lock (chunksLock) {
+            
             List<Chunk> chunksCopy = new List<Chunk>(chunks.Values);
             List<Chunk> chunkRemaining = new List<Chunk>();
             foreach (Chunk chunk in chunksCopy) {
-                if (!tryToUnloadChunk(chunk.position)) {
-                    chunkRemaining.Add(chunk);
-                }
-            }
-
-            foreach (Chunk chunk in chunkRemaining) {
-                tryToUnloadChunk(chunk.position);
+                forceUnloadChunk(chunk);
             }
         }
     }
@@ -197,6 +192,15 @@ public class ChunkManager : IChunkManager, IDisposable
             }   
         }
         return false;
+    }
+
+    private void forceUnloadChunk(Chunk chunkToUnload) {
+        lock (chunksToUnload) {
+            chunks.Remove(chunkToUnload.position);
+            chunkToUnload.Dispose();
+            chunksToUnload.Add(chunkToUnload);
+            if (semaphore.CurrentCount <= 0) semaphore.Release();
+        }
     }
 
 
