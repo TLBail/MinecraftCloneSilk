@@ -82,7 +82,6 @@ public class World : GameObject
             case WorldMode.EMPTY:
                 if (chunkManager.count() > 0) {
                     chunkManager.clear();
-                    GC.Collect();
                 }
 
                 break;
@@ -98,8 +97,8 @@ public class World : GameObject
         }
     }
 
-    public ImmutableDictionary<Vector3D<int>, Chunk> getWorldChunks() {
-        return chunkManager.getImmutableDictionary();
+    public List<Chunk> getWorldChunks() {
+        return chunkManager.getChunksList();
     }
 
     public bool containChunkKey(Vector3D<int> key) {
