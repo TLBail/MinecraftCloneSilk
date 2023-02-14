@@ -171,15 +171,12 @@ public class ChunkManager : IChunkManager, IDisposable
             }   
         }
         if(chunkToUnload == null) return false;
-        Console.WriteLine("remove " + position);
         ChunkState minimumChunkState = getMinimumChunkStateOfChunk(position);
-        Console.WriteLine("minimum chunk state " + minimumChunkState.ToString());
         if (minimumChunkState == ChunkState.EMPTY) {
             chunks.Remove(position);
             chunkToUnload.Dispose();
             chunksToUnload.Add(chunkToUnload);
             if (semaphore.CurrentCount <= 0) semaphore.Release();
-            Console.WriteLine("chunk deleted");
             return true;
         } else if(chunkToUnload.chunkState == ChunkState.DRAWABLE) {
             chunkToUnload.setWantedChunkState(minimumChunkState);

@@ -146,14 +146,16 @@ public class World : GameObject
         Console console = (Console)game.gameObjects[typeof(Console).FullName];
         console.addCommand("/addChunk", (commandParams) =>
         {
-            Vector3D<int> newPosition;
             try {
                 if (commandParams.Length >= 3) {
-                    newPosition.X = int.Parse(commandParams[0]);
-                    newPosition.Y = int.Parse(commandParams[1]);
-                    newPosition.Z = int.Parse(commandParams[2]);
+                    Vector3D<int> newPosition = new Vector3D<int>(
+                        int.Parse(commandParams[0]),
+                        int.Parse(commandParams[1]),
+                        int.Parse(commandParams[2])
+                    );
                     chunkManager.addChunkToLoad(newPosition);
-
+                    console.log("chunk at " + newPosition + " added succefuly"
+                    );
                 }
             }
             catch (Exception e) {
@@ -203,6 +205,7 @@ public class World : GameObject
         Vector3D<int>[] postions =
         {
             Vector3D<int>.Zero,
+            /*
             new Vector3D<int>(0, 0, (int)Chunk.CHUNK_SIZE),
             new Vector3D<int>(0, 0, -(int)Chunk.CHUNK_SIZE),
 
@@ -212,7 +215,7 @@ public class World : GameObject
             new Vector3D<int>(-(int)Chunk.CHUNK_SIZE, 0, 0),
             new Vector3D<int>(-(int)Chunk.CHUNK_SIZE, 0, (int)Chunk.CHUNK_SIZE),
             new Vector3D<int>(-(int)Chunk.CHUNK_SIZE, 0, -(int)Chunk.CHUNK_SIZE)
-
+            */
         };
         foreach (var position in postions) {
             chunkManager.addChunkToLoad(position);
