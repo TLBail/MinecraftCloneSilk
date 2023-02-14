@@ -19,7 +19,7 @@ public class ChunkTerrainGeneratedStrategy : ChunkStrategy
     
     public override void setBlock(int x, int y, int z, string name) {
         lock (chunk.blocksLock) {
-            chunk.blocks[x, y, z].id = name.GetHashCode();
+            chunk.blocks[x, y, z].id = Chunk.blockFactory.getBlockIdByName(name);
         }
     }
     

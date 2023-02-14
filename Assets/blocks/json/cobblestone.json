@@ -1,6 +1,7 @@
 {
     "name": "cobblestone",
     "transparent": false,
+    "id": 14,
     "texture": {
         "TOP": [
             2,

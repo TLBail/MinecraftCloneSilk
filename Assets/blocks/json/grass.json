@@ -1,6 +1,7 @@
 {
     "name": "grass",
     "transparent": false,
+    "id": 3,
     "texture": {
         "TOP": [
             0,

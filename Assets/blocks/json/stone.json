@@ -1,6 +1,7 @@
 {
     "name": "stone",
     "transparent": false,
+    "id": 7,
     "texture": {
         "TOP": [
             1,

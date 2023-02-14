@@ -1,16 +1,17 @@
-﻿using MinecraftCloneSilk.Core;
+﻿using System.Runtime.Serialization;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.Xml;
+using MinecraftCloneSilk.Core;
 using Silk.NET.Maths;
-
 namespace MinecraftCloneSilk.Model.NChunk;
 
 public class ChunkBlockGeneratedStrategy : ChunkStrategy
 {
-    private const string PATHTOWORLDSAVE = "./Worlds/newWorld";
     
     public override ChunkState getChunkStateOfStrategy() => ChunkState.BLOCKGENERATED;
     public override void setBlock(int x, int y, int z, string name) {
         lock (chunk.blocksLock) {
-            chunk.blocks[x, y, z].id = name.GetHashCode();
+            chunk.blocks[x, y, z].id = Chunk.blockFactory.getBlockIdByName(name);
         }
     }
 
@@ -22,20 +23,18 @@ public class ChunkBlockGeneratedStrategy : ChunkStrategy
         //if yes load it
         // if not check if chunk is in generated terrain and generate if not
         if (isChunkExistInMemory()) {
-            Console.WriteLine("exist " + chunk.position);
             loadBlocks();
+        } else {
+            if (chunk.chunkState != ChunkState.Generatedterrain) {
+                chunk.chunkStrategy = new ChunkTerrainGeneratedStrategy(chunk);
+                chunk.chunkStrategy.init();
+                chunk.chunkStrategy = this;
+            }
+            updateNeighboorChunkState(ChunkState.Generatedterrain);
         }
-        
-        if (chunk.chunkState != ChunkState.Generatedterrain) {
-            chunk.chunkStrategy = new ChunkTerrainGeneratedStrategy(chunk);
-            chunk.chunkStrategy.init();
-            chunk.chunkStrategy = this;
-        }
-        updateNeighboorChunkState(ChunkState.Generatedterrain);
         chunk.chunkState = ChunkState.BLOCKGENERATED;
     }
 
-    private string pathToChunk() =>  PATHTOWORLDSAVE + "/" + chunk.position.X + "  " + chunk.position.Y  + "  " + chunk.position.Z;
     private bool isChunkExistInMemory() {
         return Directory.Exists(PATHTOWORLDSAVE) && File.Exists(pathToChunk());
     }
@@ -92,10 +91,27 @@ public class ChunkBlockGeneratedStrategy : ChunkStrategy
         }
     }
 
-    
-    private void loadBlocks() {
-        
-    }
+     public override void Dispose() {
+         saveBlockInMemory();
+     }
+
+     
+ 
+
+     private void loadBlocks() {
+        Console.WriteLine("loading " + chunk.position);
+        byte[] bytes = File.ReadAllBytes(pathToChunk());
+        ReadOnlySpan<byte> span = new ReadOnlySpan<byte>(bytes);
+        int sizeofSerializeData = BlockData.sizeofSerializeData();
+        for (int x = 0; x < Chunk.CHUNK_SIZE; x++) {
+            for (int y = 0; y < Chunk.CHUNK_SIZE; y++) {
+                for (int z = 0; z < Chunk.CHUNK_SIZE; z++) {
+                    chunk.blocks[x, y, z] = new BlockData(span.Slice(0, sizeofSerializeData));
+                    span = span.Slice(sizeofSerializeData);
+                }
+            }
+        }
+     }
 
     
 }
