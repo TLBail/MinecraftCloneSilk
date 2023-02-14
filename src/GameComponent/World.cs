@@ -27,6 +27,8 @@ public class World : GameObject
     public WorldMode worldMode { get; set; }
     public ChunkManager chunkManager;
 
+    private Vector3D<int> lastPlayerChunkPosition = new Vector3D<int>(-1);
+
     public World(Game game, WorldMode worldMode = WorldMode.EMPTY) : base(game) {
         game.drawables += Draw;
         this.worldMode = worldMode;
@@ -183,9 +185,11 @@ public class World : GameObject
     }
 
     private void createChunkAroundPlayer() {
-        var chunkRelevant = new List<Vector3D<int>>();
         var centerChunk =
             getChunkPosition(new Vector3D<int>((int)player.position.X, (int)player.position.Y, (int)player.position.Z));
+        if(lastPlayerChunkPosition == centerChunk) return;
+        lastPlayerChunkPosition = centerChunk;
+        var chunkRelevant = new List<Vector3D<int>>();
         var rootChunk = centerChunk + new Vector3D<int>((int)(-RADIUS * Chunk.CHUNK_SIZE));
         for (var x = 0; x < 2 * RADIUS; x++)
         for (var y = 0; y < 2 * RADIUS; y++)
