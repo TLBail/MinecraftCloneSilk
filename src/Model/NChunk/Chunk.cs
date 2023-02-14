@@ -143,6 +143,8 @@ public class Chunk : IDisposable
             }
         }
     }
+
+    public void save() => chunkStrategy.saveBlockInMemory();
     
     public void Dispose() {
         Dispose(true);  
