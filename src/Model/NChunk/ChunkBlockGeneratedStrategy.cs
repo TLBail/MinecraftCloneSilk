@@ -23,7 +23,11 @@ public class ChunkBlockGeneratedStrategy : ChunkStrategy
         //if yes load it
         // if not check if chunk is in generated terrain and generate if not
         if (isChunkExistInMemory()) {
-            loadBlocks();
+            if (!loadBlocks()) {
+                File.Delete(pathToChunk());
+                init();
+                return;
+            }
         } else {
             if (chunk.chunkState != ChunkState.Generatedterrain) {
                 chunk.chunkStrategy = new ChunkTerrainGeneratedStrategy(chunk);
@@ -92,18 +96,12 @@ public class ChunkBlockGeneratedStrategy : ChunkStrategy
         }
     }
 
-     public override void Dispose() {
-         saveBlockInMemory();
-     }
-
-     
- 
-
-     private void loadBlocks() {
-        Console.WriteLine("loading " + chunk.position);
+     private bool loadBlocks() {
         byte[] bytes = File.ReadAllBytes(pathToChunk());
+        const int sizeofSerializeData = BlockData.sizeofSerializeData;
+        const int expectedArrayLength = 16 * 16 * 16 * sizeofSerializeData;
+        if (expectedArrayLength != bytes.Length) return false;
         ReadOnlySpan<byte> span = new ReadOnlySpan<byte>(bytes);
-        int sizeofSerializeData = BlockData.sizeofSerializeData();
         for (int x = 0; x < Chunk.CHUNK_SIZE; x++) {
             for (int y = 0; y < Chunk.CHUNK_SIZE; y++) {
                 for (int z = 0; z < Chunk.CHUNK_SIZE; z++) {
@@ -112,6 +110,7 @@ public class ChunkBlockGeneratedStrategy : ChunkStrategy
                 }
             }
         }
+        return true;
      }
 
     

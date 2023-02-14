@@ -5,7 +5,7 @@ public struct BlockData
     public int id; //block id
 
     public BlockData(ReadOnlySpan<byte> buffer) {
-        this.id = BitConverter.ToInt32(buffer);
+        this.id = BitConverter.ToInt16(buffer);
     }
     
     public BlockData(int id)
@@ -14,10 +14,10 @@ public struct BlockData
     }
 
     public ReadOnlySpan<byte> tobyte() {
-        return BitConverter.GetBytes(id);
+        return BitConverter.GetBytes((short)id);
     }
 
-    public static int sizeofSerializeData() => 4;
+    public const int sizeofSerializeData = 2;
 
 
 }
