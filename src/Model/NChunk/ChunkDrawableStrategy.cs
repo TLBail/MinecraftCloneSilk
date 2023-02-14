@@ -284,7 +284,6 @@ public class ChunkDrawableStrategy : ChunkStrategy
         Vbo?.Dispose();
         chunk.chunkManager.removeChunkToUpdate(chunk);
         chunk.chunkManager.removeChunkToDraw(chunk);
-        chunk.chunksNeighbors = null;
         saveBlockInMemory();
     }
 }

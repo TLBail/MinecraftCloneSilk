@@ -2,6 +2,7 @@
 using ImGuiNET;
 using MinecraftCloneSilk.GameComponent;
 using MinecraftCloneSilk.Model;
+using MinecraftCloneSilk.Model.NChunk;
 using Silk.NET.Input;
 using Silk.NET.Maths;
 
@@ -34,8 +35,37 @@ public class WorldUI
     private string previousWorldMode;
     private static WorldNaturalGeneration.GenerationParameter parameter;
     
-    public void drawUi()
-    {
+    public void drawUi() {
+        blockManagementUi();
+        ImGui.Separator();
+        worldGenerationUi();
+        ImGui.Separator();
+        chunkManager();
+        
+    }
+
+    private void chunkManager() {
+        if (ImGui.Button("reload Chunks")) {
+            world.chunkManager.clear();
+        }
+
+        if (ImGui.CollapsingHeader("chunks", ImGuiTreeNodeFlags.Bullet)) {
+            if (ImGui.BeginChild("chunksRegion", new Vector2(0, 300), false,
+                    ImGuiWindowFlags.HorizontalScrollbar)) {
+                ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(4, 1));
+                foreach (Chunk chunk in world.getWorldChunks()) {
+                    ImGui.Text("chunk " + chunk.position + " " + chunk.chunkState);
+                }
+
+                ImGui.PopStyleVar();
+            }
+
+            ImGui.EndChild();
+        }
+    }
+    
+    
+    private void blockManagementUi() {
         ImGui.Text("add block");
 
         if(ImGui.BeginCombo("blockname",newBlockName )) {
@@ -71,33 +101,24 @@ public class WorldUI
             }
             ImGui.EndCombo();
         }
-        
-        ImGui.Separator();
-        ImGui.Text("World generation");
-        
-        if (previousWorldMode != worldMode) {
-            world.setWorldMode(Enum.Parse<WorldMode>(worldMode));
-            previousWorldMode = worldMode;
-        }
-        
-        ImGui.InputInt("seed", ref WorldNaturalGeneration.seed);
-        ImGui.Separator();
-        for (int i = 0; i < WorldNaturalGeneration.generationParameters.Count; i++) {
-            parameter = WorldNaturalGeneration.generationParameters[i];
-            ImGui.InputFloat("freq" + i, ref parameter.freq);
-            ImGui.InputFloat("amp"+ i, ref parameter.amp);
-            ImGui.Separator();
-            WorldNaturalGeneration.generationParameters[i] = parameter;
-        }
+    }
 
+    private void worldGenerationUi() {
+        if (ImGui.CollapsingHeader("World generation", ImGuiTreeNodeFlags.Bullet) ){
         
+            if (previousWorldMode != worldMode) {
+                world.setWorldMode(Enum.Parse<WorldMode>(worldMode));
+                previousWorldMode = worldMode;
+            }
         
-        if (ImGui.Button("reload Chunks")) {
-            world.setWorldMode(WorldMode.EMPTY);
-            world.setWorldMode(WorldMode.DYNAMIC);
+            ImGui.InputInt("seed", ref WorldNaturalGeneration.seed);
+            for (int i = 0; i < WorldNaturalGeneration.generationParameters.Count; i++) {
+                parameter = WorldNaturalGeneration.generationParameters[i];
+                ImGui.InputFloat("freq" + i, ref parameter.freq);
+                ImGui.InputFloat("amp"+ i, ref parameter.amp);
+                ImGui.Separator();
+                WorldNaturalGeneration.generationParameters[i] = parameter;
+            }
         }
-        
-        
-        
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Immutable;
+using MinecraftCloneSilk.GameComponent;
 using MinecraftCloneSilk.Model;
 using MinecraftCloneSilk.Model.NChunk;
 using Silk.NET.Maths;
@@ -94,11 +95,23 @@ public class ChunkManager : IChunkManager, IDisposable
     }
 
     public int count() => chunks.Count;
-    public ImmutableDictionary<Vector3D<int>,Chunk> getImmutableDictionary() => chunks.ToImmutableDictionary();
+    public List<Chunk> getChunksList() => new List<Chunk>(chunks.Values);
     public bool ContainsKey(Vector3D<int> position) => chunks.ContainsKey(position);
     
     public void clear() {
-        lock (chunksLock) chunks.Clear();
+        lock (chunksLock) {
+            List<Chunk> chunksCopy = new List<Chunk>(chunks.Values);
+            List<Chunk> chunkRemaining = new List<Chunk>();
+            foreach (Chunk chunk in chunksCopy) {
+                if (!tryToUnloadChunk(chunk.position)) {
+                    chunkRemaining.Add(chunk);
+                }
+            }
+
+            foreach (Chunk chunk in chunkRemaining) {
+                tryToUnloadChunk(chunk.position);
+            }
+        }
     }
     
     public Chunk getChunk(Vector3D<int> position) {
@@ -149,6 +162,7 @@ public class ChunkManager : IChunkManager, IDisposable
     }
 
     public void addChunkToLoad(Vector3D<int> position) {
+        position = World.getChunkPosition(position);
         lock (chunksToLoadLock) {
             Chunk chunk;
             if (chunks.TryGetValue(position, out Chunk existingChunk)) {
@@ -168,19 +182,19 @@ public class ChunkManager : IChunkManager, IDisposable
         lock (chunksToUnloadLock) {
             if (chunks.ContainsKey(position)) {
                 chunkToUnload = chunks[position];
+                if(chunkToUnload == null) return false;
+                ChunkState minimumChunkState = getMinimumChunkStateOfChunk(position);
+                if (minimumChunkState == ChunkState.EMPTY) {
+                    chunks.Remove(position);
+                    chunkToUnload.Dispose();
+                    chunksToUnload.Add(chunkToUnload);
+                    if (semaphore.CurrentCount <= 0) semaphore.Release();
+                    return true;
+                } else if(chunkToUnload.chunkState == ChunkState.DRAWABLE) {
+                    chunkToUnload.setWantedChunkState(minimumChunkState);
+                    return true;
+                }
             }   
-        }
-        if(chunkToUnload == null) return false;
-        ChunkState minimumChunkState = getMinimumChunkStateOfChunk(position);
-        if (minimumChunkState == ChunkState.EMPTY) {
-            chunks.Remove(position);
-            chunkToUnload.Dispose();
-            chunksToUnload.Add(chunkToUnload);
-            if (semaphore.CurrentCount <= 0) semaphore.Release();
-            return true;
-        } else if(chunkToUnload.chunkState == ChunkState.DRAWABLE) {
-            chunkToUnload.setWantedChunkState(minimumChunkState);
-            return true;
         }
         return false;
     }

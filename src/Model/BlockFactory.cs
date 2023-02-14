@@ -15,7 +15,7 @@ public class BlockFactory
 
     private List<int> transparentBlockId = new List<int>();
 
-    public string getBlockNameById(int id) => blocks.TryGetValue(id, out Block value) ? value.name : null;
+    public string getBlockNameById(int id) => blocks.TryGetValue(id, out Block value) ? value.name : AIR_BLOCK;
 
     private Dictionary<string, Block> blockNameToBlockDictionary = new Dictionary<string, Block>();
 

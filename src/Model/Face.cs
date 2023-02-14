@@ -94,26 +94,7 @@ namespace MinecraftCloneSilk.Model
 				default:
 					return Vector3D<int>.Zero;
 			}
-		} 
-		public static Vector3D<int> getOffsetOfFace(FaceFlag face)
-		{
-			switch (face) {
-				case FaceFlag.TOP:
-					return new Vector3D<int>(0, 1, 0);
-				case FaceFlag.BOTTOM:
-					return new Vector3D<int>(0, -1, 0);
-				case FaceFlag.LEFT:
-					return new Vector3D<int>(-1, 0, 0);
-				case FaceFlag.RIGHT:
-					return new Vector3D<int>(1, 0, 0);
-				case FaceFlag.FRONT:
-					return new Vector3D<int>(0, 0, 1);
-				case FaceFlag.BACK:
-					return new Vector3D<int>(0, 0, -1);
-				default:
-					return Vector3D<int>.Zero;
-			}
-		} 
+		}
 	}
 	
 	
