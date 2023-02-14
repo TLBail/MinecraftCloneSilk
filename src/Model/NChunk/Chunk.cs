@@ -39,6 +39,7 @@ public class Chunk : IDisposable
 
     internal bool blockModified = false;
 
+    public bool loadedInChunkManagerThread = false;
     
     public Chunk(Vector3D<int> position, IChunkManager chunkManager, WorldGenerator worldGenerator) {
         this.chunkState = DEFAULTSTARTINGCHUNKSTATE;
@@ -133,6 +134,7 @@ public class Chunk : IDisposable
         this.chunkStrategy = new ChunkEmptyStrategy(this);
         disposed = false;
         blockModified = false;
+        loadedInChunkManagerThread = false;
         for (int x = 0; x < CHUNK_SIZE; x++) {
             for (int y = 0; y < CHUNK_SIZE; y++) {
                 for (int z = 0; z < CHUNK_SIZE; z++) {
