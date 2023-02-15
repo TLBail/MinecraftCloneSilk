@@ -21,7 +21,10 @@ public class ItemBarUi : UiWindow
     
     public ItemBarUi(Game game) : base(game, null) {
         mouse = game.getMouse();
+        needMouse = false;
     }
+    
+    
 
     protected override void start() {
         var dic = BlockFactory.getInstance().blocksReadOnly;
