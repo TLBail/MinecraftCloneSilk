@@ -28,7 +28,7 @@ public abstract class UiWindow : GameObject
         }
     }
 
-    private void setVisible(IKeyboard keyboard, Key key, int a) {
+    protected virtual void setVisible(IKeyboard keyboard, Key key, int a) {
         if (key == this.key) visible = !visible;
     }
 
