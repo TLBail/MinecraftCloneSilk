@@ -1,7 +1,9 @@
 ﻿using System.Numerics;
 using ImGuiNET;
+using MinecraftCloneSilk.Core;
 using MinecraftCloneSilk.GameComponent;
 using MinecraftCloneSilk.Model;
+using Silk.NET.GLFW;
 using Silk.NET.Input;
 
 namespace MinecraftCloneSilk.UI;
@@ -11,9 +13,14 @@ public class InventaireUi : UiWindow
     private Inventaire inventaire;
     private const string DNDCELL = "DND_CELL";
     private const ImGuiWindowFlags flags = ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoTitleBar;
-    
+    private OpenGl openGl;
     public InventaireUi(Game game) : base(game, Key.E) {
-        
+        this.openGl = game.openGl;
+    }
+
+    protected override void setVisible(IKeyboard keyboard, Key key, int a) {
+        base.setVisible(keyboard, key, a);
+        openGl.setCursorMode(visible ? CursorModeValue.CursorNormal : CursorModeValue.CursorDisabled);
     }
 
     protected override void start() {
