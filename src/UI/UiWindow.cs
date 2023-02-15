@@ -16,6 +16,7 @@ public abstract class UiWindow : GameObject
     private Key? key;
     protected bool visible;
     protected bool needMouse = true;
+    public static bool keyboardUseInConsole = false;
     
     public UiWindow(Game game, Key? key) : base(game) {
         this.key = key;
@@ -29,6 +30,7 @@ public abstract class UiWindow : GameObject
     }
 
     protected virtual void setVisible(IKeyboard keyboard, Key key, int a) {
+        if(keyboardUseInConsole) return;
         if (key == this.key) visible = !visible;
     }
 
