@@ -20,7 +20,7 @@ public class BlockFactory
     private Dictionary<string, Block> blockNameToBlockDictionary = new Dictionary<string, Block>();
 
     public int getBlockIdByName(string name) =>
-        blockNameToBlockDictionary.TryGetValue(name, out Block value) ? value.id : 0;
+        blockNameToBlockDictionary.TryGetValue(name, out Block value) ? value.blockData.id : 0;
 
     public ReadOnlyDictionary<int, Block> blocksReadOnly => new ReadOnlyDictionary<int, Block>(blocks);
 
@@ -69,12 +69,16 @@ public class BlockFactory
     }
 
 
-    public BlockData buildData(string name)
+    public BlockData getBlockData(string name)
     {
         if (blockNameToBlockDictionary.ContainsKey(name)) {
-            return blockNameToBlockDictionary[name].toBlockData();
+            return blockNameToBlockDictionary[name].getBlockData();
         }
-        return blocks[AIR_BLOCK_ID].toBlockData();
+        return blocks[AIR_BLOCK_ID].getBlockData();
+    }
+
+    public BlockData getBlockData(int id) {
+        return blocks.TryGetValue(id, out Block block) ? block.blockData : blocks[AIR_BLOCK_ID].blockData;
     }
 
 
@@ -93,10 +97,10 @@ public class BlockFactory
 
     private void addBlock(Block block)
     {
-        blocks.Add(block.id, block);
+        blocks.Add(block.blockData.id, block);
         blockNameToBlockDictionary.Add(block.name, block);
         if (block.transparent) {
-            transparentBlockId.Add(block.id);
+            transparentBlockId.Add(block.blockData.id);
         }
     }
 }
