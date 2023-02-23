@@ -10,7 +10,7 @@ namespace MinecraftCloneSilk.Model
         public string name = "air";
         public bool airBlock = true;
         public bool transparent = true;
-        public int id;
+        public BlockData blockData;
         public TextureBlock textureBlock;
         public Texture fullTexture { get; private set; } 
 
@@ -25,17 +25,14 @@ namespace MinecraftCloneSilk.Model
             this.position = position;
             this.name = name;
             this.transparent = transparent;
-            this.id = id;
+            blockData = new BlockData(id);
             this.textureBlock = textureBlock;
             this.fullTexture = (!airBlock) ? TextureManager.getInstance().textures[name + ".png"] : null;
         }
-        
 
-        public BlockData toBlockData()
-        {
-            return new BlockData(id);
-        }
-        
+
+        public BlockData getBlockData() => blockData;
+
         public override string ToString()
         {
             return "[" + position + "]" + " name : " + name;
@@ -43,7 +40,7 @@ namespace MinecraftCloneSilk.Model
 
         public object Clone()
         {
-            Block block = new Block(position, this.name, this.transparent, this.id, this.textureBlock);
+            Block block = new Block(position, this.name, this.transparent, blockData.id, this.textureBlock);
             return block;
         }
     }

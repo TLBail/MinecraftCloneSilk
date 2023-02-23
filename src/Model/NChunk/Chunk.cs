@@ -22,7 +22,7 @@ public class Chunk : IDisposable
     internal List<DebugRay> debugRays = new List<DebugRay>();
     internal bool debugMode = false;
 
-    internal Chunk?[] chunksNeighbors = new Chunk[6];
+    internal Chunk?[] chunksNeighbors;
     internal object chunksNeighborsLock = new object();
     
     public ChunkState chunkState { get; internal set; }
@@ -80,7 +80,7 @@ public class Chunk : IDisposable
                         chunkStrategy.init();
                     }
                     return;
-                case ChunkState.Generatedterrain:
+                case ChunkState.GENERATEDTERRAIN:
                     if (chunkStrategy is not ChunkTerrainGeneratedStrategy) {
                         chunkStrategy = new ChunkTerrainGeneratedStrategy(this);
                         chunkStrategy.init();

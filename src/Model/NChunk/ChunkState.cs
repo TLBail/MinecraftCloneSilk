@@ -3,7 +3,7 @@
 public enum ChunkState
 {
     EMPTY = 0,
-    Generatedterrain = 4,
+    GENERATEDTERRAIN = 4,
     BLOCKGENERATED = 8,
     DRAWABLE = 16
 }

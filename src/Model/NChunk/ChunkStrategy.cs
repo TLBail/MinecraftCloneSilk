@@ -38,6 +38,7 @@ public abstract class ChunkStrategy
             return chunk.blocks[localPosition.X, localPosition.Y, localPosition.Z];
         }
     }
+    
 
     public virtual void updateChunkVertex() {}
     
@@ -50,8 +51,20 @@ public abstract class ChunkStrategy
         var blockData = getBlockData(new Vector3D<int>(x, y, z));
         return Chunk.blockFactory.buildFromBlockData(new Vector3D<int>(x, y, z), blockData);
     }
-    protected void updateNeighboorChunkState(ChunkState chunkState) {
+    protected virtual void updateNeighboorChunkState(ChunkState chunkState) {
         lock (chunk.chunksNeighborsLock) {
+            if(chunk.chunksNeighbors == null) chunk.chunksNeighbors = new Chunk[6];
+            if (chunk.chunksNeighbors.Length != 6) {
+                chunk.chunksNeighbors = new Chunk?[]
+                {
+                    chunk.chunksNeighbors[0],
+                    chunk.chunksNeighbors[1],
+                    chunk.chunksNeighbors[2],
+                    chunk.chunksNeighbors[3],
+                    chunk.chunksNeighbors[4],
+                    chunk.chunksNeighbors[5]
+                };
+            }
             foreach (Face face in Enum.GetValues(typeof(Face))) {
                 Chunk newChunk = chunk.chunkManager.getChunk(chunk.position + (FaceOffset.getOffsetOfFace(face) * 16));
                 newChunk.setMinimumWantedChunkState(chunkState);

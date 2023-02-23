@@ -19,6 +19,7 @@ public class InventaireUi : UiWindow
     }
 
     protected override void setVisible(IKeyboard keyboard, Key key, int a) {
+        if(key != this.key) return;
         base.setVisible(keyboard, key, a);
         openGl.setCursorMode(visible ? CursorModeValue.CursorNormal : CursorModeValue.CursorDisabled);
     }
