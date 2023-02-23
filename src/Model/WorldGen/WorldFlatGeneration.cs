@@ -33,21 +33,21 @@ public class WorldFlatGeneration : WorldGenerator
                     int localY = (int)(globalY % Chunk.CHUNK_SIZE);
                     if (localY < 0)
                         localY = (int)(Chunk.CHUNK_SIZE + localY);
-                    blocks[(int)x,localY,(int)z] = blockFactory.buildData("grass");
+                    blocks[(int)x,localY,(int)z] = blockFactory.getBlockData("grass");
                     for (int g = localY - 1; g >= 0 && g >= localY - 4; g--)
                     {
-                        blocks[(int)x,g,(int)z] = blockFactory.buildData("stone");
+                        blocks[(int)x,g,(int)z] = blockFactory.getBlockData("stone");
                     }
                     for (int g = localY - 5; g >= 0; g--)
                     {
-                        blocks[(int)x,g,(int)z] = blockFactory.buildData("stone");
+                        blocks[(int)x,g,(int)z] = blockFactory.getBlockData("stone");
                     }
                 }
                 else if (globalY >= position.Y + Chunk.CHUNK_SIZE)
                 {
                     for (int y = 0; y < Chunk.CHUNK_SIZE; y++)
                     {
-                        blocks[j, y,i] = blockFactory.buildData("stone");
+                        blocks[j, y,i] = blockFactory.getBlockData("stone");
                     }
                 }
             }

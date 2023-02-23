@@ -25,7 +25,7 @@ public class ChunkTest
     public void testChunkLoadTerrain() {
         ChunkManagerEmpty chunkManagerEmpty = new ChunkManagerEmpty(new WorldFlatGeneration());
         Chunk chunk = chunkManagerEmpty.getChunk(Vector3D<int>.Zero);
-        chunk.setWantedChunkState(ChunkState.Generatedterrain);
+        chunk.setWantedChunkState(ChunkState.GENERATEDTERRAIN);
         Block block = chunk.getBlock(Vector3D<int>.Zero);
         Assert.IsNotNull(block);
         Assert.True(block.name.Equals("grass"));

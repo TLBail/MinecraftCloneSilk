@@ -13,7 +13,7 @@ public abstract class UiWindow : GameObject
     private OpenGl openGl;
     protected bool disableInteractionIfCursorIsNotAvailable = true;
     private IKeyboard keyboard;
-    private Key? key;
+    protected Key? key;
     protected bool visible;
     protected bool needMouse = true;
     public static bool keyboardUseInConsole = false;

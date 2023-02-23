@@ -12,17 +12,18 @@ public class ChunkTerrainGeneratedStrategy : ChunkStrategy
             chunk.chunkStrategy = this;
         }
         generateTerrain();
-        chunk.chunkState = ChunkState.Generatedterrain;
+        chunk.chunkState = ChunkState.GENERATEDTERRAIN;
     }
 
-    public override ChunkState getChunkStateOfStrategy() => ChunkState.Generatedterrain;
+    public override ChunkState getChunkStateOfStrategy() => ChunkState.GENERATEDTERRAIN;
     
     public override void setBlock(int x, int y, int z, string name) {
+        chunk.blockModified = true;
         lock (chunk.blocksLock) {
             chunk.blocks[x, y, z].id = Chunk.blockFactory.getBlockIdByName(name);
         }
     }
-    
+
     public override Block getBlock(int x, int y, int z) {
         throw new Exception("try to get Block of a terrain generated only chunk");
     }
