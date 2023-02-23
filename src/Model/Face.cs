@@ -9,8 +9,7 @@ namespace MinecraftCloneSilk.Model
 		LEFT = 2,
 		RIGHT = 3,
 		FRONT = 4,
-		BACK = 5
-		
+		BACK = 5,
 	};
 
 	[Flags]
