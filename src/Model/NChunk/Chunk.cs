@@ -1,10 +1,8 @@
-﻿using System.Numerics;
-using MinecraftCloneSilk.Core;
+﻿using MinecraftCloneSilk.Core;
 using MinecraftCloneSilk.GameComponent;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL;
 using Shader = MinecraftCloneSilk.Core.Shader;
-using Texture = MinecraftCloneSilk.Core.Texture;
 
 namespace MinecraftCloneSilk.Model.NChunk;
 
@@ -71,7 +69,7 @@ public class Chunk : IDisposable
     }
 
     public void setWantedChunkState(ChunkState wantedChunkState) {
-        lock (chunkStrategy) {
+        lock (chunkStrategyLock) {
             switch (wantedChunkState) {
                 case ChunkState.EMPTY:
                     if (chunkStrategy is not ChunkEmptyStrategy) {
