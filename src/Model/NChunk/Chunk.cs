@@ -1,10 +1,8 @@
-﻿using System.Numerics;
-using MinecraftCloneSilk.Core;
+﻿using MinecraftCloneSilk.Core;
 using MinecraftCloneSilk.GameComponent;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL;
 using Shader = MinecraftCloneSilk.Core.Shader;
-using Texture = MinecraftCloneSilk.Core.Texture;
 
 namespace MinecraftCloneSilk.Model.NChunk;
 
@@ -13,7 +11,7 @@ public class Chunk : IDisposable
     public Vector3D<int> position;
     internal BlockData[,,] blocks;
     internal object blocksLock = new object();
-    
+
     public static readonly uint CHUNK_SIZE = 16;
 
     internal IChunkManager chunkManager;
@@ -24,13 +22,13 @@ public class Chunk : IDisposable
 
     internal Chunk?[] chunksNeighbors;
     internal object chunksNeighborsLock = new object();
-    
+
     public ChunkState chunkState { get; internal set; }
     public const ChunkState DEFAULTSTARTINGCHUNKSTATE = ChunkState.EMPTY;
-    
+
     internal ChunkStrategy chunkStrategy;
     internal object chunkStrategyLock = new object();
-    
+
     internal static Shader cubeShader;
     internal static BlockFactory blockFactory;
     internal static GL Gl;
@@ -40,21 +38,20 @@ public class Chunk : IDisposable
     internal bool blockModified = false;
 
     public bool loadedInChunkManagerThread = false;
-    
+
     public Chunk(Vector3D<int> position, IChunkManager chunkManager, WorldGenerator worldGenerator) {
         this.chunkState = DEFAULTSTARTINGCHUNKSTATE;
         this.chunkStrategy = new ChunkEmptyStrategy(this);
         this.chunkManager = chunkManager;
         this.worldGenerator = worldGenerator;
         this.position = position;
-        if(blockFactory == null) blockFactory = BlockFactory.getInstance();
+        if (blockFactory == null) blockFactory = BlockFactory.getInstance();
         blocks = new BlockData[CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE];
         initStaticMembers();
     }
-    
-    private void initStaticMembers()
-    {
-        if(Gl != null) return;
+
+    private void initStaticMembers() {
+        if (Gl != null) return;
         Gl = Game.getInstance().getGL();
 
         if (cubeShader == null) {
@@ -64,27 +61,29 @@ public class Chunk : IDisposable
             cubeShader.SetUniform("texture1", 0);
         }
     }
-    
+
     public void setMinimumWantedChunkState(ChunkState wantedChunkState) {
-        if (wantedChunkState > this.chunkState) { 
-                setWantedChunkState(wantedChunkState);
-        }   
+        if (wantedChunkState > this.chunkState) {
+            setWantedChunkState(wantedChunkState);
+        }
     }
 
     public void setWantedChunkState(ChunkState wantedChunkState) {
-        lock (chunkStrategy) {
+        lock (chunkStrategyLock) {
             switch (wantedChunkState) {
                 case ChunkState.EMPTY:
                     if (chunkStrategy is not ChunkEmptyStrategy) {
                         chunkStrategy = new ChunkEmptyStrategy(this);
                         chunkStrategy.init();
                     }
+
                     return;
                 case ChunkState.GENERATEDTERRAIN:
                     if (chunkStrategy is not ChunkTerrainGeneratedStrategy) {
                         chunkStrategy = new ChunkTerrainGeneratedStrategy(this);
                         chunkStrategy.init();
                     }
+
                     break;
                 case ChunkState.BLOCKGENERATED:
                     if (chunkState == ChunkState.DRAWABLE) {
@@ -93,16 +92,19 @@ public class Chunk : IDisposable
                         chunkState = ChunkState.BLOCKGENERATED;
                         break;
                     }
+
                     if (chunkStrategy is not ChunkBlockGeneratedStrategy) {
                         chunkStrategy = new ChunkBlockGeneratedStrategy(this);
                         chunkStrategy.init();
                     }
+
                     break;
                 case ChunkState.DRAWABLE:
                     if (chunkStrategy is not ChunkDrawableStrategy) {
                         chunkStrategy = new ChunkDrawableStrategy(this);
                         chunkStrategy.init();
                     }
+
                     break;
             }   
         }
@@ -115,6 +117,7 @@ public class Chunk : IDisposable
     public ChunkState getMinimumChunkStateOfNeighbors() => chunkStrategy.minimumChunkStateOfNeighbors();
     public Block getBlock(Vector3D<int> blockPosition) => getBlock(blockPosition.X, blockPosition.Y, blockPosition.Z);
     public Block getBlock(int x, int y, int z) => chunkStrategy.getBlock(x, y, z);
+
     public void setBlock(int x, int y, int z, string name) {
         blockModified = true;
         chunkStrategy.setBlock(x, y, z, name);
@@ -124,6 +127,7 @@ public class Chunk : IDisposable
     public void debug(bool? setDebug = null) => chunkStrategy.debug(setDebug);
     public void Update(double deltaTime) => chunkStrategy.update(deltaTime);
     public void Draw(GL Gl, double deltaTime) => chunkStrategy.draw(Gl, deltaTime);
+
     public void reset(Vector3D<int> position, IChunkManager chunkManager, WorldGenerator worldGenerator) {
         this.position = position;
         this.chunkManager = chunkManager;
@@ -145,11 +149,12 @@ public class Chunk : IDisposable
     }
 
     public void save() => chunkStrategy.saveBlockInMemory();
-    
+
     public void Dispose() {
-        Dispose(true);  
+        Dispose(true);
         GC.SuppressFinalize(this);
-    } 
+    }
+
     ~Chunk() => Dispose(false);
 
     protected virtual void Dispose(bool disposing) {
@@ -157,8 +162,8 @@ public class Chunk : IDisposable
             if (disposing) {
                 chunkStrategy.Dispose();
             }
+
             disposed = true;
         }
     }
-
 }

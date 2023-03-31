@@ -53,7 +53,6 @@ public abstract class ChunkStrategy
     }
     protected virtual void updateNeighboorChunkState(ChunkState chunkState) {
         lock (chunk.chunksNeighborsLock) {
-            if(chunk.chunksNeighbors == null) chunk.chunksNeighbors = new Chunk[6];
             if (chunk.chunksNeighbors.Length != 6) {
                 chunk.chunksNeighbors = new Chunk?[]
                 {
@@ -142,6 +141,23 @@ public abstract class ChunkStrategy
                 }
             }
         }
+    }
+    
+    protected bool loadBlocks() {
+        byte[] bytes = File.ReadAllBytes(pathToChunk());
+        const int sizeofSerializeData = BlockData.sizeofSerializeData;
+        const int expectedArrayLength = 16 * 16 * 16 * sizeofSerializeData;
+        if (expectedArrayLength != bytes.Length) return false;
+        ReadOnlySpan<byte> span = new ReadOnlySpan<byte>(bytes);
+        for (int x = 0; x < Chunk.CHUNK_SIZE; x++) {
+            for (int y = 0; y < Chunk.CHUNK_SIZE; y++) {
+                for (int z = 0; z < Chunk.CHUNK_SIZE; z++) {
+                    chunk.blocks[x, y, z] = new BlockData(span.Slice(0, sizeofSerializeData));
+                    span = span.Slice(sizeofSerializeData);
+                }
+            }
+        }
+        return true;
     }
 
 
