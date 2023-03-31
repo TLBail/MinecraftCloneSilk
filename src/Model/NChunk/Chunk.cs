@@ -106,7 +106,7 @@ public class Chunk : IDisposable
                     }
 
                     break;
-            }   
+            }
         }
     }
 
