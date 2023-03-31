@@ -11,10 +11,23 @@ public class ChunkTerrainGeneratedStrategy : ChunkStrategy
             chunk.chunkStrategy.init();
             chunk.chunkStrategy = this;
         }
-        generateTerrain();
+
+        if (isChunkExistInMemory()) {
+            if (!loadBlocks()) {
+                File.Delete(pathToChunk());
+                generateTerrain();            
+            }
+        } else {
+            generateTerrain();            
+        }
         chunk.chunkState = ChunkState.GENERATEDTERRAIN;
     }
 
+    
+    private bool isChunkExistInMemory() {
+        return Directory.Exists(PATHTOWORLDSAVE) && File.Exists(pathToChunk());
+    }
+    
     public override ChunkState getChunkStateOfStrategy() => ChunkState.GENERATEDTERRAIN;
     
     public override void setBlock(int x, int y, int z, string name) {
@@ -23,6 +36,8 @@ public class ChunkTerrainGeneratedStrategy : ChunkStrategy
             chunk.blocks[x, y, z].id = Chunk.blockFactory.getBlockIdByName(name);
         }
     }
+    
+    
 
     public override Block getBlock(int x, int y, int z) {
         throw new Exception("try to get Block of a terrain generated only chunk");
