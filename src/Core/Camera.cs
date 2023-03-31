@@ -20,7 +20,6 @@ namespace MinecraftCloneSilk.Core
 
         private float Zoom = 45f;
         private Vector2 LastMousePosition;
-        private Shader LightingShader;
         private bool isZoomActive = false;
         private IMouse mouse;
         
