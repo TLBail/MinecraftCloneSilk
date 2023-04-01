@@ -142,6 +142,10 @@ public class Chunk : IDisposable
 
     public void save() => chunkStrategy.saveBlockInMemory();
 
+    public override string ToString() {
+        return $"Chunk {position.X} {position.Y} {position.Z} chunkState: {chunkState} \n";
+    }
+
     public void Dispose() {
         Dispose(true);
         GC.SuppressFinalize(this);
