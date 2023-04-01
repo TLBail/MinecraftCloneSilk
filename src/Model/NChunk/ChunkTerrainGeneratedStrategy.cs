@@ -13,10 +13,7 @@ public class ChunkTerrainGeneratedStrategy : ChunkStrategy
         }
 
         if (isChunkExistInMemory()) {
-            if (!loadBlocks()) {
-                File.Delete(pathToChunk());
-                generateTerrain();            
-            }
+            loadBlocks();
         } else {
             generateTerrain();            
         }
