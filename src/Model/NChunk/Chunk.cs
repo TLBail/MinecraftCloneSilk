@@ -17,7 +17,7 @@ public class Chunk : IDisposable
     internal IChunkManager chunkManager;
     internal WorldGenerator worldGenerator;
 
-    internal List<DebugRay> debugRays = new List<DebugRay>();
+    internal List<Line> debugRays = new List<Line>();
     internal bool debugMode = false;
 
     internal Chunk?[] chunksNeighbors;
