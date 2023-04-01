@@ -147,39 +147,69 @@ public class World : GameObject
         Console console = (Console)game.gameObjects[typeof(Console).FullName];
         console.addCommand("/addChunk", (commandParams) =>
         {
-            try {
-                if (commandParams.Length >= 3) {
-                    Vector3D<int> newPosition = new Vector3D<int>(
-                        int.Parse(commandParams[0]),
-                        int.Parse(commandParams[1]),
-                        int.Parse(commandParams[2])
-                    );
-                    chunkManager.addChunkToLoad(newPosition);
-                    console.log("chunk at " + newPosition + " added succefuly"
-                    );
-                }
-            }
-            catch (Exception e) {
-                console.log(e.Message, Console.LogType.ERROR);
+            if (commandParams.Length >= 3) {
+                Vector3D<int> newPosition = new Vector3D<int>(
+                    int.Parse(commandParams[0]),
+                    int.Parse(commandParams[1]),
+                    int.Parse(commandParams[2])
+                );
+                chunkManager.addChunkToLoad(newPosition);
+                console.log("chunk at " + newPosition + " added succefuly"
+                );
             }
         });
         
         console.addCommand("/rmChunk", (commandParams) =>
         {
-            try {
-                if (commandParams.Length >= 3) {
-                    Vector3D<int> position = new Vector3D<int>(
-                        int.Parse(commandParams[0]),
-                        int.Parse(commandParams[1]),
-                        int.Parse(commandParams[2])
-                    );
-                    console.log("chunk at " + position + " unloaded " + (
-                            chunkManager.tryToUnloadChunk(position) ?  "succefuly": "failed")
-                    );
-                }
+            if (commandParams.Length >= 3) {
+                Vector3D<int> position = new Vector3D<int>(
+                    int.Parse(commandParams[0]),
+                    int.Parse(commandParams[1]),
+                    int.Parse(commandParams[2])
+                );
+                console.log("chunk at " + position + " unloaded " + (
+                        chunkManager.tryToUnloadChunk(position) ?  "succefuly": "failed")
+                );
             }
-            catch (Exception e) {
-                console.log(e.Message, Console.LogType.ERROR);
+        });
+        
+        console.addCommand("/setBlock", (commandParams) =>
+        {
+            if(commandParams.Length >= 4) {
+                Vector3D<int> position = new Vector3D<int>(
+                    int.Parse(commandParams[0]),
+                    int.Parse(commandParams[1]),
+                    int.Parse(commandParams[2])
+                );
+                setBlock(commandParams[3], position);
+                console.log("block " + commandParams[3] + " at " + position + " added succefuly"
+                );
+            }
+        });
+        
+        console.addCommand("/getBlock", (commandParams) =>
+        {
+            if(commandParams.Length >= 3) {
+                Vector3D<int> position = new Vector3D<int>(
+                    int.Parse(commandParams[0]),
+                    int.Parse(commandParams[1]),
+                    int.Parse(commandParams[2])
+                );
+                console.log("block at " + position + " is " + getBlock(position).name
+                );
+            }
+        });
+        
+        console.addCommand("/getChunk", (commandParams) =>
+        {
+            if (commandParams.Length >= 3) {
+                Vector3D<int> position = new Vector3D<int>(
+                    int.Parse(commandParams[0]),
+                    int.Parse(commandParams[1]),
+                    int.Parse(commandParams[2])
+                );
+                console.log("chunk at " + position + " is \n" + getChunk(position).ToString()
+                );
             }
         });
     }
