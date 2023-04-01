@@ -24,7 +24,12 @@ public class ChunkPool : IDisposable
       return chunk;
     }
 
-    public void returnChunk(Chunk chunk) => chunkPool.Add(chunk);
+    public void returnChunk(Chunk chunk) {
+        if (chunk.blockModified) {
+            throw new GameException("try to return a modified chunk");
+        }
+        chunkPool.Add(chunk);  
+    } 
     
     private Chunk buildChunk(Vector3D<int> position) {
         return new Chunk(position, chunkManager, worldGenerator);
