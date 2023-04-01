@@ -36,11 +36,30 @@ public class PlayerTest
         gameThread.Join();
     }
     
+    [SetUp]
+    public async Task setUp() {
+        await game.waitForFrame(1);
+        world = (World)game.gameObjects[typeof(World).FullName];
+        world.chunkManager.addChunkToLoad(Vector3D<int>.Zero);
+        await game.waitForFrame(3);
+        
+    }
+
+    [TearDown]
+    public async Task tearDown() {
+        await game.waitForFrame(1);
+        world = (World)game.gameObjects[typeof(World).FullName];
+        world.chunkManager.clear();
+        await game.waitForFrame(10);
+
+    }
+
     [Test]
     public async Task playerRemoveBlockWithClick() {
         await game.waitForFrame(1);
         Player player = (Player)game.gameObjects[typeof(Player).FullName];
         world = (World)game.gameObjects[typeof(World).FullName];
+        
         world.setBlock("stone", Vector3D<int>.Zero);
         Assert.True((world.getBlock(Vector3D<int>.Zero)).name.Equals("stone"));
         player.position = Vector3.Zero;

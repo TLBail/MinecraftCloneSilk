@@ -49,19 +49,11 @@ public class Chunk : IDisposable
         this.position = position;
         if (blockFactory == null) blockFactory = BlockFactory.getInstance();
         blocks = new BlockData[CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE];
-        initStaticMembers();
     }
 
-    private void initStaticMembers() {
-        if (Gl != null) return;
-        Gl = Game.getInstance().getGL();
-
-        if (cubeShader == null) {
-            cubeShader = new Shader(Gl, "./Shader/3dPosOneTextUni/VertexShader.hlsl",
-                "./Shader/3dPosOneTextUni/FragmentShader.hlsl");
-            cubeShader.Use();
-            cubeShader.SetUniform("texture1", 0);
-        }
+    public static void initStaticMembers(GL Gl, Shader chunkShader) {
+        Chunk.Gl = Gl;
+        Chunk.cubeShader = chunkShader;
     }
 
     public void setMinimumWantedChunkState(ChunkState wantedChunkState) {
