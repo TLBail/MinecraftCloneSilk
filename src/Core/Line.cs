@@ -23,7 +23,7 @@ public enum LineType
     LINE
 }
 
-public class Line
+public class Line : IDisposable
 {
    
     
@@ -71,7 +71,7 @@ public class Line
 
     public Line(Vector3D<float> start, Vector3D<float> end) : this(start,  end, DEFAULT_COLOR){}
 
-    public void remove()
+    public void Dispose()
     {
         game.drawables -= Drawables;
         Vao.Dispose();
@@ -100,4 +100,5 @@ public class Line
                 break;
         }
     }
+    
 }
