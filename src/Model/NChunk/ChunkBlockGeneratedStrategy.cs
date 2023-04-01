@@ -19,27 +19,24 @@ public class ChunkBlockGeneratedStrategy : ChunkStrategy
     public ChunkBlockGeneratedStrategy(Chunk chunk) : base(chunk) {    }
 
     public override void init() {
-        
-        //check if we have chunk in memory
-        //if yes load it
-        // if not check if chunk is in generated terrain and generate if not
-        if (isChunkExistInMemory()) {
-            if (!loadBlocks()) {
-                File.Delete(pathToChunk());
-                init();
-                return;
-            }
-        } else {
-            if (chunk.chunkState != ChunkState.GENERATEDTERRAIN) {
+        if (chunk.chunkState != ChunkState.GENERATEDTERRAIN) {
+            if (isChunkExistInMemory()) {
+                loadBlocks();
+            } else {
                 chunk.chunkStrategy = new ChunkTerrainGeneratedStrategy(chunk);
                 chunk.chunkStrategy.init();
                 chunk.chunkStrategy = this;
+                updateNeighboorChunkState(ChunkState.GENERATEDTERRAIN);
+                generateStruture();
+                chunk.blockModified = true;
             }
+        } else {
             updateNeighboorChunkState(ChunkState.GENERATEDTERRAIN);
             generateStruture();
             chunk.blockModified = true;
         }
-        chunk.chunkState = ChunkState.BLOCKGENERATED;
+        chunk.chunkState = ChunkState.BLOCKGENERATED;    
+
     }
 
     protected override void updateNeighboorChunkState(ChunkState chunkState) {
