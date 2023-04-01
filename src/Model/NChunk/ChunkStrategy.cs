@@ -68,7 +68,8 @@ public abstract class ChunkStrategy
                 Chunk newChunk = chunk.chunkManager.getChunk(chunk.position + (FaceOffset.getOffsetOfFace(face) * 16));
                 newChunk.setMinimumWantedChunkState(chunkState);
                 chunk.chunksNeighbors[(int)face] = newChunk;
-            }   
+            }
+            
         }
     }
 
@@ -141,13 +142,14 @@ public abstract class ChunkStrategy
                 }
             }
         }
+        chunk.blockModified = false;
     }
     
-    protected bool loadBlocks() {
+    protected void loadBlocks() {
         byte[] bytes = File.ReadAllBytes(pathToChunk());
         const int sizeofSerializeData = BlockData.sizeofSerializeData;
         const int expectedArrayLength = 16 * 16 * 16 * sizeofSerializeData;
-        if (expectedArrayLength != bytes.Length) return false;
+        if (expectedArrayLength != bytes.Length) throw new GameException("Fail to load chunk from file " + chunk.position);
         ReadOnlySpan<byte> span = new ReadOnlySpan<byte>(bytes);
         for (int x = 0; x < Chunk.CHUNK_SIZE; x++) {
             for (int y = 0; y < Chunk.CHUNK_SIZE; y++) {
@@ -157,7 +159,6 @@ public abstract class ChunkStrategy
                 }
             }
         }
-        return true;
     }
 
 

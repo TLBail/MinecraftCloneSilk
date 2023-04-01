@@ -113,21 +113,10 @@ public class ChunkManager : IChunkManager, IDisposable
 
     public Chunk getChunk(Vector3D<int> position) {
         lock (chunksLock) {
-            Chunk chunk = chunks.TryGetValue(position, out Chunk value) ? value : askForNewChunk(position);
+            Chunk chunk = chunks.GetOrAdd(position, (a) => chunkPool.get(a));
             return chunk;
         }
     }
-
-    private Chunk askForNewChunk(Vector3D<int> position) {
-        Chunk chunk = chunkPool.get(position);
-        if (!chunks.TryAdd(position, chunk)) {
-            ((Console)Game.getInstance().gameObjects[typeof(Console).FullName]).log("Chunk already exist");
-        } else {
-            chunkPool.returnChunk(chunk);
-        }
-        return chunk;
-    }
-
 
     public void addChunkToDraw(Chunk chunk) {
         lock (chunksToDrawLock) {
