@@ -15,7 +15,6 @@ namespace MinecraftCloneSilk.Model;
 public class ChunkManager : IChunkManager, IDisposable
 {
     private readonly ConcurrentDictionary<Vector3D<int>, Chunk> chunks;
-    private readonly object chunksLock = new object();
     public WorldGenerator worldGenerator { get; set; }
 
 
@@ -102,20 +101,39 @@ public class ChunkManager : IChunkManager, IDisposable
     public bool ContainsKey(Vector3D<int> position) => chunks.ContainsKey(position);
 
     public void clear() {
-        lock (chunksLock) {
-            List<Chunk> chunksCopy = new List<Chunk>(chunks.Values);
-            List<Chunk> chunkRemaining = new List<Chunk>();
-            foreach (Chunk chunk in chunksCopy) {
-                forceUnloadChunk(chunk);
-            }
+        List<Chunk> chunksCopy = new List<Chunk>(chunks.Values);
+        List<Chunk> chunkRemaining = new List<Chunk>();
+        foreach (Chunk chunk in chunksCopy) {
+            forceUnloadChunk(chunk);
         }
     }
 
     public Chunk getChunk(Vector3D<int> position) {
-        lock (chunksLock) {
-            Chunk chunk = chunks.GetOrAdd(position, (a) => chunkPool.get(a));
-            return chunk;
+        lock (chunksToUnloadLock) {
+            Chunk? chunkUnload = chunksToUnload.Find((a) => a.position == position);
+            if(chunkUnload != null) {
+                // handle the fact that the  chunkStrategy can be disposed
+                if(chunkUnload.chunkStrategy is ChunkDrawableStrategy) {
+                    chunkUnload.setWantedChunkState(ChunkState.BLOCKGENERATED);
+                }
+
+                if (!chunks.TryAdd(position, chunkUnload)) {
+                    // add olds blocks 
+                    Chunk chunkToUpdate = chunks[position];
+                    if (chunkToUpdate.chunkState >= ChunkState.GENERATEDTERRAIN) {
+                        chunks[position].blocks = chunkUnload.blocks;
+                    } else {
+                        throw new Exception("fuck don't know to handle that");
+                    }
+                } else {
+                    chunksToUnload.Remove(chunkUnload);                   
+                    return chunkUnload;
+                }
+
+            }
         }
+        Chunk chunk = chunks.GetOrAdd(position, chunkPool.get);
+        return chunk;
     }
 
     public void addChunkToDraw(Chunk chunk) {
@@ -135,19 +153,18 @@ public class ChunkManager : IChunkManager, IDisposable
     public void removeChunkToDraw(Chunk chunk) => chunksToDraw.Remove(chunk);
 
     public void updateRelevantChunks(List<Vector3D<int>> chunkRelevant) {
-        lock (chunksLock) {
-            List<Vector3D<int>> chunkNotContainInChunks = new List<Vector3D<int>>();
-            foreach (Vector3D<int> position in chunkRelevant) {
-                if (!chunks.TryGetValue(position, out Chunk chunk) || chunk.chunkState < ChunkState.DRAWABLE) {
-                    chunkNotContainInChunks.Add(position);
-                }
+        List<Vector3D<int>> chunkNotContainInChunks = new List<Vector3D<int>>();
+        foreach (Vector3D<int> position in chunkRelevant) {
+            if (!chunks.TryGetValue(position, out Chunk chunk) || chunk.chunkState < ChunkState.DRAWABLE) {
+                chunkNotContainInChunks.Add(position);
             }
-
-            addChunksToLoad(chunkNotContainInChunks);
-
-            IEnumerable<Vector3D<int>> chunksToDeletePosition = chunks.Keys.Except(chunkRelevant);
-            foreach (var chunkToDeletePosition in chunksToDeletePosition) tryToUnloadChunk(chunkToDeletePosition);
         }
+
+        addChunksToLoad(chunkNotContainInChunks);
+
+        IEnumerable<Vector3D<int>> chunksToDeletePosition = chunks.Keys.Except(chunkRelevant);
+        foreach (var chunkToDeletePosition in chunksToDeletePosition) tryToUnloadChunk(chunkToDeletePosition);
+
     }
 
     public void addChunkToLoad(Vector3D<int> position) {
@@ -158,7 +175,7 @@ public class ChunkManager : IChunkManager, IDisposable
     public void addChunksToLoad(List<Vector3D<int>> positions) {
         lock (chunksToLoadLock) {
             foreach (Vector3D<int> position in positions) {
-                var chunk = chunks.GetOrAdd(position, (a) => chunkPool.get(a));
+                var chunk = getChunk(position);
                 ChunkLoadingTask chunkLoadingTask = new ChunkLoadingTask(chunk, ChunkState.DRAWABLE);
                 chunksToLoad.Add(chunkLoadingTask);
             }
