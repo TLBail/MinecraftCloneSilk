@@ -90,7 +90,8 @@ namespace MinecraftCloneSilk.GameComponent
             //load textures
             textureManager = TextureManager.getInstance();
             textureManager.load(Gl);
-            
+            ChunkDrawableStrategy.InitStaticMembers(TextureManager.getInstance().textures["spriteSheet.png"]);
+
             // init shaders 
             initShaders(Gl);
             
