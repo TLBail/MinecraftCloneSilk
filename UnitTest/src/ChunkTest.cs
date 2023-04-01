@@ -8,10 +8,11 @@ namespace UnitTest;
 
 public class ChunkTest
 {
-    [SetUp]
+    [OneTimeSetUp]
     public void setUp() {
         TextureManager textureManager = TextureManager.getInstance();
         textureManager.fakeLoad();
+        
     }
     
     [Test]
