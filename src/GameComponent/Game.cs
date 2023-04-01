@@ -9,9 +9,11 @@ using Silk.NET.OpenGL;
 using MinecraftCloneSilk.GameComponent;
 using MinecraftCloneSilk.Core;
 using MinecraftCloneSilk.Model;
+using MinecraftCloneSilk.Model.NChunk;
 using MinecraftCloneSilk.UI;
 using Silk.NET.Maths;
 using Console = MinecraftCloneSilk.UI.Console;
+using Shader = MinecraftCloneSilk.Core.Shader;
 using Texture = MinecraftCloneSilk.Core.Texture;
 
 namespace MinecraftCloneSilk.GameComponent
@@ -89,11 +91,23 @@ namespace MinecraftCloneSilk.GameComponent
             textureManager = TextureManager.getInstance();
             textureManager.load(Gl);
             
+            // init shaders 
+            initShaders(Gl);
+            
+            
             awake();
             
             if (gameObjects.ContainsKey(typeof(Console).FullName))
                 console = (Console)gameObjects[typeof(Console).FullName];
             startables?.Invoke();
+        }
+
+        private void initShaders(GL Gl) {
+            Shader chunkShader = new Shader(Gl, "./Shader/3dPosOneTextUni/VertexShader.hlsl",
+                "./Shader/3dPosOneTextUni/FragmentShader.hlsl");
+            chunkShader.Use();
+            chunkShader.SetUniform("texture1", 0);
+            Chunk.initStaticMembers(Gl, chunkShader);
         }
 
 
