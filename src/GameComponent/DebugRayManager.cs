@@ -40,7 +40,7 @@ public class DebugRayManager : GameObject
         ImGui.InputFloat("end z", ref newendZ);
 
         if (ImGui.Button("add new ray")) {
-            new DebugRay(new Vector3D<float>(newX, newY, newZ),
+            new Line(new Vector3D<float>(newX, newY, newZ),
                 new Vector3D<float>(newendX, newendY, newendZ));
         }
 
