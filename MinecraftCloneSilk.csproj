@@ -27,7 +27,6 @@
     <Compile Remove="Benchmarker\**" />
     <Compile Remove="Benchmark\**" />
     <Compile Remove="Worlds\**" />
-    <Compile Remove="Shader\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -35,7 +34,6 @@
     <EmbeddedResource Remove="Benchmarker\**" />
     <EmbeddedResource Remove="Benchmark\**" />
     <EmbeddedResource Remove="Worlds\**" />
-    <EmbeddedResource Remove="Shader\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -43,7 +41,6 @@
     <None Remove="Benchmarker\**" />
     <None Remove="Benchmark\**" />
     <None Remove="Worlds\**" />
-    <None Remove="Shader\**" />
     <None Remove=".gitattributes" />
     <None Remove=".gitignore" />
   </ItemGroup>
@@ -61,6 +58,17 @@
     <Content Include="Assets\blocks\json\oak.json" />
     <Content Include="Assets\blocks\json\sand.json" />
     <Content Include="Assets\blocks\json\stone.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ClCompile Include="Shader\3dPosOneColorUni\FragmentShader.hlsl" />
+    <ClCompile Include="Shader\3dPosOneColorUni\VertexShader.hlsl" />
+    <ClCompile Include="Shader\3dPosOneTextUni\FragmentShader.hlsl" />
+    <ClCompile Include="Shader\3dPosOneTextUni\VertexShader.hlsl" />
+    <ClCompile Include="Shader\color\FragmentShader.hlsl" />
+    <ClCompile Include="Shader\color\VertexShader.hlsl" />
+    <ClCompile Include="Shader\Skybox\FragmentShader.hlsl" />
+    <ClCompile Include="Shader\Skybox\VertexShader.hlsl" />
   </ItemGroup>
 
 </Project>
