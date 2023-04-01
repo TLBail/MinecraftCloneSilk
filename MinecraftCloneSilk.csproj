@@ -61,14 +61,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ClCompile Include="Shader\3dPosOneColorUni\FragmentShader.hlsl" />
-    <ClCompile Include="Shader\3dPosOneColorUni\VertexShader.hlsl" />
-    <ClCompile Include="Shader\3dPosOneTextUni\FragmentShader.hlsl" />
-    <ClCompile Include="Shader\3dPosOneTextUni\VertexShader.hlsl" />
-    <ClCompile Include="Shader\color\FragmentShader.hlsl" />
-    <ClCompile Include="Shader\color\VertexShader.hlsl" />
-    <ClCompile Include="Shader\Skybox\FragmentShader.hlsl" />
-    <ClCompile Include="Shader\Skybox\VertexShader.hlsl" />
+    <Content Include="Shader\3dPosOneColorUni\FragmentShader.glsl" />
+    <Content Include="Shader\3dPosOneColorUni\VertexShader.glsl" />
+    <Content Include="Shader\3dPosOneTextUni\FragmentShader.glsl" />
+    <Content Include="Shader\3dPosOneTextUni\VertexShader.glsl" />
+    <Content Include="Shader\color\FragmentShader.glsl" />
+    <Content Include="Shader\color\VertexShader.glsl" />
+    <Content Include="Shader\Skybox\FragmentShader.glsl" />
+    <Content Include="Shader\Skybox\VertexShader.glsl" />
   </ItemGroup>
 
 </Project>

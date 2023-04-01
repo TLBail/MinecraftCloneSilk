@@ -42,7 +42,7 @@ namespace MinecraftCloneSilk.GameComponent
         
         public Camera mainCamera { get; set; }
 
-        public List<DebugRay> debugRays = new List<DebugRay>();
+        public List<Line> debugRays = new List<Line>();
 
         private Scene scene;
 
@@ -103,8 +103,8 @@ namespace MinecraftCloneSilk.GameComponent
         }
 
         private void initShaders(GL Gl) {
-            Shader chunkShader = new Shader(Gl, "./Shader/3dPosOneTextUni/VertexShader.hlsl",
-                "./Shader/3dPosOneTextUni/FragmentShader.hlsl");
+            Shader chunkShader = new Shader(Gl, "./Shader/3dPosOneTextUni/VertexShader.glsl",
+                "./Shader/3dPosOneTextUni/FragmentShader.glsl");
             chunkShader.Use();
             chunkShader.SetUniform("texture1", 0);
             Chunk.initStaticMembers(Gl, chunkShader);
