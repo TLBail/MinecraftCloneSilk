@@ -13,7 +13,6 @@ public class ChunkDrawableStrategy : ChunkStrategy
     private VertexArrayObject<CubeVertex, uint> Vao;
 
     internal static Texture cubeTexture;
-    public static object staticObjectLock = new object();
 
     private bool openGlSetup = false;
     private bool needToSendVertices = false;
@@ -30,23 +29,18 @@ public class ChunkDrawableStrategy : ChunkStrategy
     }
 
 
-    private void initStaticMembers() {
-        lock (staticObjectLock) {
-            if (cubeTexture == null) {
-                cubeTexture = TextureManager.getInstance().textures["spriteSheet.png"];
-            }
-        }
+    public static void InitStaticMembers(Texture cubeTexture) {
+        ChunkDrawableStrategy.cubeTexture = cubeTexture;
     }
 
     public override void init() {
-        if (chunk.chunkState != minimumChunkStateOfNeighbors()) {
+        if (chunk.chunkState != ChunkState.BLOCKGENERATED) {
             chunk.chunkStrategy = new ChunkBlockGeneratedStrategy(chunk);
             chunk.chunkStrategy.init();
             chunk.chunkStrategy = this;
         }
 
         updateNeighboorChunkState(minimumChunkStateOfNeighbors());
-        initStaticMembers();
         initVertices();
         chunk.chunkState = ChunkState.DRAWABLE;
         chunk.chunkManager.addChunkToUpdate(chunk);
