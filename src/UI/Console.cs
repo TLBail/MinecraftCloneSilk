@@ -104,7 +104,12 @@ public class Console : UiWindow
     private void execCommand(string textCommand) {
         foreach (var keyValuePair in commands)
             if (textCommand.StartsWith(keyValuePair.Key)) {
-                keyValuePair.Value?.Invoke(textCommand.Split()[1..]);
+                try {
+                    keyValuePair.Value?.Invoke(textCommand.Split()[1..]);
+                }
+                catch (Exception e) {
+                    log(e.Message, LogType.ERROR);
+                }
                 return;
             }
         log(textCommand, LogType.INFO);
