@@ -69,7 +69,7 @@ public abstract class ChunkStrategy
                 newChunk.setMinimumWantedChunkState(chunkState);
                 chunk.chunksNeighbors[(int)face] = newChunk;
             }
-            
+            if(chunk.chunksNeighbors.Any((chunk) => chunk == null)) throw new Exception("fail to init neighboor chunk");
         }
     }
 
