@@ -28,8 +28,8 @@ public class ChunkBlockGeneratedStrategy : ChunkStrategy
 
     public override void init() {
         if (chunk.chunkState != ChunkState.GENERATEDTERRAIN) {
-            if (isChunkExistInMemory()) {
-                loadBlocks();
+            if (chunk.chunkStorage.isChunkExistInMemory(chunk)) {
+                chunk.chunkStorage.LoadBlocks(chunk);
             } else {
                 chunk.chunkStrategy = new ChunkTerrainGeneratedStrategy(chunk);
                 chunk.chunkStrategy.init();
@@ -62,9 +62,6 @@ public class ChunkBlockGeneratedStrategy : ChunkStrategy
         }
     }
 
-    private bool isChunkExistInMemory() {
-        return Directory.Exists(PATHTOWORLDSAVE) && File.Exists(pathToChunk());
-    }
 
     protected override Vector3D<float> ChunkStrategyColor() => new Vector3D<float>(0, 0, 1);
 
