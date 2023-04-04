@@ -18,7 +18,7 @@ public class ChunkManagerEmpty : IChunkManager
         if (chunks.ContainsKey(position)) {
             return chunks[position];
         }    
-        chunks.Add(position, new Chunk(position, this, worldGenerator));
+        chunks.Add(position, new Chunk(position, this, worldGenerator, null));
         return chunks[position];
     }
 

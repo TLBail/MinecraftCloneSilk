@@ -26,7 +26,7 @@ public class ChunkGenerationBenchmark
 
     [Benchmark]
     public void createAllBlockForAChunk() {
-        Chunk chunk = new Chunk(position, chunkManager, worldNaturalGeneration);
+        Chunk chunk = new Chunk(position, chunkManager, worldNaturalGeneration, null);
     }
     
 }

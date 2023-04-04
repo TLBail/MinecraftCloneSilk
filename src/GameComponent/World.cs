@@ -4,6 +4,7 @@ using System.Numerics;
 using System.Xml.Linq;
 using MinecraftCloneSilk.Model;
 using MinecraftCloneSilk.Model.NChunk;
+using MinecraftCloneSilk.Model.Storage;
 using MinecraftCloneSilk.UI;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL;
@@ -21,7 +22,7 @@ public enum WorldMode
 public class World : GameObject
 {
     private Player player;
-    private const int RADIUS = 6;
+    private const int RADIUS = 2;
     private readonly WorldUI worldUi;
     public WorldNaturalGeneration worldNaturalGeneration;
     public WorldMode worldMode { get; set; }
@@ -29,12 +30,14 @@ public class World : GameObject
 
     private Vector3D<int> lastPlayerChunkPosition = new Vector3D<int>(-1);
 
+    private ChunkStorage chunkStorage;
     public World(Game game, WorldMode worldMode = WorldMode.EMPTY) : base(game) {
         game.drawables += Draw;
         this.worldMode = worldMode;
         worldUi = new WorldUI(this);
         worldNaturalGeneration = new WorldNaturalGeneration();
-        chunkManager = new ChunkManager(RADIUS, worldNaturalGeneration);
+        chunkStorage = new ChunkStorage("./Worlds/newWorld");
+        chunkManager = new ChunkManager(RADIUS, worldNaturalGeneration, chunkStorage);
     }
 
 
