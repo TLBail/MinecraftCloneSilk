@@ -112,7 +112,6 @@ public class ChunkManager : IChunkManager, IDisposable
         lock (chunksToUnloadLock) {
             Chunk? chunkUnload = chunksToUnload.Find((a) => a.position == position);
             if(chunkUnload != null) {
-                // handle the fact that the  chunkStrategy can be disposed
                 if(chunkUnload.chunkStrategy is ChunkDrawableStrategy) {
                     chunkUnload.setWantedChunkState(ChunkState.BLOCKGENERATED);
                 }
@@ -148,9 +147,17 @@ public class ChunkManager : IChunkManager, IDisposable
         }
     }
 
-    public void removeChunkToUpdate(Chunk chunk) => chunksToUpdate.Remove(chunk);
+    public void removeChunkToUpdate(Chunk chunk) {
+        lock (chunksToUpdateLock) {
+            chunksToUpdate.Remove(chunk);
+        }
+    }
 
-    public void removeChunkToDraw(Chunk chunk) => chunksToDraw.Remove(chunk);
+    public void removeChunkToDraw(Chunk chunk) {
+        lock (chunksToDrawLock) {
+            chunksToDraw.Remove(chunk);      
+        }  
+    } 
 
     public void updateRelevantChunks(List<Vector3D<int>> chunkRelevant) {
         List<Vector3D<int>> chunkNotContainInChunks = new List<Vector3D<int>>();
