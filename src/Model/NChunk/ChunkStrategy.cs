@@ -68,8 +68,8 @@ public abstract class ChunkStrategy
                 Chunk newChunk = chunk.chunkManager.getChunk(chunk.position + (FaceOffset.getOffsetOfFace(face) * 16));
                 newChunk.setMinimumWantedChunkState(chunkState);
                 chunk.chunksNeighbors[(int)face] = newChunk;
+                if(newChunk is null) throw new Exception("fail to init neighboor chunk");
             }
-            if(chunk.chunksNeighbors.Any((chunk) => chunk == null)) throw new Exception("fail to init neighboor chunk");
         }
     }
 
