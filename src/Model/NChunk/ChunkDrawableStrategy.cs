@@ -39,7 +39,7 @@ public class ChunkDrawableStrategy : ChunkStrategy
             chunk.chunkStrategy.init();
             chunk.chunkStrategy = this;
         }
-
+        
         updateNeighboorChunkState(minimumChunkStateOfNeighbors());
         initVertices();
         chunk.chunkState = ChunkState.DRAWABLE;
@@ -58,7 +58,7 @@ public class ChunkDrawableStrategy : ChunkStrategy
     }
 
     public override void update(double deltaTime) {
-        if (!openGlSetup) setOpenGl();
+        if (nbVertex > 0 && !openGlSetup) setOpenGl();
         if (openGlSetup && needToSendVertices) sendCubeVertices();
         if (needToUpdateChunkVertices) updateChunkVertex();
         disposeAction?.Invoke();
