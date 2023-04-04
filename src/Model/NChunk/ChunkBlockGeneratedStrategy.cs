@@ -11,6 +11,12 @@ public class ChunkBlockGeneratedStrategy : ChunkStrategy
 {
     public override ChunkState getChunkStateOfStrategy() => ChunkState.BLOCKGENERATED;
 
+
+    private ChunkState minimumChunkStateOfNeighborsValue = ChunkState.EMPTY;
+    public override ChunkState minimumChunkStateOfNeighbors() => minimumChunkStateOfNeighborsValue;
+
+    
+    
     public override void setBlock(int x, int y, int z, string name) {
         lock (chunk.blocksLock) {
             chunk.blocks[x, y, z].id = Chunk.blockFactory.getBlockIdByName(name);
@@ -28,16 +34,19 @@ public class ChunkBlockGeneratedStrategy : ChunkStrategy
                 chunk.chunkStrategy = new ChunkTerrainGeneratedStrategy(chunk);
                 chunk.chunkStrategy.init();
                 chunk.chunkStrategy = this;
+                minimumChunkStateOfNeighborsValue = ChunkState.GENERATEDTERRAIN;
                 updateNeighboorChunkState(ChunkState.GENERATEDTERRAIN);
                 generateStruture();
+                minimumChunkStateOfNeighborsValue = ChunkState.EMPTY;
                 chunk.blockModified = true;
             }
         } else {
+            minimumChunkStateOfNeighborsValue = ChunkState.GENERATEDTERRAIN;
             updateNeighboorChunkState(ChunkState.GENERATEDTERRAIN);
             generateStruture();
+            minimumChunkStateOfNeighborsValue = ChunkState.EMPTY;
             chunk.blockModified = true;
         }
-
         chunk.chunkState = ChunkState.BLOCKGENERATED;
     }
 
