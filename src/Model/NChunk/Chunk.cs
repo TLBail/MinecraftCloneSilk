@@ -1,5 +1,6 @@
 ﻿using MinecraftCloneSilk.Core;
 using MinecraftCloneSilk.GameComponent;
+using MinecraftCloneSilk.Model.Storage;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL;
 using Shader = MinecraftCloneSilk.Core.Shader;
@@ -16,6 +17,7 @@ public class Chunk : IDisposable
 
     internal IChunkManager chunkManager;
     internal WorldGenerator worldGenerator;
+    internal ChunkStorage chunkStorage;
 
     internal Line? debugRay;
     internal bool debugMode = false;
@@ -39,11 +41,12 @@ public class Chunk : IDisposable
 
     public bool loadedInChunkManagerThread = false;
 
-    public Chunk(Vector3D<int> position, IChunkManager chunkManager, WorldGenerator worldGenerator) {
+    public Chunk(Vector3D<int> position, IChunkManager chunkManager, WorldGenerator worldGenerator, ChunkStorage chunkStorage) {
         this.chunkState = DEFAULTSTARTINGCHUNKSTATE;
         this.chunkStrategy = new ChunkEmptyStrategy(this);
         this.chunkManager = chunkManager;
         this.worldGenerator = worldGenerator;
+        this.chunkStorage = chunkStorage;
         this.position = position;
         if (blockFactory == null) blockFactory = BlockFactory.getInstance();
         blocks = new BlockData[CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE];
@@ -140,7 +143,7 @@ public class Chunk : IDisposable
         }
     }
 
-    public void save() => chunkStrategy.saveBlockInMemory();
+    public void save() => chunkStorage.SaveChunk(this);
 
     public override string ToString() {
         return $"Chunk {position.X} {position.Y} {position.Z} chunkState: {chunkState} \n";

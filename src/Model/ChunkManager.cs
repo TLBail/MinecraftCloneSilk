@@ -6,6 +6,7 @@ using ImGuiNET;
 using MinecraftCloneSilk.GameComponent;
 using MinecraftCloneSilk.Model;
 using MinecraftCloneSilk.Model.NChunk;
+using MinecraftCloneSilk.Model.Storage;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL;
 using Console = MinecraftCloneSilk.UI.Console;
@@ -45,12 +46,12 @@ public class ChunkManager : IChunkManager, IDisposable
 
     private ChunkPool chunkPool;
 
-    public ChunkManager(int RADIUS, WorldGenerator worldGenerator) {
+    public ChunkManager(int RADIUS, WorldGenerator worldGenerator, ChunkStorage chunkStorage) {
         chunks = new ConcurrentDictionary<Vector3D<int>, Chunk>(Environment.ProcessorCount * 2 ,RADIUS * RADIUS * RADIUS);
         this.worldGenerator = worldGenerator;
         chunksToLoad = new List<ChunkLoadingTask>();
         semaphore = new SemaphoreSlim(0);
-        chunkPool = new ChunkPool(this, worldGenerator);
+        chunkPool = new ChunkPool(this, worldGenerator, chunkStorage);
         chunkLoaderThread = new Thread(chunkLoaderThreadRuntime);
         chunkLoaderThread.Start();
     }

@@ -1,0 +1,11 @@
+﻿{
+  "$schema": "http://json.schemastore.org/launchsettings.json",
+  "profiles": {
+    "UnitTest": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "workingDirectory": "C:\\Users\\theol\\source\\C#\\MinecraftCloneSilk"
+      }
+    }
+  }
+}
