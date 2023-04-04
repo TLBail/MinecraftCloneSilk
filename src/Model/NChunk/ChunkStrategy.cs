@@ -113,40 +113,8 @@ public abstract class ChunkStrategy
     }
     
     public virtual void init(){}
-
-    protected const string PATHTOWORLDSAVE = "./Worlds/newWorld";
-    protected const CompressionLevel COMPRESSION_LEVEL = CompressionLevel.Fastest;
-    protected string pathToChunk() =>  PATHTOWORLDSAVE + "/" + chunk.position.X + "  " + chunk.position.Y  + "  " + chunk.position.Z;
-
-    internal virtual void saveBlockInMemory() {
-        if(!chunk.blockModified) return;
-        using Stream stream = File.Create(pathToChunk());
-        for (int x = 0; x < Chunk.CHUNK_SIZE; x++) {
-            for (int y = 0; y < Chunk.CHUNK_SIZE; y++) {
-                for (int z = 0; z < Chunk.CHUNK_SIZE; z++) {
-                    BlockData blockData = chunk.blocks[x, y, z];
-                    stream.Write(blockData.tobyte());
-                }
-            }
-        }
-        chunk.blockModified = false;
-    }
     
-    protected void loadBlocks() {
-        byte[] bytes = File.ReadAllBytes(pathToChunk());
-        const int sizeofSerializeData = BlockData.sizeofSerializeData;
-        const int expectedArrayLength = 16 * 16 * 16 * sizeofSerializeData;
-        if (expectedArrayLength != bytes.Length) throw new GameException("Fail to load chunk from file " + chunk.position);
-        ReadOnlySpan<byte> span = new ReadOnlySpan<byte>(bytes);
-        for (int x = 0; x < Chunk.CHUNK_SIZE; x++) {
-            for (int y = 0; y < Chunk.CHUNK_SIZE; y++) {
-                for (int z = 0; z < Chunk.CHUNK_SIZE; z++) {
-                    chunk.blocks[x, y, z] = new BlockData(span.Slice(0, sizeofSerializeData));
-                    span = span.Slice(sizeofSerializeData);
-                }
-            }
-        }
-    }
+    
 
 
     public virtual ChunkState minimumChunkStateOfNeighbors() => ChunkState.EMPTY;

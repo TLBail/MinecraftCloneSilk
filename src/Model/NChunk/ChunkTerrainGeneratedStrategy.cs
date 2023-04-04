@@ -12,18 +12,14 @@ public class ChunkTerrainGeneratedStrategy : ChunkStrategy
             chunk.chunkStrategy = this;
         }
 
-        if (isChunkExistInMemory()) {
-            loadBlocks();
+        if (chunk.chunkStorage.isChunkExistInMemory(chunk)) {
+            chunk.chunkStorage.LoadBlocks(chunk);
         } else {
             generateTerrain();            
         }
         chunk.chunkState = ChunkState.GENERATEDTERRAIN;
     }
 
-    
-    private bool isChunkExistInMemory() {
-        return Directory.Exists(PATHTOWORLDSAVE) && File.Exists(pathToChunk());
-    }
     
     public override ChunkState getChunkStateOfStrategy() => ChunkState.GENERATEDTERRAIN;
     
