@@ -1,6 +1,7 @@
 ﻿using MinecraftCloneSilk.Core;
 using MinecraftCloneSilk.Model;
 using MinecraftCloneSilk.Model.NChunk;
+using MinecraftCloneSilk.Model.Storage;
 using Silk.NET.Maths;
 using UnitTest.fakeClass;
 
@@ -17,16 +18,17 @@ public class ChunkTest
     
     [Test]
     public void testChunkIsNotNull() {
-        ChunkManagerEmpty chunkManagerEmpty = new ChunkManagerEmpty(new WorldFlatGeneration());
+        ChunkManagerEmpty chunkManagerEmpty = new ChunkManagerEmpty(new WorldFlatGeneration(), null);
         Chunk chunk = chunkManagerEmpty.getChunk(Vector3D<int>.Zero);
         Assert.NotNull(chunk);
     }
     
     [Test]
     public void testChunkLoadTerrain() {
-        ChunkManagerEmpty chunkManagerEmpty = new ChunkManagerEmpty(new WorldFlatGeneration());
+        ChunkStorage chunkStorage = new ChunkStorage("./Worlds/newWorld");
+        ChunkManagerEmpty chunkManagerEmpty = new ChunkManagerEmpty(new WorldFlatGeneration(), chunkStorage);
         Chunk chunk = chunkManagerEmpty.getChunk(Vector3D<int>.Zero);
-        chunk.setWantedChunkState(ChunkState.GENERATEDTERRAIN);
+        chunk.setWantedChunkState(ChunkState.BLOCKGENERATED);
         Block block = chunk.getBlock(Vector3D<int>.Zero);
         Assert.IsNotNull(block);
         Assert.True(block.name.Equals("grass"));
