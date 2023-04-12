@@ -13,6 +13,10 @@ public struct BlockData
         this.id = id;
     }
 
+    public BlockData(BinaryReader br) {
+        this.id = br.ReadInt16();
+    }
+
     public byte[] tobyte() {
         return BitConverter.GetBytes((short)id);
     }

@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using MinecraftCloneSilk.Model.NChunk;
+using Silk.NET.Maths;
 
 namespace MinecraftCloneSilk.Model.Storage;
 
@@ -24,9 +25,46 @@ public class ChunkStorage
         binaryWriter.Write(chunkState);
         int tick = 0; //Todo specify tick
         binaryWriter.Write(tick);
+        
+        Dictionary<int, BlockData> palette = getPallette(chunk);
+        
+        byte[] bytesPallet = new byte[palette.Count * BlockData.sizeofSerializeData];
+        BlockData[] blockDatasPalette = palette.Values.ToArray();
+        for (int i = 0; i < blockDatasPalette.Length; i++) {
+            for (int j = 0; j < BlockData.sizeofSerializeData; j++) {
+                bytesPallet[(i * BlockData.sizeofSerializeData) + j] = (byte) (blockDatasPalette[i].id >> (8 * j));
+            }
+        }
+        
+        binaryWriter.Write(palette.Count);
+        binaryWriter.Write(bytesPallet);
+
+        int[] arrayOfKey = palette.Keys.ToArray();
+        if (palette.Count > 1) {
+            int maxIndex = palette.Count - 1;
+            int bytesPerBlock = Log8Ceil(maxIndex);
+            byte[] bytes = new byte[Chunk.CHUNK_SIZE * Chunk.CHUNK_SIZE * Chunk.CHUNK_SIZE * bytesPerBlock];
+            int index = 0;
+            for (int x = 0; x < Chunk.CHUNK_SIZE; x++) {
+                for (int y = 0; y < Chunk.CHUNK_SIZE; y++) {
+                    for (int z = 0; z < Chunk.CHUNK_SIZE; z++) {
+                        int indexPalette = Array.IndexOf(arrayOfKey, chunk.getBlockData(new Vector3D<int>(x, y, z)).id);
+                        for (int i = 0; i < bytesPerBlock; i++) {
+                            bytes[index] = (byte)(indexPalette >> (i * 8));
+                            index++;
+                        }
+                    }
+                }
+            }
+            binaryWriter.Write(bytes);
+            
+        }
+        
+        chunk.blockModified = false;
+    }
+
+    private Dictionary<int, BlockData> getPallette(Chunk chunk) {
         Dictionary<int, BlockData> palette = new Dictionary<int, BlockData>();
-        byte[] blockBytes = new byte[sizeof(Int32)  *  (Chunk.CHUNK_SIZE * Chunk.CHUNK_SIZE * Chunk.CHUNK_SIZE)];
-        int index = 0;
         for (int x = 0; x < Chunk.CHUNK_SIZE; x++) {
             for (int y = 0; y < Chunk.CHUNK_SIZE; y++) {
                 for (int z = 0; z < Chunk.CHUNK_SIZE; z++) {
@@ -34,46 +72,57 @@ public class ChunkStorage
                     if(!palette.ContainsKey(blockData.id)) {
                         palette[blockData.id] = blockData;
                     }
-                    blockBytes[index] = (byte) blockData.id;
-                    blockBytes[index + 1] = (byte) (blockData.id >> 8);
-                    blockBytes[index + 2] = (byte) (blockData.id >> 16);
-                    blockBytes[index + 3] = (byte) (blockData.id >> 24);
-                    index += 4;
                 }
             }
         }
-        byte[] bytesPallet = new byte[palette.Count * BlockData.sizeofSerializeData];
-        BlockData[] blockDatasPalette = palette.Values.ToArray();
-        for (int i = 0; i < blockDatasPalette.Length; i++) {
-            bytesPallet[(i * 2)] = (byte) blockDatasPalette[i].id;
-            bytesPallet[(i * 2) + 1] = (byte) (blockDatasPalette[i].id >> 8);
-        }
-        binaryWriter.Write(palette.Count);
-        binaryWriter.Write(bytesPallet);
-        if (palette.Count > 1) {
-            binaryWriter.Write(blockBytes);
-        }
-        chunk.blockModified = false;
+
+        return palette;
     }
-    
+
     public bool isChunkExistInMemory(Chunk chunk) {
         return Directory.Exists(pathToChunkFolder) && File.Exists(PathToChunk(chunk));
     }
 
     
     public void LoadBlocks(Chunk chunk) {
-        byte[] bytes = File.ReadAllBytes(PathToChunk(chunk));
-        const int sizeofSerializeData = BlockData.sizeofSerializeData;
-        const int expectedArrayLength = 16 * 16 * 16 * sizeofSerializeData;
-        if (expectedArrayLength != bytes.Length) throw new GameException("Fail to load chunk from file " + chunk.position);
-        ReadOnlySpan<byte> span = new ReadOnlySpan<byte>(bytes);
-        for (int x = 0; x < Chunk.CHUNK_SIZE; x++) {
-            for (int y = 0; y < Chunk.CHUNK_SIZE; y++) {
-                for (int z = 0; z < Chunk.CHUNK_SIZE; z++) {
-                    chunk.blocks[x, y, z] = new BlockData(span.Slice(0, sizeofSerializeData));
-                    span = span.Slice(sizeofSerializeData);
-                }
-            }
+        using FileStream fs = File.Open(PathToChunk(chunk), FileMode.Open);
+        using BinaryReader br = new BinaryReader(fs);
+        br.ReadInt32(); //version
+        br.ReadByte(); // chunkState
+        br.ReadInt32(); // tick
+        int nbBlockInPalette = br.ReadInt32();
+        
+        BlockData[] blocksData = new BlockData[nbBlockInPalette];
+        for (int i = 0; i < nbBlockInPalette; i++) {
+            blocksData[i] = new BlockData(br);
         }
+
+        if (nbBlockInPalette > 1) {
+            int nbBytePerBlock = Log8Ceil(nbBlockInPalette);
+            for (int x = 0; x < Chunk.CHUNK_SIZE; x++) {
+                for (int y = 0; y < Chunk.CHUNK_SIZE; y++) {
+                    for (int z = 0; z < Chunk.CHUNK_SIZE; z++) {
+                        int indexPalette = 0;
+                        for (int j = 0; j < nbBytePerBlock; j++) {
+                            indexPalette += br.ReadByte() << (j * 8);
+                        }
+                        chunk.blocks[x,y,z] = blocksData[indexPalette];
+                    }
+                }
+            }   
+        }
+    }
+    
+    
+    public static int Log8Ceil(int x)
+    {
+        int v = x ; // 32-bit word to find the log base 2 of
+        int r = 0; // r will be lg(v)
+        while (v > 0) // unroll for more speed...
+        {
+            v >>= 8;
+            r++;
+        }
+        return r;
     }
 }
