@@ -13,12 +13,14 @@ public struct BlockData
         this.id = id;
     }
 
-    public ReadOnlySpan<byte> tobyte() {
+    public byte[] tobyte() {
         return BitConverter.GetBytes((short)id);
     }
 
     public const int sizeofSerializeData = 2;
 
-
+    public override bool Equals(object? obj) {
+        return obj is BlockData data && id == data.id;
+    }
 }
 
