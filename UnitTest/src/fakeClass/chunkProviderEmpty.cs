@@ -25,6 +25,10 @@ public class ChunkManagerEmpty : IChunkManager
         return chunks[position];
     }
 
+    public void removeChunk(Vector3D<int> position) {
+        chunks.Remove(position);
+    }
+
     public void addChunkToDraw(Chunk chunk) {
     }
 
