@@ -78,17 +78,86 @@ public class ChunkStorageTest
             blocksData[i] = new BlockData(br.ReadInt16());
             Console.WriteLine(blocksData[i].id);
         }
+        
+        int nbBytePerBlock = ChunkStorage.Log8Ceil(nbBlock);
         for (int i = 0; i < Chunk.CHUNK_SIZE; i++) {
             for (int y = 0; y < Chunk.CHUNK_SIZE; y++) {
                 for (int z = 0; z < Chunk.CHUNK_SIZE; z++) {
-                    Assert.That(new BlockData(br.ReadInt32()), Is.EqualTo(blocks[i, y, z]));
+                    int indexPalette = 0;
+                    for (int j = 0; j < nbBytePerBlock; j++) {
+                        indexPalette += br.ReadByte() << (j * 8);
+                    }
+                    Assert.That(blocksData[indexPalette], Is.EqualTo(blocks[i, y, z]));
                 }
             }
         }
+    }
+
+    [Test]
+    public void testCreatedChunkIsAbleToSaveAndRecoverData() {
+        Chunk chunk = chunkManagerEmpty.getChunk(Vector3D<int>.Zero);
+        chunk.setWantedChunkState(ChunkState.BLOCKGENERATED);
+        
+        chunk.setBlock(0,0,0, "metal");
+
+        chunk.save();
+        
+        chunkManagerEmpty.removeChunk(Vector3D<int>.Zero);
+        Chunk chunk2 = chunkManagerEmpty.getChunk(Vector3D<int>.Zero);
+        chunk2.setWantedChunkState(ChunkState.BLOCKGENERATED);
+        
+        Assert.True(chunk2.getBlock(Vector3D<int>.Zero).name.Equals("metal"));
+    }
+
+
+    [Test]
+    public void testEmptyChunkLoadAndSave() {
+        Vector3D<int> chunkPosition = new Vector3D<int>(0, (int)(Chunk.CHUNK_SIZE * 1000), 0);
+        Chunk chunk = chunkManagerEmpty.getChunk(chunkPosition);
+        chunk.setWantedChunkState(ChunkState.BLOCKGENERATED);
+        chunk.save();
+        
+        chunkManagerEmpty.removeChunk(chunkPosition);
+        Chunk chunk2 = chunkManagerEmpty.getChunk(chunkPosition);
+        chunk2.setWantedChunkState(ChunkState.BLOCKGENERATED);
+
+        for (int x = 0; x < Chunk.CHUNK_SIZE; x++) {
+            for (int y = 0; y < Chunk.CHUNK_SIZE; y++) {
+                for (int z = 0; z < Chunk.CHUNK_SIZE; z++) {
+                    Assert.True(chunk2.getBlock(new Vector3D<int>(x,y,z)).name.Equals(BlockFactory.AIR_BLOCK));
+                }
+            }
+        }
+
+    }
+
+
+    
+    
+    [Test]
+    public void testCalculNbBytePerBlock() {
+        int nbBlock = 1;
+        Assert.AreEqual(1,ChunkStorage.Log8Ceil(nbBlock));
         
 
+        nbBlock = 55;
+        Assert.AreEqual(1,ChunkStorage.Log8Ceil(nbBlock));
 
+        nbBlock = 255;
+        Assert.AreEqual(1,ChunkStorage.Log8Ceil(nbBlock));
 
+        nbBlock = 256;
+        Assert.AreEqual(2,ChunkStorage.Log8Ceil(nbBlock));
+        
+        nbBlock = 65535;
+        Assert.AreEqual(2,ChunkStorage.Log8Ceil(nbBlock));
+
+        nbBlock = 65536;
+        Assert.AreEqual(3,ChunkStorage.Log8Ceil(nbBlock));
+        nbBlock = 16777215;
+        Assert.AreEqual(3,ChunkStorage.Log8Ceil(nbBlock));
+        nbBlock = 16777216;
+        Assert.AreEqual(4,ChunkStorage.Log8Ceil(nbBlock));
     }
 
 }
