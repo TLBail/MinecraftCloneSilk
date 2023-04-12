@@ -21,7 +21,7 @@ public class ChunkGenerationBenchmark
         textureManager.fakeLoad();
         blocks = new BlockData[16, 16, 16];
         worldNaturalGeneration = new WorldNaturalGeneration();
-        chunkManager = new ChunkManagerEmpty(worldNaturalGeneration);
+        chunkManager = new ChunkManagerEmpty(worldNaturalGeneration, null);
     }
 
     [Benchmark]
