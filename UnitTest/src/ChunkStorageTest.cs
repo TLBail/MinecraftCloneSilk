@@ -1,4 +1,5 @@
-﻿using MinecraftCloneSilk.Core;
+﻿using System.IO.Compression;
+using MinecraftCloneSilk.Core;
 using MinecraftCloneSilk.Model;
 using MinecraftCloneSilk.Model.NChunk;
 using MinecraftCloneSilk.Model.Storage;
@@ -65,7 +66,8 @@ public class ChunkStorageTest
         Assert.True(chunkManagerEmpty.chunkStorage.isChunkExistInMemory(chunk));
         
         using FileStream fs = File.Open(chunkManagerEmpty.chunkStorage.PathToChunk(chunk), FileMode.Open);
-        using BinaryReader br = new BinaryReader(fs);
+        using ZLibStream zs = new ZLibStream(fs, CompressionMode.Decompress, false);
+        using BinaryReader br = new BinaryReader(zs);
         Assert.That(br.ReadInt32(), Is.EqualTo(1), "version of file");
         Assert.That(br.ReadByte(), Is.EqualTo((byte) chunk.chunkState), "chunkState");
         Assert.That(br.ReadInt32(), Is.EqualTo(0), "tick of chunk");
@@ -160,4 +162,5 @@ public class ChunkStorageTest
         Assert.AreEqual(4,ChunkStorage.Log8Ceil(nbBlock));
     }
 
+    
 }
