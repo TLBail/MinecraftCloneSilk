@@ -50,10 +50,12 @@ public class ChunkDrawableStrategy : ChunkStrategy
 
 
     public override void updateChunkVertex() {
-        if (!openGlSetup) return;
         updateCubeVertices();
-        nbVertex = vertices.Count;
-        sendCubeVertices();
+        if (!openGlSetup && nbVertex == 0) {
+            needToUpdateChunkVertices = false;
+            return;            
+        }
+        needToSendVertices = true;
         needToUpdateChunkVertices = false;
     }
 
@@ -82,7 +84,7 @@ public class ChunkDrawableStrategy : ChunkStrategy
         lock (chunk.blocksLock) {
             chunk.blocks[x, y, z].id = Chunk.blockFactory.getBlockIdByName(name);
         }
-
+        
         updateBlocksAround(x, y, z);
         needToUpdateChunkVertices = true;
     }
@@ -91,7 +93,7 @@ public class ChunkDrawableStrategy : ChunkStrategy
 
     private void initVertices() {
         updateCubeVertices();
-        if (vertices.Count == 0) {
+        if (nbVertex == 0) {
             return;
         }
 
