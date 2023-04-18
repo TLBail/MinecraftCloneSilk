@@ -162,5 +162,32 @@ public class ChunkStorageTest
         Assert.AreEqual(4,ChunkStorage.Log8Ceil(nbBlock));
     }
 
+
+    [Test]
+    public void testSaveChunkFullOfCobble() {
+        Chunk chunk = chunkManagerEmpty.getChunk(new Vector3D<int>(0, -32, 0));
+        chunk.setWantedChunkState(ChunkState.BLOCKGENERATED);
+        for (int x = 0; x < Chunk.CHUNK_SIZE; x++) {
+            for (int y = 0; y < Chunk.CHUNK_SIZE; y++) {
+                for (int z = 0; z < Chunk.CHUNK_SIZE; z++) {
+                    Assert.That(chunk.getBlock(x,y,z).name, Is.EqualTo("stone"));
+                }
+            }
+        }
+        
+        chunk.save();
+        
+        chunkManagerEmpty.removeChunk(new Vector3D<int>(0, -32, 0));
+        
+        Chunk chunk2 = chunkManagerEmpty.getChunk(new Vector3D<int>(0, -32, 0));
+        chunk2.setWantedChunkState(ChunkState.BLOCKGENERATED);
+        for (int x = 0; x < Chunk.CHUNK_SIZE; x++) {
+            for (int y = 0; y < Chunk.CHUNK_SIZE; y++) {
+                for (int z = 0; z < Chunk.CHUNK_SIZE; z++) {
+                    Assert.That(chunk2.getBlock(x,y,z).name, Is.EqualTo("stone"));
+                }
+            }
+        }
+    }
     
 }
