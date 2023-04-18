@@ -3,6 +3,22 @@
 
 Silk Minecraft Clone est un projet qui vise à recréer le célèbre jeu Minecraft en utilisant Silk.Net, une bibliothèque C# dédiée à la programmation de jeux vidéo, avec ImGui pour l'interface utilisateur. Le monde est généré de manière procédurale grâce à l'algorithme de Perlin Noise, offrant des paysages variés et uniques. Le jeu dispose également de nombreux menus de débogage pour faciliter le développement et la résolution des problèmes.
 
+# Build 
+Pour compiler le projet, il dotnet 7.0
+utilisez la commande suivantes :
+```bash
+dotnet publish -r win-x64 /p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true
+```
+vous aurez le dossier "publish" qui contient le l'executable.
+vous pouvez supprimer tous les fichiers sauf "MinecraftCloneSilk.exe" 
+vous avez besoin de rajouter les fichiers et dossiers suivants :
+- le Dossier Assets
+- le Dossier Shader
+- glfw3.dll ou SDL2.dll (fichiers trouvables dans les dossier de l'export)
+- deux dossier Worlds/newWorld
+
+
+
 
 ## Architecture 
 
