@@ -15,6 +15,7 @@ public class WorldUI
     public WorldUI(World world)
     {
         this.world = world;
+        chunkRenderDistance = this.world.radius;
         worldMode = world.worldMode.ToString();
         blockNames = new string[BlockFactory.getInstance().blocksReadOnly.Count];
         int index = 0;
@@ -34,6 +35,8 @@ public class WorldUI
 
     private string previousWorldMode;
     private static WorldNaturalGeneration.GenerationParameter parameter;
+    private static int chunkRenderDistance;
+    
     
     public void drawUi() {
         blockManagementUi();
@@ -50,6 +53,10 @@ public class WorldUI
     
     
     private void blockManagementUi() {
+        if (ImGui.DragInt("chunk render distance", ref chunkRenderDistance, 1, 1, 30)) {
+            world.radius = chunkRenderDistance;
+        }
+        
         ImGui.Text("add block");
 
         if(ImGui.BeginCombo("blockname",newBlockName )) {
@@ -78,8 +85,10 @@ public class WorldUI
             for (int n = 0; n < worldModes.Length; n++)
             {
                 bool is_selected = (worldMode == worldModes[n].ToString());
-                if (ImGui.Selectable(worldModes[n].ToString(), is_selected))
+                if (ImGui.Selectable(worldModes[n].ToString(), is_selected)) {
                     worldMode = worldModes[n].ToString();
+                    world.setWorldMode(Enum.Parse<WorldMode>(worldMode));                    
+                }
                 if (is_selected)
                     ImGui.SetItemDefaultFocus();   // Set the initial focus when opening the combo (scrolling + for keyboard navigation support in the upcoming navigation branch)
             }
@@ -89,11 +98,6 @@ public class WorldUI
 
     private void worldGenerationUi() {
         if (ImGui.CollapsingHeader("World generation", ImGuiTreeNodeFlags.Bullet) ){
-        
-            if (previousWorldMode != worldMode) {
-                world.setWorldMode(Enum.Parse<WorldMode>(worldMode));
-                previousWorldMode = worldMode;
-            }
         
             ImGui.InputInt("seed", ref WorldNaturalGeneration.seed);
             for (int i = 0; i < WorldNaturalGeneration.generationParameters.Count; i++) {
