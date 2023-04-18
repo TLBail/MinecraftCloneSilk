@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.IO.Compression;
+using System.Text;
 using MinecraftCloneSilk.Model.NChunk;
 using Silk.NET.Maths;
 
@@ -18,7 +19,8 @@ public class ChunkStorage
     public void SaveChunk(Chunk chunk) {
         if(!chunk.blockModified) return;
         using Stream stream = File.Create(PathToChunk(chunk));
-        using BinaryWriter binaryWriter = new BinaryWriter(stream, Encoding.UTF8, false);
+        using ZLibStream zs = new ZLibStream(stream, CompressionLevel.Fastest, false);
+        using BinaryWriter binaryWriter = new BinaryWriter(zs, Encoding.UTF8, false);
         int version = 1;
         binaryWriter.Write(version);
         byte chunkState = (byte)chunk.chunkState;
@@ -86,7 +88,8 @@ public class ChunkStorage
     
     public void LoadBlocks(Chunk chunk) {
         using FileStream fs = File.Open(PathToChunk(chunk), FileMode.Open);
-        using BinaryReader br = new BinaryReader(fs);
+        using ZLibStream zs = new ZLibStream(fs, CompressionMode.Decompress, false);
+        using BinaryReader br = new BinaryReader(zs);
         br.ReadInt32(); //version
         br.ReadByte(); // chunkState
         br.ReadInt32(); // tick
