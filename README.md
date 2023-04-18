@@ -43,7 +43,7 @@ Les chunks sont sauvegardés dans le dossier "dossierCourant/Worlds/newWorld". L
 Pour accéder à la liste complète des commandes disponibles, tapez /help dans le chat du jeu.
 
 ## Crédits
-Un grand merci à LearnOpenGL pour les ressources et le soutien apportés au développement de ce projet.
+Un grand merci à LearnOpenGL
 
 
 [![Watch the video](https://img.youtube.com/vi/XlYM7xdmK9M/maxresdefault.jpg)](https://youtu.be/XlYM7xdmK9M)
