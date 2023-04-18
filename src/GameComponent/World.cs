@@ -22,7 +22,7 @@ public enum WorldMode
 public class World : GameObject
 {
     private Player player;
-    private const int RADIUS = 2;
+    public int radius { get; set; } = 6;
     private readonly WorldUI worldUi;
     public WorldNaturalGeneration worldNaturalGeneration;
     public WorldMode worldMode { get; set; }
@@ -37,7 +37,7 @@ public class World : GameObject
         worldUi = new WorldUI(this);
         worldNaturalGeneration = new WorldNaturalGeneration();
         chunkStorage = new ChunkStorage("./Worlds/newWorld");
-        chunkManager = new ChunkManager(RADIUS, worldNaturalGeneration, chunkStorage);
+        chunkManager = new ChunkManager(radius, worldNaturalGeneration, chunkStorage);
     }
 
 
@@ -223,10 +223,10 @@ public class World : GameObject
         if(lastPlayerChunkPosition == centerChunk) return;
         lastPlayerChunkPosition = centerChunk;
         var chunkRelevant = new List<Vector3D<int>>();
-        var rootChunk = centerChunk + new Vector3D<int>((int)(-RADIUS * Chunk.CHUNK_SIZE));
-        for (var x = 0; x < 2 * RADIUS; x++)
-        for (var y = 0; y < 2 * RADIUS; y++)
-        for (var z = 0; z < 2 * RADIUS; z++) {
+        var rootChunk = centerChunk + new Vector3D<int>((int)(-radius * Chunk.CHUNK_SIZE));
+        for (var x = 0; x < 2 * radius; x++)
+        for (var y = 0; y < 2 * radius; y++)
+        for (var z = 0; z < 2 * radius; z++) {
             var key = rootChunk + new Vector3D<int>((int)(x * Chunk.CHUNK_SIZE), (int)(y * Chunk.CHUNK_SIZE),
                 (int)(z * Chunk.CHUNK_SIZE));
             chunkRelevant.Add(key);

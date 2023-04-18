@@ -13,6 +13,10 @@ public class ChunkStorage
 
     public ChunkStorage(string pathToChunkFolder) {
         this.pathToChunkFolder = pathToChunkFolder;
+        var directory = Directory.CreateDirectory(pathToChunkFolder);
+        if(!directory.Exists) {
+            throw new Exception("Can't create directory for chunk storage");
+        }
     }
     
     
