@@ -15,10 +15,10 @@ Le code du projet est structuré autour d'un système ECS (Entity-Component-Syst
 ## Controles 
 Voici les commandes de base pour naviguer dans le jeu :
 
-ZQSD : Déplacement du personnage.
-T : Activer le chat pour entrer des commandes.
-E : Ouvrir l'inventaire.
-F1 : Activer ou désactiver la souris.
+- ZQSD : Déplacement du personnage.
+- T : Activer le chat pour entrer des commandes.
+- E : Ouvrir l'inventaire.
+- F1 : Activer ou désactiver la souris.
 
 
 ## Commandes
