@@ -20,6 +20,8 @@ Voici les commandes de base pour naviguer dans le jeu :
 - E : Ouvrir l'inventaire.
 - F1 : Activer ou désactiver la souris.
 
+## Sauvegarde
+Les chunks sont sauvegardés dans le dossier "dossierCourant/Worlds/newWorld". La taille des fichiers est optimisée, mais il y a encore un fichier par chunk. Attention à ne pas créer des mondes trop grands, car cela pourrait générer un grand nombre de fichiers.
 
 ## Commandes
 Pour accéder à la liste complète des commandes disponibles, tapez /help dans le chat du jeu.
