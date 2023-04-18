@@ -113,6 +113,14 @@ public class ChunkStorage
                     }
                 }
             }   
+        } else if(nbBlockInPalette == 1) {
+            for (int x = 0; x < Chunk.CHUNK_SIZE; x++) {
+                for (int y = 0; y < Chunk.CHUNK_SIZE; y++) {
+                    for (int z = 0; z < Chunk.CHUNK_SIZE; z++) {
+                        chunk.blocks[x,y,z] = blocksData[0];
+                    }
+                }
+            }
         }
     }
     
