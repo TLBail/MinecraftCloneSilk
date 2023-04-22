@@ -80,6 +80,9 @@ namespace MinecraftCloneSilk.Core
             //Set-up input context.
             input = window.CreateInput();
             Gl = window.CreateOpenGL();
+            Gl.GetInteger(GetPName.MajorVersion, out int major);
+            Gl.GetInteger(GetPName.MinorVersion, out int minor);
+            Console.WriteLine("OpenGl Version : "  + major + "." + minor); ;
 
             loadIcon();
             
