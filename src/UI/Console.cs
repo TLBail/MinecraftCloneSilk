@@ -88,7 +88,7 @@ public class Console : UiWindow
         if (ImGui.InputText("", ref result, 255, inputTextFlags, Callback)) {
             execCommand(result);
             scrollToBottom = true;
-            ImGui.CaptureKeyboardFromApp(false);
+            ImGui.SetNextFrameWantCaptureKeyboard(false);
             ImGui.SetNextWindowFocus();
         }else if (keyboard.IsKeyPressed(Key.T)) {
             ImGui.SetKeyboardFocusHere(-1);
