@@ -52,7 +52,7 @@ namespace MinecraftCloneSilk.Core
             var options = WindowOptions.Default;
             options.Size = new Vector2D<int>(1920, 1080);
             options.Title = "MinecraftCloneSilk";
-
+            options.API = new GraphicsAPI(ContextAPI.OpenGL, new APIVersion(4, 3));
             window = Window.Create(options);
 
             //Assign events.
