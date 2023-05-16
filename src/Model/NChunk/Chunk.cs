@@ -13,7 +13,7 @@ public class Chunk : IDisposable
     internal BlockData[,,] blocks;
     internal object blocksLock = new object();
 
-    public static readonly uint CHUNK_SIZE = 16;
+    public const uint CHUNK_SIZE = 16;
 
     internal IChunkManager chunkManager;
     internal WorldGenerator worldGenerator;
@@ -33,13 +33,10 @@ public class Chunk : IDisposable
 
     internal static Shader cubeShader;
     internal static BlockFactory blockFactory;
-    internal static GL Gl;
 
     private bool disposed = false;
 
     internal bool blockModified = false;
-
-    public bool loadedInChunkManagerThread = false;
 
     public Chunk(Vector3D<int> position, IChunkManager chunkManager, WorldGenerator worldGenerator, ChunkStorage chunkStorage) {
         this.chunkState = DEFAULTSTARTINGCHUNKSTATE;
@@ -53,7 +50,6 @@ public class Chunk : IDisposable
     }
 
     public static void initStaticMembers(GL Gl, Shader chunkShader) {
-        Chunk.Gl = Gl;
         Chunk.cubeShader = chunkShader;
     }
 
@@ -121,7 +117,8 @@ public class Chunk : IDisposable
     public void updateChunkVertex() => chunkStrategy.updateChunkVertex();
     public void debug(bool? setDebug = null) => chunkStrategy.debug(setDebug);
     public void Update(double deltaTime) => chunkStrategy.update(deltaTime);
-    public void Draw(GL Gl, double deltaTime) => chunkStrategy.draw(Gl, deltaTime);
+    
+    public ReadOnlySpan<CubeVertex> getVertices() => chunkStrategy.getVertices();
 
     public void reset(Vector3D<int> position, IChunkManager chunkManager, WorldGenerator worldGenerator) {
         this.position = position;
@@ -133,7 +130,6 @@ public class Chunk : IDisposable
         this.chunkStrategy = new ChunkEmptyStrategy(this);
         disposed = false;
         blockModified = false;
-        loadedInChunkManagerThread = false;
         for (int x = 0; x < CHUNK_SIZE; x++) {
             for (int y = 0; y < CHUNK_SIZE; y++) {
                 for (int z = 0; z < CHUNK_SIZE; z++) {

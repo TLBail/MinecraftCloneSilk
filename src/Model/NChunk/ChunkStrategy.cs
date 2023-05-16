@@ -118,4 +118,8 @@ public abstract class ChunkStrategy
 
 
     public virtual ChunkState minimumChunkStateOfNeighbors() => ChunkState.EMPTY;
+
+    public virtual ReadOnlySpan<CubeVertex> getVertices() {
+        throw new Exception("not availabe for this chunk state : " + chunk.chunkState.ToString());
+    }
 }

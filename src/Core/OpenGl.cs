@@ -82,8 +82,14 @@ namespace MinecraftCloneSilk.Core
             Gl = window.CreateOpenGL();
             Gl.GetInteger(GetPName.MajorVersion, out int major);
             Gl.GetInteger(GetPName.MinorVersion, out int minor);
-            Console.WriteLine("OpenGl Version : "  + major + "." + minor); ;
-
+            Console.WriteLine("OpenGl Version : "  + major + "." + minor);
+            byte* bytePtr = Gl.GetString(StringName.Renderer);
+            List<byte> vendor = new List<byte>();
+            while (*bytePtr != 0) {
+                vendor.Add(*bytePtr);
+                bytePtr++;
+            }
+            Console.WriteLine("Vendor : " + Encoding.ASCII.GetString(vendor.ToArray()) );
             loadIcon();
             
             imGuiController = new ImGuiController(Gl, window, input);

@@ -1,5 +1,6 @@
 ﻿using System.Numerics;
 using MinecraftCloneSilk.Core;
+using MinecraftCloneSilk.GameComponent;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL;
 using Shader = MinecraftCloneSilk.Core.Shader;
@@ -9,17 +10,14 @@ namespace MinecraftCloneSilk.Model.NChunk;
 
 public class ChunkDrawableStrategy : ChunkStrategy
 {
-    private BufferObject<CubeVertex> Vbo;
-    private VertexArrayObject<CubeVertex, uint> Vao;
-
-    internal static Texture cubeTexture;
+    
 
     private bool openGlSetup = false;
     private bool needToSendVertices = false;
     private bool needToUpdateChunkVertices = false;
     private Action disposeAction;
     private List<CubeVertex> vertices;
-
+    private static ChunkBufferObjectManager chunkBufferObjectManager;
 
     private int nbVertex = 0;
 
@@ -29,8 +27,8 @@ public class ChunkDrawableStrategy : ChunkStrategy
     }
 
 
-    public static void InitStaticMembers(Texture cubeTexture) {
-        ChunkDrawableStrategy.cubeTexture = cubeTexture;
+    public static void InitStaticMembers(Texture cubeTexture,Game game) {
+        if(chunkBufferObjectManager == null) chunkBufferObjectManager = new ChunkBufferObjectManager(cubeTexture, game);
     }
 
     public override void init() {
@@ -66,19 +64,7 @@ public class ChunkDrawableStrategy : ChunkStrategy
         disposeAction?.Invoke();
     }
 
-    public override void draw(GL gl, double deltaTime) {
-        if (!openGlSetup) return;
-        if (nbVertex == 0) return;
-        Vao.Bind();
-        Chunk.cubeShader.Use();
-        cubeTexture.Bind();
-
-        var model = Matrix4x4.CreateTranslation(new Vector3(chunk.position.X, chunk.position.Y, chunk.position.Z));
-        Chunk.cubeShader.SetUniform("model", model);
-
-
-        gl.DrawArrays(PrimitiveType.Triangles, 0, (uint)nbVertex);
-    }
+    
 
     public override void setBlock(int x, int y, int z, string name) {
         lock (chunk.blocksLock) {
@@ -102,30 +88,25 @@ public class ChunkDrawableStrategy : ChunkStrategy
 
 
     private void setOpenGl() {
-        const int nbFacePerBlock = 6;
-        const int nbVertexPerFace = 6;
-        int nbVertexMax = (int)(nbVertexPerFace * nbFacePerBlock * Chunk.CHUNK_SIZE * Chunk.CHUNK_SIZE *
-                                Chunk.CHUNK_SIZE);
-        Vbo = new BufferObject<CubeVertex>(Chunk.Gl, nbVertexMax, BufferTargetARB.ArrayBuffer);
-        Vao = new VertexArrayObject<CubeVertex, uint>(Chunk.Gl, Vbo);
-
-        Vao.Bind();
-        Vao.VertexAttributePointer(0, 3, VertexAttribPointerType.Float, "position");
-        Vao.VertexAttributePointer(1, 2, VertexAttribPointerType.Float, "texCoords");
-
-        chunk.chunkManager.addChunkToDraw(chunk);
+        chunkBufferObjectManager.addChunkToRegion(chunk);
         openGlSetup = true;
     }
 
+
+    public override ReadOnlySpan<CubeVertex> getVertices() {
+        return vertices.ToArray();
+    }
+
     private void sendCubeVertices() {
-        Vbo.Bind();
-        Vbo.sendData(vertices.ToArray(), 0);
+        chunkBufferObjectManager.needToUpdateChunk(chunk);
         needToSendVertices = false;
     }
 
     private void updateCubeVertices() {
         lock (chunk.blocksLock) {
             lock (chunk.chunksNeighborsLock) {
+                Vector3D<float> positionFloat =
+                    new Vector3D<float>(chunk.position.X, chunk.position.Y, chunk.position.Z);
                 vertices = new List<CubeVertex>();
                 for (int x = 0; x < Chunk.CHUNK_SIZE; x++) {
                     for (int y = 0; y < Chunk.CHUNK_SIZE; y++) {
@@ -136,7 +117,7 @@ public class ChunkDrawableStrategy : ChunkStrategy
                             FaceFlag faces = getFaces(x, y, z);
                             if (faces > 0) {
                                 vertices.AddRange(Chunk.blockFactory.blocksReadOnly[block.id].textureBlock
-                                    .getCubeVertices(faces, new Vector3D<float>(x, y, z)));
+                                    .getCubeVertices(faces, new Vector3D<float>(x, y, z), positionFloat));
                             }
                         }
                     }
@@ -149,33 +130,24 @@ public class ChunkDrawableStrategy : ChunkStrategy
 
     private FaceFlag getFaces(int x, int y, int z) {
         FaceFlag faceFlag = FaceFlag.EMPTY;
-        //X
-        if (isBlockTransparent(x - 1, y, z)) {
+        if (isBlockTransparent(x - 1, y, z)) { //X
             faceFlag |= FaceFlag.RIGHT;
         }
-
         if (isBlockTransparent(x + 1, y, z)) {
             faceFlag |= FaceFlag.LEFT;
         }
-
-        //y
-        if (isBlockTransparent(x, y - 1, z)) {
+        if (isBlockTransparent(x, y - 1, z)) { // Y
             faceFlag |= FaceFlag.BOTTOM;
         }
-
         if (isBlockTransparent(x, y + 1, z)) {
             faceFlag |= FaceFlag.TOP;
         }
-
-        //z
-        if (isBlockTransparent(x, y, z - 1)) {
+        if (isBlockTransparent(x, y, z - 1)) { // Z
             faceFlag |= FaceFlag.BACK;
         }
-
         if (isBlockTransparent(x, y, z + 1)) {
             faceFlag |= FaceFlag.FRONT;
         }
-
         return faceFlag;
     }
 
@@ -227,9 +199,9 @@ public class ChunkDrawableStrategy : ChunkStrategy
 
 
     public override void Dispose() {
-        Vao?.Dispose();
-        Vbo?.Dispose();
+        if (openGlSetup) {
+            chunkBufferObjectManager.removeChunk(chunk);
+        }
         chunk.chunkManager.removeChunkToUpdate(chunk);
-        chunk.chunkManager.removeChunkToDraw(chunk);
     }
 }

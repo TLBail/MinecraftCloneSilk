@@ -38,8 +38,6 @@ public class ChunkManager : IChunkManager, IDisposable
 
     private List<Chunk> chunksToUpdate = new List<Chunk>();
     private object chunksToUpdateLock = new object();
-    private List<Chunk> chunksToDraw = new List<Chunk>();
-    private object chunksToDrawLock = new object();
 
     private List<Chunk> chunksToUnload = new List<Chunk>();
     private object chunksToUnloadLock = new object();
@@ -81,12 +79,7 @@ public class ChunkManager : IChunkManager, IDisposable
             }
         }
     }
-
-    public void Draw(GL gl, double deltaTime) {
-        lock (chunksToDrawLock) {
-            foreach (var chunk in chunksToDraw) chunk.Draw(gl, deltaTime);
-        }
-    }
+    
 
 
     public void update(double deltatime) {
@@ -136,12 +129,6 @@ public class ChunkManager : IChunkManager, IDisposable
         return chunk;
     }
 
-    public void addChunkToDraw(Chunk chunk) {
-        lock (chunksToDrawLock) {
-            chunksToDraw.Add(chunk);
-        }
-    }
-
     public void addChunkToUpdate(Chunk chunk) {
         lock (chunksToUpdateLock) {
             chunksToUpdate.Add(chunk);
@@ -154,11 +141,6 @@ public class ChunkManager : IChunkManager, IDisposable
         }
     }
 
-    public void removeChunkToDraw(Chunk chunk) {
-        lock (chunksToDrawLock) {
-            chunksToDraw.Remove(chunk);      
-        }  
-    } 
 
     public void updateRelevantChunks(List<Vector3D<int>> chunkRelevant) {
         List<Vector3D<int>> chunkNotContainInChunks = new List<Vector3D<int>>();
