@@ -22,7 +22,7 @@ namespace MinecraftCloneSilk.Model
 
         }
 
-        public IEnumerable<CubeVertex> getCubeVertices(FaceFlag faceFlag, Vector3D<float> blockPosition)
+        public IEnumerable<CubeVertex> getCubeVertices(FaceFlag faceFlag, Vector3D<float> blockPosition, Vector3D<float> chunkPosition)
         {
             CubeVertex[] vertices = new CubeVertex[6 * FaceFlagUtils.nbFaces(faceFlag)];
             int index = 0;
@@ -31,7 +31,7 @@ namespace MinecraftCloneSilk.Model
                 Face face = enumerator.Current;
                 foreach (var vertex in cubeVertices[(int)face]) {
                     vertices[index] = vertex;
-                    vertices[index].position += blockPosition;
+                    vertices[index].position += blockPosition + chunkPosition;
                     index++;
                 }
             }

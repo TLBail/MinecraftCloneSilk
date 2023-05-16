@@ -90,7 +90,7 @@ namespace MinecraftCloneSilk.GameComponent
             //load textures
             textureManager = TextureManager.getInstance();
             textureManager.load(Gl);
-            ChunkDrawableStrategy.InitStaticMembers(TextureManager.getInstance().textures["spriteSheet.png"]);
+            ChunkDrawableStrategy.InitStaticMembers(TextureManager.getInstance().textures["spriteSheet.png"], this);
 
             // init shaders 
             initShaders(Gl);
@@ -138,7 +138,7 @@ namespace MinecraftCloneSilk.GameComponent
             gl.BindBuffer(BufferTargetARB.UniformBuffer, 0);
 
             try{   
-            drawables?.Invoke(gl, deltaTime);
+                drawables?.Invoke(gl, deltaTime);
             }catch (GameException gameException) {
                 console?.log(gameException.ToString(), Console.LogType.ERROR);
             }

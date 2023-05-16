@@ -22,7 +22,7 @@ public enum WorldMode
 public class World : GameObject
 {
     private Player player;
-    public int radius { get; set; } = 6;
+    public int radius { get; set; } = 16;
     private readonly WorldUI worldUi;
     public WorldNaturalGeneration worldNaturalGeneration;
     public WorldMode worldMode { get; set; }
@@ -31,8 +31,8 @@ public class World : GameObject
     private Vector3D<int> lastPlayerChunkPosition = new Vector3D<int>(-1);
 
     private ChunkStorage chunkStorage;
+
     public World(Game game, WorldMode worldMode = WorldMode.EMPTY) : base(game) {
-        game.drawables += Draw;
         this.worldMode = worldMode;
         worldUi = new WorldUI(this);
         worldNaturalGeneration = new WorldNaturalGeneration();
@@ -46,15 +46,16 @@ public class World : GameObject
         if (worldMode == WorldMode.SIMPLE) {
             addExempleChunk();
         }
+
         addCommand();
     }
 
-   
 
     protected override void update(double deltaTime) {
         if (worldMode == WorldMode.DYNAMIC) {
             createChunkAroundPlayer();
         }
+
         chunkManager.update(deltaTime);
     }
 
@@ -67,6 +68,7 @@ public class World : GameObject
         if (blockName == null) {
             throw new GameException(this, "try to set a block with a name null");
         }
+
         var key = getChunkPosition(position);
         var chunk = chunkManager.getChunk(key);
         var localPosition = getLocalPosition(position);
@@ -116,10 +118,6 @@ public class World : GameObject
     }
 
 
-    public void Draw(GL gl, double deltaTime) {
-        chunkManager.Draw(gl, deltaTime);
-    }
-    
     public static Vector3D<int> getChunkPosition(Vector3D<int> blockPosition) {
         return new Vector3D<int>(
             (int)((int)MathF.Floor((float)blockPosition.X / Chunk.CHUNK_SIZE) * Chunk.CHUNK_SIZE),
@@ -161,7 +159,7 @@ public class World : GameObject
                 );
             }
         });
-        
+
         console.addCommand("/rmChunk", (commandParams) =>
         {
             if (commandParams.Length >= 3) {
@@ -171,14 +169,14 @@ public class World : GameObject
                     int.Parse(commandParams[2])
                 );
                 console.log("chunk at " + position + " unloaded " + (
-                        chunkManager.tryToUnloadChunk(position) ?  "succefuly": "failed")
+                        chunkManager.tryToUnloadChunk(position) ? "succefuly" : "failed")
                 );
             }
         });
-        
+
         console.addCommand("/setBlock", (commandParams) =>
         {
-            if(commandParams.Length >= 4) {
+            if (commandParams.Length >= 4) {
                 Vector3D<int> position = new Vector3D<int>(
                     int.Parse(commandParams[0]),
                     int.Parse(commandParams[1]),
@@ -189,10 +187,10 @@ public class World : GameObject
                 );
             }
         });
-        
+
         console.addCommand("/getBlock", (commandParams) =>
         {
-            if(commandParams.Length >= 3) {
+            if (commandParams.Length >= 3) {
                 Vector3D<int> position = new Vector3D<int>(
                     int.Parse(commandParams[0]),
                     int.Parse(commandParams[1]),
@@ -202,7 +200,7 @@ public class World : GameObject
                 );
             }
         });
-        
+
         console.addCommand("/getChunk", (commandParams) =>
         {
             if (commandParams.Length >= 3) {
@@ -220,7 +218,7 @@ public class World : GameObject
     private void createChunkAroundPlayer() {
         var centerChunk =
             getChunkPosition(new Vector3D<int>((int)player.position.X, (int)player.position.Y, (int)player.position.Z));
-        if(lastPlayerChunkPosition == centerChunk) return;
+        if (lastPlayerChunkPosition == centerChunk) return;
         lastPlayerChunkPosition = centerChunk;
         var chunkRelevant = new List<Vector3D<int>>();
         var rootChunk = centerChunk + new Vector3D<int>((int)(-radius * Chunk.CHUNK_SIZE));
@@ -231,28 +229,26 @@ public class World : GameObject
                 (int)(z * Chunk.CHUNK_SIZE));
             chunkRelevant.Add(key);
         }
+
         chunkManager.updateRelevantChunks(chunkRelevant);
     }
 
 
-    
-
     private void addExempleChunk() {
-        Vector3D<int>[] postions = {
+        Vector3D<int>[] postions =
+        {
             Vector3D<int>.Zero,
 
             new Vector3D<int>(-(int)Chunk.CHUNK_SIZE, 0, (int)Chunk.CHUNK_SIZE),
             new Vector3D<int>(-(int)Chunk.CHUNK_SIZE, 0, -(int)Chunk.CHUNK_SIZE),
             new Vector3D<int>(-(int)Chunk.CHUNK_SIZE, 0, 0),
             new Vector3D<int>(0, 0, -(int)Chunk.CHUNK_SIZE),
-
-            // new Vector3D<int>((int)Chunk.CHUNK_SIZE, 0, 0),
-            // new Vector3D<int>((int)Chunk.CHUNK_SIZE, 0, (int)Chunk.CHUNK_SIZE),
-            // new Vector3D<int>((int)Chunk.CHUNK_SIZE, 0, -(int)Chunk.CHUNK_SIZE),
-            // new Vector3D<int>(-(int)Chunk.CHUNK_SIZE, 0, 0),
-            // new Vector3D<int>(-(int)Chunk.CHUNK_SIZE, 0, (int)Chunk.CHUNK_SIZE),
-            // new Vector3D<int>(-(int)Chunk.CHUNK_SIZE, 0, -(int)Chunk.CHUNK_SIZE)
-
+            new Vector3D<int>((int)Chunk.CHUNK_SIZE, 0, 0),
+            new Vector3D<int>((int)Chunk.CHUNK_SIZE, 0, (int)Chunk.CHUNK_SIZE),
+            new Vector3D<int>((int)Chunk.CHUNK_SIZE, 0, -(int)Chunk.CHUNK_SIZE),
+            new Vector3D<int>(-(int)Chunk.CHUNK_SIZE, 0, 0),
+            new Vector3D<int>(-(int)Chunk.CHUNK_SIZE, 0, (int)Chunk.CHUNK_SIZE),
+            new Vector3D<int>(-(int)Chunk.CHUNK_SIZE, 0, -(int)Chunk.CHUNK_SIZE)
         };
         foreach (var position in postions) {
             chunkManager.addChunkToLoad(position);
