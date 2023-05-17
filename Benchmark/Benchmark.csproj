@@ -9,6 +9,8 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="App.Metrics" Version="4.4.0-preview.0.4" />
+      <PackageReference Include="App.Metrics.Reporting.Console" Version="4.4.0-preview.0.4" />
       <PackageReference Include="BenchmarkDotNet" Version="0.13.2" />
     </ItemGroup>
 
