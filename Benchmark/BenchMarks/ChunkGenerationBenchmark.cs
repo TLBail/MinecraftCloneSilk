@@ -1,32 +1,48 @@
 ﻿using BenchmarkDotNet.Attributes;
 using MinecraftCloneSilk.Core;
+using MinecraftCloneSilk.GameComponent;
 using MinecraftCloneSilk.Model;
 using MinecraftCloneSilk.Model.NChunk;
 using Silk.NET.Maths;
-using UnitTest.fakeClass;
 
 namespace Benchmark.BenchMarks;
 
 [MemoryDiagnoser,KeepBenchmarkFiles]
 public class ChunkGenerationBenchmark
 {
-    public int bob = 0;
-    public static int dagniel = 0; 
-    WorldNaturalGeneration worldNaturalGeneration;
-    BlockData[,,] blocks;
-    Vector3D<int> position = Vector3D<int>.Zero;
+    private Game game;
+    private Thread gameThread;
+
     private IChunkManager chunkManager;
-    public ChunkGenerationBenchmark() {
-        TextureManager textureManager = TextureManager.getInstance();
-        textureManager.fakeLoad();
-        blocks = new BlockData[16, 16, 16];
-        worldNaturalGeneration = new WorldNaturalGeneration();
-        chunkManager = new ChunkManagerEmpty(worldNaturalGeneration, null);
+    
+    [GlobalSetup]
+    public async void Setup() {
+        Scene scene = new Scene(new List<InitGameData>()
+            {
+                new (typeof(Player).FullName),
+                new (typeof(World).FullName, new object[]{WorldMode.EMPTY}),
+                new (typeof(Console).FullName)
+            }
+        );
+        game = Game.getInstance(scene, false);
+        gameThread = new Thread(() => {
+            game.Run();
+        });
+        gameThread.Start();
+        await game.waitForFrame(1);
     }
 
+    [GlobalCleanup]
+    public async void cleanUp() {
+        await game.waitForFrame(10);
+        game.Stop();
+        gameThread.Join();
+    }
+    
+    
     [Benchmark]
     public void createAllBlockForAChunk() {
-        Chunk chunk = new Chunk(position, chunkManager, worldNaturalGeneration, null);
+        Chunk chunk = new Chunk(Vector3D<int>.Zero, null, null, null);
     }
     
 }
