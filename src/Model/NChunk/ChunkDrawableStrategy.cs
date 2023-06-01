@@ -11,10 +11,11 @@ namespace MinecraftCloneSilk.Model.NChunk;
 public class ChunkDrawableStrategy : ChunkStrategy
 {
     
-
+    private bool visible = false;
     private bool openGlSetup = false;
     private bool needToSendVertices = false;
     private bool needToUpdateChunkVertices = false;
+    
     private Action disposeAction;
     private List<CubeVertex> vertices;
     private static ChunkBufferObjectManager chunkBufferObjectManager;
@@ -89,6 +90,7 @@ public class ChunkDrawableStrategy : ChunkStrategy
 
     private void setOpenGl() {
         chunkBufferObjectManager.addChunkToRegion(chunk);
+        visible = true;
         openGlSetup = true;
     }
 
@@ -154,22 +156,22 @@ public class ChunkDrawableStrategy : ChunkStrategy
     private bool isBlockTransparent(int x, int y, int z) {
         BlockData blockData;
         if (y < 0) {
-            blockData = chunk.chunksNeighbors[(int)Face.BOTTOM]!
+            blockData = chunk.chunksNeighbors[(int)Face.BOTTOM]
                 .getBlockData(new Vector3D<int>(x, y + (int)Chunk.CHUNK_SIZE, z));
         } else if (y >= Chunk.CHUNK_SIZE) {
-            blockData = chunk.chunksNeighbors[(int)Face.TOP]!
+            blockData = chunk.chunksNeighbors[(int)Face.TOP]
                 .getBlockData(new Vector3D<int>(x, y - (int)Chunk.CHUNK_SIZE, z));
         } else if (x < 0) {
-            blockData = chunk.chunksNeighbors[(int)Face.LEFT]!
+            blockData = chunk.chunksNeighbors[(int)Face.LEFT]
                 .getBlockData(new Vector3D<int>(x + (int)Chunk.CHUNK_SIZE, y, z));
         } else if (x >= Chunk.CHUNK_SIZE) {
-            blockData = chunk.chunksNeighbors[(int)Face.RIGHT]!
+            blockData = chunk.chunksNeighbors[(int)Face.RIGHT]
                 .getBlockData(new Vector3D<int>(x - (int)Chunk.CHUNK_SIZE, y, z));
         } else if (z < 0) {
-            blockData = chunk.chunksNeighbors[(int)Face.BACK]!
+            blockData = chunk.chunksNeighbors[(int)Face.BACK]
                 .getBlockData(new Vector3D<int>(x, y, z + (int)Chunk.CHUNK_SIZE));
         } else if (z >= Chunk.CHUNK_SIZE) {
-            blockData = chunk.chunksNeighbors[(int)Face.FRONT]!
+            blockData = chunk.chunksNeighbors[(int)Face.FRONT]
                 .getBlockData(new Vector3D<int>(x, y, z - (int)Chunk.CHUNK_SIZE));
         } else {
             lock (chunk.blocksLock) {
@@ -183,24 +185,30 @@ public class ChunkDrawableStrategy : ChunkStrategy
 
     internal void updateBlocksAround(int x, int y, int z) {
         lock (chunk.chunksNeighborsLock) {
-            if (x == 0) chunk.chunksNeighbors[(int)Face.LEFT]!.updateChunkVertex();
-            if (x == Chunk.CHUNK_SIZE - 1) chunk.chunksNeighbors[(int)Face.RIGHT]!.updateChunkVertex();
+            if (x == 0) chunk.chunksNeighbors[(int)Face.LEFT].updateChunkVertex();
+            if (x == Chunk.CHUNK_SIZE - 1) chunk.chunksNeighbors[(int)Face.RIGHT].updateChunkVertex();
 
-            if (y == 0) chunk.chunksNeighbors[(int)Face.BOTTOM]!.updateChunkVertex();
+            if (y == 0) chunk.chunksNeighbors[(int)Face.BOTTOM].updateChunkVertex();
             ;
-            if (y == Chunk.CHUNK_SIZE - 1) chunk.chunksNeighbors[(int)Face.TOP]!.updateChunkVertex();
+            if (y == Chunk.CHUNK_SIZE - 1) chunk.chunksNeighbors[(int)Face.TOP].updateChunkVertex();
 
-            if (z == 0) chunk.chunksNeighbors[(int)Face.BACK]!.updateChunkVertex();
-            if (z == Chunk.CHUNK_SIZE - 1) chunk.chunksNeighbors[(int)Face.FRONT]!.updateChunkVertex();
+            if (z == 0) chunk.chunksNeighbors[(int)Face.BACK].updateChunkVertex();
+            if (z == Chunk.CHUNK_SIZE - 1) chunk.chunksNeighbors[(int)Face.FRONT].updateChunkVertex();
         }
+    }
+
+    public void hide() {
+        if(!visible) return;
+        visible = false;
+        chunkBufferObjectManager.removeChunk(chunk);
     }
 
     protected override Vector3D<float> ChunkStrategyColor() => new Vector3D<float>(1, 1, 0);
 
 
     public override void Dispose() {
-        if (openGlSetup) {
-            chunkBufferObjectManager.removeChunk(chunk);
+        if (visible) {
+            hide();
         }
         chunk.chunkManager.removeChunkToUpdate(chunk);
     }

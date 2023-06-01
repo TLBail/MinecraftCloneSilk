@@ -53,22 +53,12 @@ public abstract class ChunkStrategy
     }
     protected virtual void updateNeighboorChunkState(ChunkState chunkState) {
         lock (chunk.chunksNeighborsLock) {
-            if (chunk.chunksNeighbors.Length != 6) {
-                chunk.chunksNeighbors = new Chunk?[]
-                {
-                    chunk.chunksNeighbors[0],
-                    chunk.chunksNeighbors[1],
-                    chunk.chunksNeighbors[2],
-                    chunk.chunksNeighbors[3],
-                    chunk.chunksNeighbors[4],
-                    chunk.chunksNeighbors[5]
-                };
-            }
+            chunk.chunksNeighbors = new Chunk[6];
             foreach (Face face in Enum.GetValues(typeof(Face))) {
                 Chunk newChunk = chunk.chunkManager.getChunk(chunk.position + (FaceOffset.getOffsetOfFace(face) * 16));
                 newChunk.setMinimumWantedChunkState(chunkState);
                 chunk.chunksNeighbors[(int)face] = newChunk;
-                if(newChunk is null) throw new Exception("fail to init neighboor chunk");
+                if(newChunk == null) throw new Exception("fail to init neighboor chunk");
             }
         }
     }
@@ -120,6 +110,6 @@ public abstract class ChunkStrategy
     public virtual ChunkState minimumChunkStateOfNeighbors() => ChunkState.EMPTY;
 
     public virtual ReadOnlySpan<CubeVertex> getVertices() {
-        throw new Exception("not availabe for this chunk state : " + chunk.chunkState.ToString());
+         throw new Exception("not availabe for this chunk state : " + chunk.chunkState.ToString());
     }
 }

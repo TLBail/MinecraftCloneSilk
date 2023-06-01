@@ -106,23 +106,24 @@ public class ChunkManager : IChunkManager, IDisposable
         lock (chunksToUnloadLock) {
             Chunk? chunkUnload = chunksToUnload.Find((a) => a.position == position);
             if(chunkUnload != null) {
-                if(chunkUnload.chunkStrategy is ChunkDrawableStrategy) {
-                    chunkUnload.setWantedChunkState(ChunkState.BLOCKGENERATED);
-                }
-
-                if (!chunks.TryAdd(position, chunkUnload)) {
-                    // add olds blocks 
-                    Chunk chunkToUpdate = chunks[position];
-                    if (chunkToUpdate.chunkState >= ChunkState.GENERATEDTERRAIN) {
-                        chunks[position].blocks = chunkUnload.blocks;
-                    } else {
-                        throw new Exception("fuck don't know to handle that");
+                lock (chunkUnload.chunkStrategyLock) {
+                    if(chunkUnload.chunkStrategy is ChunkDrawableStrategy) {
+                        ((ChunkDrawableStrategy)chunkUnload.chunkStrategy).hide();
+                        chunkUnload.setWantedChunkState(ChunkState.BLOCKGENERATED);
                     }
-                } else {
-                    chunksToUnload.Remove(chunkUnload);                   
-                    return chunkUnload;
+                    if (!chunks.TryAdd(position, chunkUnload)) {
+                        // add olds blocks 
+                        Chunk chunkToUpdate = chunks[position];
+                        if (chunkToUpdate.chunkState >= ChunkState.GENERATEDTERRAIN) {
+                            chunks[position].blocks = chunkUnload.blocks;
+                        } else {
+                            throw new Exception("fuck don't know to handle that");
+                        }
+                    } else {
+                        chunksToUnload.Remove(chunkUnload);                   
+                        return chunkUnload;
+                    }
                 }
-
             }
         }
         Chunk chunk = chunks.GetOrAdd(position, chunkPool.get);
@@ -186,7 +187,8 @@ public class ChunkManager : IChunkManager, IDisposable
                     chunksToUnload.Add(chunkToUnload);
                     if (semaphore.CurrentCount <= 0) semaphore.Release();
                     return true;
-                } else if (chunkToUnload.chunkState == ChunkState.DRAWABLE) {
+                } else if (chunkToUnload is { chunkState: ChunkState.DRAWABLE, chunkStrategy: ChunkDrawableStrategy })  {
+                    ((ChunkDrawableStrategy)chunkToUnload.chunkStrategy).hide();
                     chunkToUnload.setWantedChunkState(minimumChunkState);
                     return true;
                 }

@@ -44,8 +44,10 @@ public class RegionBuffer : IDisposable
 
     public void update() {
         
+        
         nbVertex = 0;
         for (int i = 0; i < chunkCount; i++) {
+            if(chunks[i].chunkState != ChunkState.DRAWABLE) continue;
             nbVertex += chunks[i].getVertices().Length;
         }
 
@@ -53,6 +55,7 @@ public class RegionBuffer : IDisposable
         int offset = 0;
         for (int i = 0; i < chunkCount; i++) {
             Chunk chunk = chunks[i];
+            if(chunk.chunkState != ChunkState.DRAWABLE) continue;
             ReadOnlySpan<CubeVertex> verticesChunk1 = chunk.getVertices();
             verticesChunk1.CopyTo(vertices.AsSpan(offset));
             offset += verticesChunk1.Length;
@@ -86,14 +89,19 @@ public class RegionBuffer : IDisposable
 
     public void removeChunk(Chunk chunk) {
         int indexOfChunk = Array.IndexOf(chunks, chunk);
-        chunkCount--;
-        for (int i = 0; i < chunkCount; i++) {
+        int offset = 0;
+        for (int i = 0; i < CHUNKS_PER_REGION; i++) {
+            if (i >= chunkCount - 1) {
+                chunks[i] = null;
+                continue;
+            }
             if (i == indexOfChunk) {
                 chunks[i] = chunks[i + 1];
-                i++;
+                offset = 1;
             } else {
-                chunks[i] = chunks[i];
+                chunks[i] = chunks[i + offset];
             }
         }
+        chunkCount--;
     }
 }

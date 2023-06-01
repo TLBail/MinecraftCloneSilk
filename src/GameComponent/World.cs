@@ -22,7 +22,7 @@ public enum WorldMode
 public class World : GameObject
 {
     private Player player;
-    public int radius { get; set; } = 16;
+    public int radius { get; set; } = 1;
     private readonly WorldUI worldUi;
     public WorldNaturalGeneration worldNaturalGeneration;
     public WorldMode worldMode { get; set; }
