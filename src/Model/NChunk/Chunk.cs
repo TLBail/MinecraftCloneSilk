@@ -22,7 +22,7 @@ public class Chunk : IDisposable
     internal Line? debugRay;
     internal bool debugMode = false;
 
-    internal Chunk?[] chunksNeighbors;
+    internal Chunk[] chunksNeighbors;
     internal object chunksNeighborsLock = new object();
 
     public ChunkState chunkState { get; internal set; }
@@ -35,9 +35,8 @@ public class Chunk : IDisposable
     internal static BlockFactory blockFactory;
 
     private bool disposed = false;
-
     internal bool blockModified = false;
-
+    
     public Chunk(Vector3D<int> position, IChunkManager chunkManager, WorldGenerator worldGenerator, ChunkStorage chunkStorage) {
         this.chunkState = DEFAULTSTARTINGCHUNKSTATE;
         this.chunkStrategy = new ChunkEmptyStrategy(this);

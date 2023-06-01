@@ -48,6 +48,7 @@ public class ChunkBufferObjectManager
 
     public void removeChunk(Chunk chunk) {
         regionBufferByChunk[chunk]?.removeChunk(chunk);
+        needToUpdateChunk(chunk);
         if(!regionsWithAvailableSpace.Contains(regionBufferByChunk[chunk])) regionsWithAvailableSpace.Push(regionBufferByChunk[chunk]);
         regionBufferByChunk.Remove(chunk);
 

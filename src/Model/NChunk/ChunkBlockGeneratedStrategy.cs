@@ -85,124 +85,124 @@ public class ChunkBlockGeneratedStrategy : ChunkStrategy
         if (y < 0) {
             if (x < 0) {
                 if (z < 0) {
-                    chunk.chunksNeighbors[(int)FaceExtended.BOTTOMLEFTBACK]!.blockModified = true;
-                    chunk.chunksNeighbors[(int)FaceExtended.BOTTOMLEFTBACK]!.blocks[x + (int)Chunk.CHUNK_SIZE,
+                    chunk.chunksNeighbors[(int)FaceExtended.BOTTOMLEFTBACK].blockModified = true;
+                    chunk.chunksNeighbors[(int)FaceExtended.BOTTOMLEFTBACK].blocks[x + (int)Chunk.CHUNK_SIZE,
                         y + (int)Chunk.CHUNK_SIZE, z + (int)Chunk.CHUNK_SIZE] = blockData;
                 } else if (z >= Chunk.CHUNK_SIZE) {
-                    chunk.chunksNeighbors[(int)FaceExtended.BOTTOMLEFTFRONT]!.blockModified = true;
-                    chunk.chunksNeighbors[(int)FaceExtended.BOTTOMLEFTFRONT]!.blocks[x + (int)Chunk.CHUNK_SIZE,
+                    chunk.chunksNeighbors[(int)FaceExtended.BOTTOMLEFTFRONT].blockModified = true;
+                    chunk.chunksNeighbors[(int)FaceExtended.BOTTOMLEFTFRONT].blocks[x + (int)Chunk.CHUNK_SIZE,
                         y + (int)Chunk.CHUNK_SIZE, z - (int)Chunk.CHUNK_SIZE] = blockData;
                 } else {
-                    chunk.chunksNeighbors[(int)FaceExtended.BOTTOMLEFT]!.blockModified = true;
-                    chunk.chunksNeighbors[(int)FaceExtended.BOTTOMLEFT]!.blocks[x + (int)Chunk.CHUNK_SIZE,
+                    chunk.chunksNeighbors[(int)FaceExtended.BOTTOMLEFT].blockModified = true;
+                    chunk.chunksNeighbors[(int)FaceExtended.BOTTOMLEFT].blocks[x + (int)Chunk.CHUNK_SIZE,
                         y + (int)Chunk.CHUNK_SIZE, z] = blockData;
                 }
             } else if (x >= Chunk.CHUNK_SIZE) {
                 if (z < 0) {
-                    chunk.chunksNeighbors[(int)FaceExtended.BOTTOMRIGHTBACK]!.blockModified = true;
-                    chunk.chunksNeighbors[(int)FaceExtended.BOTTOMRIGHTBACK]!.blocks[x - (int)Chunk.CHUNK_SIZE,
+                    chunk.chunksNeighbors[(int)FaceExtended.BOTTOMRIGHTBACK].blockModified = true;
+                    chunk.chunksNeighbors[(int)FaceExtended.BOTTOMRIGHTBACK].blocks[x - (int)Chunk.CHUNK_SIZE,
                         y + (int)Chunk.CHUNK_SIZE, z + (int)Chunk.CHUNK_SIZE] = blockData;
                 } else if (z >= Chunk.CHUNK_SIZE) {
-                    chunk.chunksNeighbors[(int)FaceExtended.BOTTOMRIGHTFRONT]!.blockModified = true;
-                    chunk.chunksNeighbors[(int)FaceExtended.BOTTOMRIGHTFRONT]!.blocks[x - (int)Chunk.CHUNK_SIZE,
+                    chunk.chunksNeighbors[(int)FaceExtended.BOTTOMRIGHTFRONT].blockModified = true;
+                    chunk.chunksNeighbors[(int)FaceExtended.BOTTOMRIGHTFRONT].blocks[x - (int)Chunk.CHUNK_SIZE,
                         y + (int)Chunk.CHUNK_SIZE, z - (int)Chunk.CHUNK_SIZE] = blockData;
                 } else {
-                    chunk.chunksNeighbors[(int)FaceExtended.BOTTOMRIGHT]!.blockModified = true;
-                    chunk.chunksNeighbors[(int)FaceExtended.BOTTOMRIGHT]!.blocks[x - (int)Chunk.CHUNK_SIZE,
+                    chunk.chunksNeighbors[(int)FaceExtended.BOTTOMRIGHT].blockModified = true;
+                    chunk.chunksNeighbors[(int)FaceExtended.BOTTOMRIGHT].blocks[x - (int)Chunk.CHUNK_SIZE,
                         y + (int)Chunk.CHUNK_SIZE, z] = blockData;
                 }
             } else {
                 if (z < 0) {
-                    chunk.chunksNeighbors[(int)FaceExtended.BOTTOMBACK]!.blockModified = true;
-                    chunk.chunksNeighbors[(int)FaceExtended.BOTTOMBACK]!.blocks[x, y + (int)Chunk.CHUNK_SIZE,
+                    chunk.chunksNeighbors[(int)FaceExtended.BOTTOMBACK].blockModified = true;
+                    chunk.chunksNeighbors[(int)FaceExtended.BOTTOMBACK].blocks[x, y + (int)Chunk.CHUNK_SIZE,
                         z + (int)Chunk.CHUNK_SIZE] = blockData;
                 } else if (z >= Chunk.CHUNK_SIZE) {
-                    chunk.chunksNeighbors[(int)FaceExtended.BOTTOMFRONT]!.blockModified = true;
-                    chunk.chunksNeighbors[(int)FaceExtended.BOTTOMFRONT]!.blocks[x, y + (int)Chunk.CHUNK_SIZE,
+                    chunk.chunksNeighbors[(int)FaceExtended.BOTTOMFRONT].blockModified = true;
+                    chunk.chunksNeighbors[(int)FaceExtended.BOTTOMFRONT].blocks[x, y + (int)Chunk.CHUNK_SIZE,
                         z - (int)Chunk.CHUNK_SIZE] = blockData;
                 } else {
-                    chunk.chunksNeighbors[(int)FaceExtended.BOTTOM]!.blockModified = true;
-                    chunk.chunksNeighbors[(int)FaceExtended.BOTTOM]!.blocks[x, y + (int)Chunk.CHUNK_SIZE, z] =
+                    chunk.chunksNeighbors[(int)FaceExtended.BOTTOM].blockModified = true;
+                    chunk.chunksNeighbors[(int)FaceExtended.BOTTOM].blocks[x, y + (int)Chunk.CHUNK_SIZE, z] =
                         blockData;
                 }
             }
         } else if (y >= Chunk.CHUNK_SIZE) {
             if (x < 0) {
                 if (z < 0) {
-                    chunk.chunksNeighbors[(int)FaceExtended.TOPLEFTBACK]!.blockModified = true;
-                    chunk.chunksNeighbors[(int)FaceExtended.TOPLEFTBACK]!.blocks[x + (int)Chunk.CHUNK_SIZE,
+                    chunk.chunksNeighbors[(int)FaceExtended.TOPLEFTBACK].blockModified = true;
+                    chunk.chunksNeighbors[(int)FaceExtended.TOPLEFTBACK].blocks[x + (int)Chunk.CHUNK_SIZE,
                         y - (int)Chunk.CHUNK_SIZE, z + (int)Chunk.CHUNK_SIZE] = blockData;
                 } else if (z >= Chunk.CHUNK_SIZE) {
-                    chunk.chunksNeighbors[(int)FaceExtended.TOPLEFTFRONT]!.blockModified = true;
-                    chunk.chunksNeighbors[(int)FaceExtended.TOPLEFTFRONT]!.blocks[x + (int)Chunk.CHUNK_SIZE,
+                    chunk.chunksNeighbors[(int)FaceExtended.TOPLEFTFRONT].blockModified = true;
+                    chunk.chunksNeighbors[(int)FaceExtended.TOPLEFTFRONT].blocks[x + (int)Chunk.CHUNK_SIZE,
                         y - (int)Chunk.CHUNK_SIZE, z - (int)Chunk.CHUNK_SIZE] = blockData;
                 } else {
-                    chunk.chunksNeighbors[(int)FaceExtended.TOPLEFT]!.blockModified = true;
-                    chunk.chunksNeighbors[(int)FaceExtended.TOPLEFT]!.blocks[x + (int)Chunk.CHUNK_SIZE,
+                    chunk.chunksNeighbors[(int)FaceExtended.TOPLEFT].blockModified = true;
+                    chunk.chunksNeighbors[(int)FaceExtended.TOPLEFT].blocks[x + (int)Chunk.CHUNK_SIZE,
                         y - (int)Chunk.CHUNK_SIZE, z] = blockData;
                 }
             } else if (x >= Chunk.CHUNK_SIZE) {
                 if (z < 0) {
-                    chunk.chunksNeighbors[(int)FaceExtended.TOPRIGHTBACK]!.blockModified = true;
-                    chunk.chunksNeighbors[(int)FaceExtended.TOPRIGHTBACK]!.blocks[x - (int)Chunk.CHUNK_SIZE,
+                    chunk.chunksNeighbors[(int)FaceExtended.TOPRIGHTBACK].blockModified = true;
+                    chunk.chunksNeighbors[(int)FaceExtended.TOPRIGHTBACK].blocks[x - (int)Chunk.CHUNK_SIZE,
                         y - (int)Chunk.CHUNK_SIZE, z + (int)Chunk.CHUNK_SIZE] = blockData;
                 } else if (z >= Chunk.CHUNK_SIZE) {
-                    chunk.chunksNeighbors[(int)FaceExtended.TOPRIGHTFRONT]!.blockModified = true;
-                    chunk.chunksNeighbors[(int)FaceExtended.TOPRIGHTFRONT]!.blocks[x - (int)Chunk.CHUNK_SIZE,
+                    chunk.chunksNeighbors[(int)FaceExtended.TOPRIGHTFRONT].blockModified = true;
+                    chunk.chunksNeighbors[(int)FaceExtended.TOPRIGHTFRONT].blocks[x - (int)Chunk.CHUNK_SIZE,
                         y - (int)Chunk.CHUNK_SIZE, z - (int)Chunk.CHUNK_SIZE] = blockData;
                 } else {
-                    chunk.chunksNeighbors[(int)FaceExtended.TOPRIGHT]!.blockModified = true;
-                    chunk.chunksNeighbors[(int)FaceExtended.TOPRIGHT]!.blocks[x - (int)Chunk.CHUNK_SIZE,
+                    chunk.chunksNeighbors[(int)FaceExtended.TOPRIGHT].blockModified = true;
+                    chunk.chunksNeighbors[(int)FaceExtended.TOPRIGHT].blocks[x - (int)Chunk.CHUNK_SIZE,
                         y - (int)Chunk.CHUNK_SIZE, z] = blockData;
                 }
             } else {
                 if (z < 0) {
-                    chunk.chunksNeighbors[(int)FaceExtended.TOPBACK]!.blockModified = true;
-                    chunk.chunksNeighbors[(int)FaceExtended.TOPBACK]!.blocks[x, y - (int)Chunk.CHUNK_SIZE,
+                    chunk.chunksNeighbors[(int)FaceExtended.TOPBACK].blockModified = true;
+                    chunk.chunksNeighbors[(int)FaceExtended.TOPBACK].blocks[x, y - (int)Chunk.CHUNK_SIZE,
                         z + (int)Chunk.CHUNK_SIZE] = blockData;
                 } else if (z >= Chunk.CHUNK_SIZE) {
-                    chunk.chunksNeighbors[(int)FaceExtended.TOPFRONT]!.blockModified = true;
-                    chunk.chunksNeighbors[(int)FaceExtended.TOPFRONT]!.blocks[x, y - (int)Chunk.CHUNK_SIZE,
+                    chunk.chunksNeighbors[(int)FaceExtended.TOPFRONT].blockModified = true;
+                    chunk.chunksNeighbors[(int)FaceExtended.TOPFRONT].blocks[x, y - (int)Chunk.CHUNK_SIZE,
                         z - (int)Chunk.CHUNK_SIZE] = blockData;
                 } else {
-                    chunk.chunksNeighbors[(int)FaceExtended.TOP]!.blockModified = true;
-                    chunk.chunksNeighbors[(int)FaceExtended.TOP]!.blocks[x, y - (int)Chunk.CHUNK_SIZE, z] = blockData;
+                    chunk.chunksNeighbors[(int)FaceExtended.TOP].blockModified = true;
+                    chunk.chunksNeighbors[(int)FaceExtended.TOP].blocks[x, y - (int)Chunk.CHUNK_SIZE, z] = blockData;
                 }
             }
         } else {
             if (x < 0) {
                 if (z < 0) {
-                    chunk.chunksNeighbors[(int)FaceExtended.LEFTBACK]!.blockModified = true;
-                    chunk.chunksNeighbors[(int)FaceExtended.LEFTBACK]!.blocks[x + (int)Chunk.CHUNK_SIZE, y,
+                    chunk.chunksNeighbors[(int)FaceExtended.LEFTBACK].blockModified = true;
+                    chunk.chunksNeighbors[(int)FaceExtended.LEFTBACK].blocks[x + (int)Chunk.CHUNK_SIZE, y,
                         z + (int)Chunk.CHUNK_SIZE] = blockData;
                 } else if (z >= Chunk.CHUNK_SIZE) {
-                    chunk.chunksNeighbors[(int)FaceExtended.LEFTFRONT]!.blockModified = true;
-                    chunk.chunksNeighbors[(int)FaceExtended.LEFTFRONT]!.blocks[x + (int)Chunk.CHUNK_SIZE, y,
+                    chunk.chunksNeighbors[(int)FaceExtended.LEFTFRONT].blockModified = true;
+                    chunk.chunksNeighbors[(int)FaceExtended.LEFTFRONT].blocks[x + (int)Chunk.CHUNK_SIZE, y,
                         z - (int)Chunk.CHUNK_SIZE] = blockData;
                 } else {
-                    chunk.chunksNeighbors[(int)FaceExtended.LEFT]!.blockModified = true;
-                    chunk.chunksNeighbors[(int)FaceExtended.LEFT]!.blocks[x + (int)Chunk.CHUNK_SIZE, y, z] = blockData;
+                    chunk.chunksNeighbors[(int)FaceExtended.LEFT].blockModified = true;
+                    chunk.chunksNeighbors[(int)FaceExtended.LEFT].blocks[x + (int)Chunk.CHUNK_SIZE, y, z] = blockData;
                 }
             } else if (x >= Chunk.CHUNK_SIZE) {
                 if (z < 0) {
-                    chunk.chunksNeighbors[(int)FaceExtended.RIGHTBACK]!.blockModified = true;
-                    chunk.chunksNeighbors[(int)FaceExtended.RIGHTBACK]!.blocks[x - (int)Chunk.CHUNK_SIZE, y,
+                    chunk.chunksNeighbors[(int)FaceExtended.RIGHTBACK].blockModified = true;
+                    chunk.chunksNeighbors[(int)FaceExtended.RIGHTBACK].blocks[x - (int)Chunk.CHUNK_SIZE, y,
                         z + (int)Chunk.CHUNK_SIZE] = blockData;
                 } else if (z >= Chunk.CHUNK_SIZE) {
-                    chunk.chunksNeighbors[(int)FaceExtended.RIGHTFRONT]!.blockModified = true;
-                    chunk.chunksNeighbors[(int)FaceExtended.RIGHTFRONT]!.blocks[x - (int)Chunk.CHUNK_SIZE, y,
+                    chunk.chunksNeighbors[(int)FaceExtended.RIGHTFRONT].blockModified = true;
+                    chunk.chunksNeighbors[(int)FaceExtended.RIGHTFRONT].blocks[x - (int)Chunk.CHUNK_SIZE, y,
                         z - (int)Chunk.CHUNK_SIZE] = blockData;
                 } else {
-                    chunk.chunksNeighbors[(int)FaceExtended.RIGHT]!.blockModified = true;
-                    chunk.chunksNeighbors[(int)FaceExtended.RIGHT]!.blocks[x - (int)Chunk.CHUNK_SIZE, y, z] = blockData;
+                    chunk.chunksNeighbors[(int)FaceExtended.RIGHT].blockModified = true;
+                    chunk.chunksNeighbors[(int)FaceExtended.RIGHT].blocks[x - (int)Chunk.CHUNK_SIZE, y, z] = blockData;
                 }
             } else {
                 if (z < 0) {
-                    chunk.chunksNeighbors[(int)FaceExtended.BACK]!.blockModified = true;
-                    chunk.chunksNeighbors[(int)FaceExtended.BACK]!.blocks[x, y, z + (int)Chunk.CHUNK_SIZE] = blockData;
+                    chunk.chunksNeighbors[(int)FaceExtended.BACK].blockModified = true;
+                    chunk.chunksNeighbors[(int)FaceExtended.BACK].blocks[x, y, z + (int)Chunk.CHUNK_SIZE] = blockData;
                 } else if (z >= Chunk.CHUNK_SIZE) {
-                    chunk.chunksNeighbors[(int)FaceExtended.FRONT]!.blockModified = true;
-                    chunk.chunksNeighbors[(int)FaceExtended.FRONT]!.blocks[x, y, z - (int)Chunk.CHUNK_SIZE] = blockData;
+                    chunk.chunksNeighbors[(int)FaceExtended.FRONT].blockModified = true;
+                    chunk.chunksNeighbors[(int)FaceExtended.FRONT].blocks[x, y, z - (int)Chunk.CHUNK_SIZE] = blockData;
                 } else {
                     chunk.blocks[x, y, z] = blockData;
                 }
