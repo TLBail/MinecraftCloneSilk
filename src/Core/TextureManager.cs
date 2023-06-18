@@ -8,12 +8,12 @@ public class TextureManager
 {
     private static TextureManager instance;
 
-    private static readonly Object _lock = new Object();
+    private static readonly Object Lock = new Object();
 
     public static TextureManager getInstance()
     {
         if (instance == null) {
-            lock (_lock) {
+            lock (Lock) {
                 if (instance == null) {
                     instance = new TextureManager();
                 }
@@ -31,33 +31,12 @@ public class TextureManager
     
     public const string pathToTexturesJson = "./Assets/textures.json";
     public Dictionary<string, Texture> textures { get; private set; }
-
-    
     
     
     private  TextureManager() {
         textures = new Dictionary<string, Texture>();
     }
-
-    public void fakeLoad() {
-        string jsonString = File.ReadAllText(pathToTexturesJson);
-        TexturesJson? textJson = JsonSerializer.Deserialize<TexturesJson>(jsonString);
-        foreach(string filepath in textJson.texturesPath) {
-            FileAttributes attr = File.GetAttributes(filepath);
-            if ((attr & FileAttributes.Directory) == FileAttributes.Directory) {
-                string[] files = Directory.GetFiles(filepath);
-                foreach(string subfilepath in files)
-                {
-                    if (Path.GetExtension(subfilepath).Equals(".png"))
-                        textures.Add(Path.GetFileName(subfilepath), null);
-                }
-
-            } else {
-                textures.Add(Path.GetFileName(filepath), null);
-            }
-        }
-    }
-
+    
     public void load(GL gl) {
         string jsonString = File.ReadAllText(pathToTexturesJson);
         TexturesJson? textJson = JsonSerializer.Deserialize<TexturesJson>(jsonString);
