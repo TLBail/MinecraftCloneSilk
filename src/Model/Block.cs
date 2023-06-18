@@ -27,7 +27,7 @@ namespace MinecraftCloneSilk.Model
             this.transparent = transparent;
             blockData = new BlockData(id);
             this.textureBlock = textureBlock;
-            this.fullTexture = (!airBlock) ? TextureManager.getInstance().textures[name + ".png"] : null;
+            this.fullTexture = (!airBlock) ? TextureManager.getInstance().textures.TryGetValue(name + ".png", out Texture value) ? value: null : null;
         }
 
 

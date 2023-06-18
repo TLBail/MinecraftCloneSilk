@@ -108,7 +108,7 @@ namespace MinecraftCloneSilk.GameComponent
                 "./Shader/3dPosOneTextUni/FragmentShader.glsl");
             chunkShader.Use();
             chunkShader.SetUniform("texture1", 0);
-            Chunk.initStaticMembers(Gl, chunkShader);
+            Chunk.initStaticMembers(chunkShader, BlockFactory.getInstance());
         }
 
 

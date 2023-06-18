@@ -15,9 +15,8 @@ public class ChunkStorageTest
     
     [OneTimeSetUp]
     public void setUp() {
-        TextureManager textureManager = TextureManager.getInstance();
-        textureManager.fakeLoad();
-        
+        Directory.SetCurrentDirectory("./../../../../");
+        Chunk.initStaticMembers(null, BlockFactory.getInstance());
         chunkManagerEmpty = new ChunkManagerEmpty(new WorldFlatGeneration(), new ChunkStorage("./Worlds/newWorld"));
         
     }

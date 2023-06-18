@@ -11,9 +11,8 @@ public class ChunkTest
 {
     [OneTimeSetUp]
     public void setUp() {
-        TextureManager textureManager = TextureManager.getInstance();
-        textureManager.fakeLoad();
-        
+        Directory.SetCurrentDirectory("./../../../../");
+        Chunk.initStaticMembers(null, BlockFactory.getInstance());
     }
     
     [Test]
