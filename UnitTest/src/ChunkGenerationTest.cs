@@ -19,7 +19,7 @@ public class ChunkGenerationTest
 
     [OneTimeSetUp]
     public  void initGame() {
-        
+        Directory.SetCurrentDirectory("./../../../../");
         Scene scene = new Scene(new List<InitGameData>()
             {
                 new (typeof(Player).FullName),
