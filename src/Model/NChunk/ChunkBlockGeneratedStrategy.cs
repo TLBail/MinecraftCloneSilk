@@ -11,16 +11,11 @@ public class ChunkBlockGeneratedStrategy : ChunkStrategy
 {
     public override ChunkState getChunkStateOfStrategy() => ChunkState.BLOCKGENERATED;
 
-
     private ChunkState minimumChunkStateOfNeighborsValue = ChunkState.EMPTY;
     public override ChunkState minimumChunkStateOfNeighbors() => minimumChunkStateOfNeighborsValue;
 
-    
-    
     public override void setBlock(int x, int y, int z, string name) {
-        lock (chunk.blocksLock) {
-            chunk.blocks[x, y, z].id = Chunk.blockFactory.getBlockIdByName(name);
-        }
+        chunk.blocks[x, y, z].id = Chunk.blockFactory.getBlockIdByName(name);
     }
 
     public ChunkBlockGeneratedStrategy(Chunk chunk) : base(chunk) {
@@ -28,37 +23,25 @@ public class ChunkBlockGeneratedStrategy : ChunkStrategy
 
     public override void init() {
         if (chunk.chunkState != ChunkState.GENERATEDTERRAIN) {
-            if (chunk.chunkStorage.isChunkExistInMemory(chunk)) {
-                chunk.chunkStorage.LoadBlocks(chunk);
-            } else {
-                chunk.chunkStrategy = new ChunkTerrainGeneratedStrategy(chunk);
-                chunk.chunkStrategy.init();
-                chunk.chunkStrategy = this;
-                minimumChunkStateOfNeighborsValue = ChunkState.GENERATEDTERRAIN;
-                updateNeighboorChunkState(ChunkState.GENERATEDTERRAIN);
-                generateStruture();
-                minimumChunkStateOfNeighborsValue = ChunkState.EMPTY;
-                chunk.blockModified = true;
-            }
-        } else {
-            minimumChunkStateOfNeighborsValue = ChunkState.GENERATEDTERRAIN;
-            updateNeighboorChunkState(ChunkState.GENERATEDTERRAIN);
-            generateStruture();
-            minimumChunkStateOfNeighborsValue = ChunkState.EMPTY;
-            chunk.blockModified = true;
-        }
+            throw new Exception("try to init a chunk with a wrong state");
+        } 
+        minimumChunkStateOfNeighborsValue = ChunkState.GENERATEDTERRAIN;
+        setupNeighbors();
+        generateStruture();
+        minimumChunkStateOfNeighborsValue = ChunkState.EMPTY;
+        chunk.blockModified = true;
         chunk.chunkState = ChunkState.BLOCKGENERATED;
     }
 
-    protected override void updateNeighboorChunkState(ChunkState chunkState) {
-        lock (chunk.chunksNeighborsLock) {
-            chunk.chunksNeighbors = new Chunk[26];
-            foreach (FaceExtended face in Enum.GetValues(typeof(FaceExtended))) {
-                Chunk newChunk =
-                    chunk.chunkManager.getChunk(chunk.position + (FaceExtendedOffset.getOffsetOfFace(face) * 16));
-                newChunk.setMinimumWantedChunkState(chunkState);
-                chunk.chunksNeighbors[(int)face] = newChunk;
+    private void setupNeighbors() {
+        chunk.chunksNeighbors = new Chunk[26];
+        foreach (FaceExtended face in Enum.GetValues(typeof(FaceExtended))) {
+            Chunk newChunk =
+                chunk.chunkManager.getChunk(chunk.position + (FaceExtendedOffset.getOffsetOfFace(face) * Chunk.CHUNK_SIZE));
+            if(newChunk.chunkState < minimumChunkStateOfNeighborsValue) {
+                throw new Exception("try to setup a chunk with a lower state than the minimum");
             }
+            chunk.chunksNeighbors[(int)face] = newChunk;
         }
     }
 
@@ -268,4 +251,15 @@ public class ChunkBlockGeneratedStrategy : ChunkStrategy
         new StructureBlock(1, 4, -2, 18),
         new StructureBlock(-1, 4, -2, 18),
     };
+
+    static ChunkBlockGeneratedStrategy() {
+        FaceExtended[] faces = (FaceExtended[])Enum.GetValues(typeof(FaceExtended));
+        dependatesChunkOffset = new Vector3D<int>[faces.Length];
+        for (int i = 0; i < faces.Length; i++) {
+            dependatesChunkOffset[i] = FaceExtendedOffset.getOffsetOfFace(faces[i]) * Chunk.CHUNK_SIZE;
+        }
+    }
+
+    public static readonly Vector3D<int>[] dependatesChunkOffset;
+
 }

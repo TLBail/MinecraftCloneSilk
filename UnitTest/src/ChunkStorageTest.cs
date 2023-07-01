@@ -40,7 +40,7 @@ public class ChunkStorageTest
     public void testCreatingChunk() {
         Chunk chunk = chunkManagerEmpty.getChunk(Vector3D<int>.Zero);
         Assert.IsNotNull(chunk);
-        chunk.setWantedChunkState(ChunkState.BLOCKGENERATED);
+        chunk.setChunkState(ChunkState.BLOCKGENERATED);
         Assert.False(chunkManagerEmpty.chunkStorage.isChunkExistInMemory(chunk));
         chunk.save();
         Assert.True(chunkManagerEmpty.chunkStorage.isChunkExistInMemory(chunk));
@@ -51,7 +51,7 @@ public class ChunkStorageTest
     public void testCreatingChunkFollowNorm() {
         Chunk chunk = chunkManagerEmpty.getChunk(Vector3D<int>.Zero);
         Assert.IsNotNull(chunk);
-        chunk.setWantedChunkState(ChunkState.BLOCKGENERATED);
+        chunk.setChunkState(ChunkState.BLOCKGENERATED);
         BlockData[,,] blocks = new BlockData[Chunk.CHUNK_SIZE,Chunk.CHUNK_SIZE,Chunk.CHUNK_SIZE];
         for (int i = 0; i < Chunk.CHUNK_SIZE; i++) {
             for (int y = 0; y < Chunk.CHUNK_SIZE; y++) {
@@ -97,7 +97,7 @@ public class ChunkStorageTest
     [Test]
     public void testCreatedChunkIsAbleToSaveAndRecoverData() {
         Chunk chunk = chunkManagerEmpty.getChunk(Vector3D<int>.Zero);
-        chunk.setWantedChunkState(ChunkState.BLOCKGENERATED);
+        chunk.setChunkState(ChunkState.BLOCKGENERATED);
         
         chunk.setBlock(0,0,0, "metal");
 
@@ -105,7 +105,7 @@ public class ChunkStorageTest
         
         chunkManagerEmpty.removeChunk(Vector3D<int>.Zero);
         Chunk chunk2 = chunkManagerEmpty.getChunk(Vector3D<int>.Zero);
-        chunk2.setWantedChunkState(ChunkState.BLOCKGENERATED);
+        chunk2.setChunkState(ChunkState.BLOCKGENERATED);
         
         Assert.True(chunk2.getBlock(Vector3D<int>.Zero).name.Equals("metal"));
     }
@@ -115,12 +115,12 @@ public class ChunkStorageTest
     public void testEmptyChunkLoadAndSave() {
         Vector3D<int> chunkPosition = new Vector3D<int>(0, (int)(Chunk.CHUNK_SIZE * 1000), 0);
         Chunk chunk = chunkManagerEmpty.getChunk(chunkPosition);
-        chunk.setWantedChunkState(ChunkState.BLOCKGENERATED);
+        chunk.setChunkState(ChunkState.BLOCKGENERATED);
         chunk.save();
         
         chunkManagerEmpty.removeChunk(chunkPosition);
         Chunk chunk2 = chunkManagerEmpty.getChunk(chunkPosition);
-        chunk2.setWantedChunkState(ChunkState.BLOCKGENERATED);
+        chunk2.setChunkState(ChunkState.BLOCKGENERATED);
 
         for (int x = 0; x < Chunk.CHUNK_SIZE; x++) {
             for (int y = 0; y < Chunk.CHUNK_SIZE; y++) {
@@ -165,7 +165,7 @@ public class ChunkStorageTest
     [Test]
     public void testSaveChunkFullOfCobble() {
         Chunk chunk = chunkManagerEmpty.getChunk(new Vector3D<int>(0, -32, 0));
-        chunk.setWantedChunkState(ChunkState.BLOCKGENERATED);
+        chunk.setChunkState(ChunkState.BLOCKGENERATED);
         for (int x = 0; x < Chunk.CHUNK_SIZE; x++) {
             for (int y = 0; y < Chunk.CHUNK_SIZE; y++) {
                 for (int z = 0; z < Chunk.CHUNK_SIZE; z++) {
@@ -179,7 +179,7 @@ public class ChunkStorageTest
         chunkManagerEmpty.removeChunk(new Vector3D<int>(0, -32, 0));
         
         Chunk chunk2 = chunkManagerEmpty.getChunk(new Vector3D<int>(0, -32, 0));
-        chunk2.setWantedChunkState(ChunkState.BLOCKGENERATED);
+        chunk2.setChunkState(ChunkState.BLOCKGENERATED);
         for (int x = 0; x < Chunk.CHUNK_SIZE; x++) {
             for (int y = 0; y < Chunk.CHUNK_SIZE; y++) {
                 for (int z = 0; z < Chunk.CHUNK_SIZE; z++) {

@@ -2,16 +2,14 @@
 
 public class ChunkTerrainGeneratedStrategy : ChunkStrategy
 {
-    
-    public ChunkTerrainGeneratedStrategy(Chunk chunk) : base(chunk) { }
+
+    public ChunkTerrainGeneratedStrategy(Chunk chunk) : base(chunk) {
+        if (chunk.chunkState != ChunkState.EMPTY) {
+            throw new Exception("try to create a ChunkTerrainGeneratedStrategy with a chunk that is not empty");
+        }
+    }
 
     public override void init() {
-        if (chunk.chunkState != ChunkState.EMPTY) {
-            chunk.chunkStrategy = new ChunkEmptyStrategy(chunk); 
-            chunk.chunkStrategy.init();
-            chunk.chunkStrategy = this;
-        }
-
         if (chunk.chunkStorage.isChunkExistInMemory(chunk)) {
             chunk.chunkStorage.LoadBlocks(chunk);
         } else {
@@ -25,9 +23,7 @@ public class ChunkTerrainGeneratedStrategy : ChunkStrategy
     
     public override void setBlock(int x, int y, int z, string name) {
         chunk.blockModified = true;
-        lock (chunk.blocksLock) {
-            chunk.blocks[x, y, z].id = Chunk.blockFactory.getBlockIdByName(name);
-        }
+        chunk.blocks[x, y, z].id = Chunk.blockFactory.getBlockIdByName(name);
     }
     
     
@@ -38,8 +34,6 @@ public class ChunkTerrainGeneratedStrategy : ChunkStrategy
 
     private void generateTerrain()
     {
-        lock (chunk.blocksLock) {
-            chunk.worldGenerator.generateTerrain(chunk.position, chunk.blocks);
-        }
+        chunk.worldGenerator.generateTerrain(chunk.position, chunk.blocks);
     }
 }
