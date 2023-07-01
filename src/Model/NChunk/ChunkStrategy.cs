@@ -152,4 +152,8 @@ public abstract class ChunkStrategy
     public virtual ReadOnlySpan<CubeVertex> getVertices() {
         throw new Exception("not availabe for this chunk state : " + chunk.chunkState.ToString());
     }
+
+    public virtual void load() { }
+
+    public virtual void finish() {}
 }
