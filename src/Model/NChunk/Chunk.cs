@@ -32,7 +32,7 @@ public class Chunk : IDisposable
     internal static Shader cubeShader;
     internal static BlockFactory blockFactory;
 
-    public int nbRequiredByChunkLoader = 0;
+    public bool isRequiredByChunkLoader = false;
     private bool disposed = false;
     internal bool blockModified = false;
 
@@ -92,7 +92,11 @@ public class Chunk : IDisposable
                 break;
         }
     }
-
+    
+    public void loadChunkState() => chunkStrategy.load();
+        
+    public void finishChunkState() => chunkStrategy.finish();
+    
     public BlockData getBlockData(Vector3D<int> localPosition) {
         return chunkStrategy.getBlockData(localPosition);
     }
@@ -116,7 +120,7 @@ public class Chunk : IDisposable
     public ReadOnlySpan<CubeVertex> getVertices() => chunkStrategy.getVertices();
 
     public void reset(Vector3D<int> position, IChunkManager chunkManager, WorldGenerator worldGenerator) {
-        if(nbRequiredByChunkLoader > 0) {
+        if(isRequiredByChunkLoader) {
             throw new Exception("Chunk is still required by chunk loader");
         }
         this.position = position;

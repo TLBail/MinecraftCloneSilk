@@ -9,15 +9,25 @@ public class ChunkTerrainGeneratedStrategy : ChunkStrategy
         }
     }
 
+    private bool isChunkInMemory;
+    
     public override void init() {
-        if (chunk.chunkStorage.isChunkExistInMemory(chunk)) {
-            chunk.chunkStorage.LoadBlocks(chunk);
-        } else {
-            generateTerrain();            
-        }
-        chunk.chunkState = ChunkState.GENERATEDTERRAIN;
+        isChunkInMemory = chunk.chunkStorage.isChunkExistInMemory(chunk);
     }
 
+    public override void load() {
+
+        if (isChunkInMemory) {
+            chunk.chunkStorage.LoadBlocks(chunk);
+        } else {
+            generateTerrain();
+        }
+    }
+
+    public override void finish() {
+        chunk.chunkState = ChunkState.GENERATEDTERRAIN;
+    }
+    
     
     public override ChunkState getChunkStateOfStrategy() => ChunkState.GENERATEDTERRAIN;
     

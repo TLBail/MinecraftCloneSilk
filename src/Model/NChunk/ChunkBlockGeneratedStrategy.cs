@@ -27,11 +27,19 @@ public class ChunkBlockGeneratedStrategy : ChunkStrategy
         } 
         minimumChunkStateOfNeighborsValue = ChunkState.GENERATEDTERRAIN;
         setupNeighbors();
+        // check if file exist
+    }
+
+    public override void load() {
         generateStruture();
+    }
+
+    public override void finish() {
         minimumChunkStateOfNeighborsValue = ChunkState.EMPTY;
         chunk.blockModified = true;
         chunk.chunkState = ChunkState.BLOCKGENERATED;
     }
+
 
     private void setupNeighbors() {
         chunk.chunksNeighbors = new Chunk[26];

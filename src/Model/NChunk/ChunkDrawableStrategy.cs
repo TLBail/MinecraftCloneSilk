@@ -35,12 +35,18 @@ public class ChunkDrawableStrategy : ChunkStrategy
         if (chunk.chunkState != ChunkState.BLOCKGENERATED) {
             throw new Exception("failed to init chunkDrawableStrategy because the chunk is not BLOCKGENERATED");
         }
-
         setupNeighbors();
+    }
+
+    public override void load() {
         initVertices();
+    }
+
+    public override void finish() {
         chunk.chunkState = ChunkState.DRAWABLE;
         chunk.chunkManager.addChunkToUpdate(chunk);
     }
+
 
     protected virtual void setupNeighbors() {
         chunk.chunksNeighbors = new Chunk[6];
