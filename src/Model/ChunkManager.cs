@@ -169,13 +169,13 @@ public class ChunkManager : IChunkManager, IDisposable
 
     private class ChunkLoader
     {
-        public List<Chunk> chunksList;
-        public List<Chunk> chunkToLoadTerrain;
-        public List<Chunk> chunkToLoadBlock;
-        public List<Chunk> chunkToDraw;
+        
 
         private enum ChunkLoaderState
         {
+            SETUPCHUNKINMEMORY,
+            LOADCHUNKINMEMORY,
+            FINISHCHUNKINMEMORY,
             SETUPTERRAIN,
             LOADTERRAIN,
             FINISHTERRAIN,
@@ -186,7 +186,11 @@ public class ChunkManager : IChunkManager, IDisposable
             LOADDRAW,
             FINISHDRAW,
         }
-        
+        public List<Chunk> chunksList;
+        public List<Chunk> chunkToLoadTerrain;
+        public List<Chunk> chunkToLoadBlock;
+        public List<Chunk> chunkToDraw;
+        public List<ChunkLoadingTask> chunkInMemory;
         private ChunkLoaderState chunkLoaderState;
         private Task task;
         
@@ -194,13 +198,17 @@ public class ChunkManager : IChunkManager, IDisposable
             chunkToDraw = new List<Chunk>();
             chunkToLoadBlock = new List<Chunk>();
             chunkToLoadTerrain = new List<Chunk>();
-            chunkLoaderState  = ChunkLoaderState.SETUPTERRAIN;
+            chunkInMemory = new List<ChunkLoadingTask>();
+            chunkLoaderState  = ChunkLoaderState.SETUPCHUNKINMEMORY;
         }
 
         public void addChunk(Chunk chunk) {
-            if (chunk.chunkState < ChunkState.GENERATEDTERRAIN && chunk.wantedChunkState >= ChunkState.GENERATEDTERRAIN)
+            if(chunk.chunkState >= chunk.wantedChunkState) return;
+            ChunkState chunkStateInMemory = chunk.chunkStorage.getChunkStateInMemory(chunk.position);
+            if(chunkStateInMemory > chunk.chunkState) chunkInMemory.Add(new( chunk, chunkStateInMemory));
+            if (chunkStateInMemory < ChunkState.GENERATEDTERRAIN && chunk.chunkState < ChunkState.GENERATEDTERRAIN && chunk.wantedChunkState >= ChunkState.GENERATEDTERRAIN)
                 chunkToLoadTerrain.Add(chunk);
-            if (chunk.chunkState < ChunkState.BLOCKGENERATED && chunk.wantedChunkState >= ChunkState.BLOCKGENERATED)
+            if (chunkStateInMemory < ChunkState.BLOCKGENERATED && chunk.chunkState < ChunkState.BLOCKGENERATED && chunk.wantedChunkState >= ChunkState.BLOCKGENERATED)
                 chunkToLoadBlock.Add(chunk);
             if (chunk.chunkState < ChunkState.DRAWABLE && chunk.wantedChunkState >= ChunkState.DRAWABLE)
                 chunkToDraw.Add(chunk);
@@ -213,6 +221,14 @@ public class ChunkManager : IChunkManager, IDisposable
 
         private bool singleThreadLoading() {
             switch (chunkLoaderState) {
+                case ChunkLoaderState.SETUPCHUNKINMEMORY:
+                    foreach (ChunkLoadingTask chunk in chunkInMemory) {
+                        chunk.chunk.setChunkState(chunk.wantedChunkState);
+                        chunk.chunk.loadChunkState();
+                        chunk.chunk.finishChunkState();
+                    }
+                    chunkLoaderState = ChunkLoaderState.SETUPTERRAIN;
+                    return false;
                 case ChunkLoaderState.SETUPTERRAIN:
                     foreach (Chunk chunk in chunkToLoadTerrain) {
                         chunk.setChunkState(ChunkState.GENERATEDTERRAIN);
@@ -277,6 +293,29 @@ public class ChunkManager : IChunkManager, IDisposable
         
         private bool multiThreadLoading() {
             switch (chunkLoaderState) {
+                case ChunkLoaderState.SETUPCHUNKINMEMORY:
+                    foreach (ChunkLoadingTask chunk in chunkInMemory) {
+                        chunk.chunk.setChunkState(chunk.wantedChunkState);
+                    }
+                    chunkLoaderState = ChunkLoaderState.LOADCHUNKINMEMORY;
+                    task = Parallel.ForEachAsync(chunkInMemory, async (chunk, token) =>
+                    {
+                        chunk.chunk.loadChunkState();
+                    }).ContinueWith((task) =>
+                    {
+                        if(task.IsFaulted) throw task.Exception;
+                        chunkLoaderState = ChunkLoaderState.FINISHCHUNKINMEMORY;
+                    });
+                    return false;
+                case ChunkLoaderState.LOADCHUNKINMEMORY:
+                    if (task.IsFaulted) throw task.Exception;
+                    return false;
+                case ChunkLoaderState.FINISHCHUNKINMEMORY:
+                    foreach (ChunkLoadingTask chunkLoadingTask in chunkInMemory) {
+                        chunkLoadingTask.chunk.finishChunkState();
+                    }
+                    chunkLoaderState = ChunkLoaderState.SETUPTERRAIN;
+                    return false;
                 case ChunkLoaderState.SETUPTERRAIN:
                     foreach (Chunk chunk in chunkToLoadTerrain) {
                         chunk.setChunkState(ChunkState.GENERATEDTERRAIN);

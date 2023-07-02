@@ -24,6 +24,7 @@ public class ChunkManagerEmpty : IChunkManager
         chunks.Add(position, new Chunk(position, this, worldGenerator, chunkStorage));
         return chunks[position];
     }
+    
 
     public void removeChunk(Vector3D<int> position) {
         chunks.Remove(position);

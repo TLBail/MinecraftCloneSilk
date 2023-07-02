@@ -9,7 +9,8 @@ public class ChunkStorage
 {
     private readonly string pathToChunkFolder;
 
-    public string PathToChunk(Chunk chunk) =>  pathToChunkFolder + "/" + chunk.position.X + "  " + chunk.position.Y  + "  " + chunk.position.Z;
+    public string PathToChunk(Vector3D<int> position) =>
+        $"{pathToChunkFolder}/{position.X}  {position.Y}  {position.Z}";
 
     public ChunkStorage(string pathToChunkFolder) {
         this.pathToChunkFolder = pathToChunkFolder;
@@ -22,12 +23,12 @@ public class ChunkStorage
     
     public void SaveChunk(Chunk chunk) {
         if(!chunk.blockModified) return;
-        using Stream stream = File.Create(PathToChunk(chunk));
+        using Stream stream = File.Create(PathToChunk(chunk.position));
         using ZLibStream zs = new ZLibStream(stream, CompressionLevel.Fastest, false);
         using BinaryWriter binaryWriter = new BinaryWriter(zs, Encoding.UTF8, false);
         int version = 1;
         binaryWriter.Write(version);
-        byte chunkState = (byte)chunk.chunkState;
+        byte chunkState = chunk.chunkState > ChunkState.BLOCKGENERATED ? (byte)ChunkState.BLOCKGENERATED : (byte)chunk.chunkState;
         binaryWriter.Write(chunkState);
         int tick = 0; //Todo specify tick
         binaryWriter.Write(tick);
@@ -85,13 +86,22 @@ public class ChunkStorage
         return palette;
     }
 
-    public bool isChunkExistInMemory(Chunk chunk) {
-        return Directory.Exists(pathToChunkFolder) && File.Exists(PathToChunk(chunk));
+    public bool isChunkExistInMemory(Vector3D<int> position) {
+        return Directory.Exists(pathToChunkFolder) && File.Exists(PathToChunk(position));
     }
 
+
+    public ChunkState getChunkStateInMemory(Vector3D<int> position) {
+        if (!isChunkExistInMemory(position)) return ChunkState.EMPTY;
+        using FileStream fs = File.Open(PathToChunk(position), FileMode.Open);
+        using ZLibStream zs = new ZLibStream(fs, CompressionMode.Decompress, false);
+        using BinaryReader br = new BinaryReader(zs);
+        br.ReadInt32(); //version
+        return (ChunkState) br.ReadByte();
+    }
     
     public void LoadBlocks(Chunk chunk) {
-        using FileStream fs = File.Open(PathToChunk(chunk), FileMode.Open);
+        using FileStream fs = File.Open(PathToChunk(chunk.position), FileMode.Open);
         using ZLibStream zs = new ZLibStream(fs, CompressionMode.Decompress, false);
         using BinaryReader br = new BinaryReader(zs);
         br.ReadInt32(); //version

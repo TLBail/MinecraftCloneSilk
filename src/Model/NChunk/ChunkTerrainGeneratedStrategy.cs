@@ -12,7 +12,7 @@ public class ChunkTerrainGeneratedStrategy : ChunkStrategy
     private bool isChunkInMemory;
     
     public override void init() {
-        isChunkInMemory = chunk.chunkStorage.isChunkExistInMemory(chunk);
+        isChunkInMemory = chunk.chunkStorage.isChunkExistInMemory(chunk.position);
     }
 
     public override void load() {

@@ -40,10 +40,10 @@ public class ChunkStorageTest
     public void testCreatingChunk() {
         Chunk chunk = chunkManagerEmpty.getChunk(Vector3D<int>.Zero);
         Assert.IsNotNull(chunk);
-        chunk.setChunkState(ChunkState.BLOCKGENERATED);
-        Assert.False(chunkManagerEmpty.chunkStorage.isChunkExistInMemory(chunk));
+        //Todo find a way to load chunk with chunkManagerEmpty
+        Assert.False(chunkManagerEmpty.chunkStorage.isChunkExistInMemory(chunk.position));
         chunk.save();
-        Assert.True(chunkManagerEmpty.chunkStorage.isChunkExistInMemory(chunk));
+        Assert.True(chunkManagerEmpty.chunkStorage.isChunkExistInMemory(chunk.position));
     }
     
     
@@ -51,6 +51,8 @@ public class ChunkStorageTest
     public void testCreatingChunkFollowNorm() {
         Chunk chunk = chunkManagerEmpty.getChunk(Vector3D<int>.Zero);
         Assert.IsNotNull(chunk);
+        //Todo find a way to load chunk with chunkManagerEmpty
+
         chunk.setChunkState(ChunkState.BLOCKGENERATED);
         BlockData[,,] blocks = new BlockData[Chunk.CHUNK_SIZE,Chunk.CHUNK_SIZE,Chunk.CHUNK_SIZE];
         for (int i = 0; i < Chunk.CHUNK_SIZE; i++) {
@@ -60,11 +62,11 @@ public class ChunkStorageTest
                 }
             }
         }
-        Assert.False(chunkManagerEmpty.chunkStorage.isChunkExistInMemory(chunk));
+        Assert.False(chunkManagerEmpty.chunkStorage.isChunkExistInMemory(chunk.position));
         chunk.save();
-        Assert.True(chunkManagerEmpty.chunkStorage.isChunkExistInMemory(chunk));
+        Assert.True(chunkManagerEmpty.chunkStorage.isChunkExistInMemory(chunk.position));
         
-        using FileStream fs = File.Open(chunkManagerEmpty.chunkStorage.PathToChunk(chunk), FileMode.Open);
+        using FileStream fs = File.Open(chunkManagerEmpty.chunkStorage.PathToChunk(chunk.position), FileMode.Open);
         using ZLibStream zs = new ZLibStream(fs, CompressionMode.Decompress, false);
         using BinaryReader br = new BinaryReader(zs);
         Assert.That(br.ReadInt32(), Is.EqualTo(1), "version of file");
@@ -97,6 +99,8 @@ public class ChunkStorageTest
     [Test]
     public void testCreatedChunkIsAbleToSaveAndRecoverData() {
         Chunk chunk = chunkManagerEmpty.getChunk(Vector3D<int>.Zero);
+        //Todo find a way to load chunk with chunkManagerEmpty
+
         chunk.setChunkState(ChunkState.BLOCKGENERATED);
         
         chunk.setBlock(0,0,0, "metal");
@@ -115,6 +119,8 @@ public class ChunkStorageTest
     public void testEmptyChunkLoadAndSave() {
         Vector3D<int> chunkPosition = new Vector3D<int>(0, (int)(Chunk.CHUNK_SIZE * 1000), 0);
         Chunk chunk = chunkManagerEmpty.getChunk(chunkPosition);
+        //Todo find a way to load chunk with chunkManagerEmpty
+
         chunk.setChunkState(ChunkState.BLOCKGENERATED);
         chunk.save();
         
@@ -165,6 +171,8 @@ public class ChunkStorageTest
     [Test]
     public void testSaveChunkFullOfCobble() {
         Chunk chunk = chunkManagerEmpty.getChunk(new Vector3D<int>(0, -32, 0));
+        //Todo find a way to load chunk with chunkManagerEmpty
+
         chunk.setChunkState(ChunkState.BLOCKGENERATED);
         for (int x = 0; x < Chunk.CHUNK_SIZE; x++) {
             for (int y = 0; y < Chunk.CHUNK_SIZE; y++) {
