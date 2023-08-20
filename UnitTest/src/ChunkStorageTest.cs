@@ -1,4 +1,5 @@
 ﻿using System.IO.Compression;
+using System.Text;
 using MinecraftCloneSilk.Core;
 using MinecraftCloneSilk.Model;
 using MinecraftCloneSilk.Model.NChunk;
@@ -11,14 +12,16 @@ namespace UnitTest;
 public class ChunkStorageTest
 {
     private ChunkManagerEmpty chunkManagerEmpty;
-
+    private ChunkLoader chunkLoader;
+    private ChunkStorage chunkStorage;
     
     [OneTimeSetUp]
     public void setUp() {
         Directory.SetCurrentDirectory("./../../../../");
         Chunk.initStaticMembers(null, BlockFactory.getInstance());
-        chunkManagerEmpty = new ChunkManagerEmpty(new WorldFlatGeneration(), new ChunkStorage("./Worlds/newWorld"));
-        
+        chunkStorage = new ChunkStorage("./Worlds/newWorld");
+        chunkManagerEmpty = new ChunkManagerEmpty(new WorldFlatGeneration(), chunkStorage);
+        chunkLoader = new ChunkLoader(chunkStorage);
     }
 
     [SetUp]
@@ -29,6 +32,22 @@ public class ChunkStorageTest
         }   
     }
     
+    [Test]
+    public void ableToGetChunkGenereated() {
+        Chunk chunk = getBlockGeneratedChunk();
+        Assert.That(chunk.chunkState, Is.EqualTo(ChunkState.BLOCKGENERATED));
+    }
+
+    private Chunk getBlockGeneratedChunk() => getBlockGeneratedChunk(Vector3D<int>.Zero);
+    private Chunk getBlockGeneratedChunk(Vector3D<int> position) {
+        Chunk chunk = chunkManagerEmpty.getChunk(position);
+        Assert.IsNotNull(chunk);
+        Stack<ChunkLoadingTask> chunkLoadingTasks = new Stack<ChunkLoadingTask>();
+        chunkLoadingTasks.Push(new ChunkLoadingTask(chunk, ChunkState.BLOCKGENERATED));
+        chunkLoader.addChunks(ChunkManagerTools.getChunkDependent(chunkManagerEmpty, chunkLoadingTasks));
+        chunkLoader.singleThreadLoading();
+        return chunk;
+    }
     
     [Test]
     public void testChunkStorageHaveOpenFolder() {
@@ -38,22 +57,19 @@ public class ChunkStorageTest
 
     [Test]
     public void testCreatingChunk() {
-        Chunk chunk = chunkManagerEmpty.getChunk(Vector3D<int>.Zero);
-        Assert.IsNotNull(chunk);
-        //Todo find a way to load chunk with chunkManagerEmpty
+        Chunk chunk = getBlockGeneratedChunk();
         Assert.False(chunkManagerEmpty.chunkStorage.isChunkExistInMemory(chunk.position));
-        chunk.save();
+        chunkStorage.SaveChunk(chunk);
         Assert.True(chunkManagerEmpty.chunkStorage.isChunkExistInMemory(chunk.position));
     }
     
     
+   
+    
     [Test]
     public void testCreatingChunkFollowNorm() {
-        Chunk chunk = chunkManagerEmpty.getChunk(Vector3D<int>.Zero);
-        Assert.IsNotNull(chunk);
-        //Todo find a way to load chunk with chunkManagerEmpty
+        Chunk chunk = getBlockGeneratedChunk(new (12* Chunk.CHUNK_SIZE, 0,0));
 
-        chunk.setChunkState(ChunkState.BLOCKGENERATED);
         BlockData[,,] blocks = new BlockData[Chunk.CHUNK_SIZE,Chunk.CHUNK_SIZE,Chunk.CHUNK_SIZE];
         for (int i = 0; i < Chunk.CHUNK_SIZE; i++) {
             for (int y = 0; y < Chunk.CHUNK_SIZE; y++) {
@@ -62,11 +78,11 @@ public class ChunkStorageTest
                 }
             }
         }
-        Assert.False(chunkManagerEmpty.chunkStorage.isChunkExistInMemory(chunk.position));
-        chunk.save();
-        Assert.True(chunkManagerEmpty.chunkStorage.isChunkExistInMemory(chunk.position));
+        Assert.False(chunkStorage.isChunkExistInMemory(chunk.position));
+        chunkStorage.SaveChunk(chunk);
+        Assert.True(chunkStorage.isChunkExistInMemory(chunk.position));
         
-        using FileStream fs = File.Open(chunkManagerEmpty.chunkStorage.PathToChunk(chunk.position), FileMode.Open);
+        using FileStream fs = File.Open(chunkStorage.PathToChunk(chunk.position), FileMode.Open);
         using ZLibStream zs = new ZLibStream(fs, CompressionMode.Decompress, false);
         using BinaryReader br = new BinaryReader(zs);
         Assert.That(br.ReadInt32(), Is.EqualTo(1), "version of file");
@@ -98,18 +114,15 @@ public class ChunkStorageTest
 
     [Test]
     public void testCreatedChunkIsAbleToSaveAndRecoverData() {
-        Chunk chunk = chunkManagerEmpty.getChunk(Vector3D<int>.Zero);
-        //Todo find a way to load chunk with chunkManagerEmpty
-
-        chunk.setChunkState(ChunkState.BLOCKGENERATED);
-        
+        Chunk chunk = getBlockGeneratedChunk();
         chunk.setBlock(0,0,0, "metal");
 
-        chunk.save();
+        chunkStorage.SaveChunk(chunk);
         
         chunkManagerEmpty.removeChunk(Vector3D<int>.Zero);
-        Chunk chunk2 = chunkManagerEmpty.getChunk(Vector3D<int>.Zero);
-        chunk2.setChunkState(ChunkState.BLOCKGENERATED);
+        
+        Chunk chunk2 = getBlockGeneratedChunk();
+
         
         Assert.True(chunk2.getBlock(Vector3D<int>.Zero).name.Equals("metal"));
     }
@@ -118,15 +131,11 @@ public class ChunkStorageTest
     [Test]
     public void testEmptyChunkLoadAndSave() {
         Vector3D<int> chunkPosition = new Vector3D<int>(0, (int)(Chunk.CHUNK_SIZE * 1000), 0);
-        Chunk chunk = chunkManagerEmpty.getChunk(chunkPosition);
-        //Todo find a way to load chunk with chunkManagerEmpty
-
-        chunk.setChunkState(ChunkState.BLOCKGENERATED);
-        chunk.save();
+        Chunk chunk = getBlockGeneratedChunk(chunkPosition);
+        chunkStorage.SaveChunk(chunk);
         
         chunkManagerEmpty.removeChunk(chunkPosition);
-        Chunk chunk2 = chunkManagerEmpty.getChunk(chunkPosition);
-        chunk2.setChunkState(ChunkState.BLOCKGENERATED);
+        Chunk chunk2 = getBlockGeneratedChunk(chunkPosition);
 
         for (int x = 0; x < Chunk.CHUNK_SIZE; x++) {
             for (int y = 0; y < Chunk.CHUNK_SIZE; y++) {
@@ -170,10 +179,8 @@ public class ChunkStorageTest
 
     [Test]
     public void testSaveChunkFullOfCobble() {
-        Chunk chunk = chunkManagerEmpty.getChunk(new Vector3D<int>(0, -32, 0));
-        //Todo find a way to load chunk with chunkManagerEmpty
+        Chunk chunk = getBlockGeneratedChunk(new Vector3D<int>(0, -32, 0));
 
-        chunk.setChunkState(ChunkState.BLOCKGENERATED);
         for (int x = 0; x < Chunk.CHUNK_SIZE; x++) {
             for (int y = 0; y < Chunk.CHUNK_SIZE; y++) {
                 for (int z = 0; z < Chunk.CHUNK_SIZE; z++) {
@@ -182,12 +189,11 @@ public class ChunkStorageTest
             }
         }
         
-        chunk.save();
+        chunkStorage.SaveChunk(chunk);
         
         chunkManagerEmpty.removeChunk(new Vector3D<int>(0, -32, 0));
         
-        Chunk chunk2 = chunkManagerEmpty.getChunk(new Vector3D<int>(0, -32, 0));
-        chunk2.setChunkState(ChunkState.BLOCKGENERATED);
+        Chunk chunk2 = getBlockGeneratedChunk(new Vector3D<int>(0, -32, 0));
         for (int x = 0; x < Chunk.CHUNK_SIZE; x++) {
             for (int y = 0; y < Chunk.CHUNK_SIZE; y++) {
                 for (int z = 0; z < Chunk.CHUNK_SIZE; z++) {

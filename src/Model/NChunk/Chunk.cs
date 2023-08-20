@@ -16,7 +16,6 @@ public class Chunk : IDisposable
 
     internal IChunkManager chunkManager;
     internal WorldGenerator worldGenerator;
-    internal ChunkStorage chunkStorage;
 
     internal Line? debugRay;
     internal bool debugMode = false;
@@ -36,14 +35,12 @@ public class Chunk : IDisposable
     private bool disposed = false;
     internal bool blockModified = false;
 
-    public Chunk(Vector3D<int> position, IChunkManager chunkManager, WorldGenerator worldGenerator,
-        ChunkStorage chunkStorage) {
+    public Chunk(Vector3D<int> position, IChunkManager chunkManager, WorldGenerator worldGenerator) {
         this.chunkState = DEFAULTSTARTINGCHUNKSTATE;
         this.wantedChunkState = DEFAULTSTARTINGCHUNKSTATE;
         this.chunkStrategy = new ChunkEmptyStrategy(this);
         this.chunkManager = chunkManager;
         this.worldGenerator = worldGenerator;
-        this.chunkStorage = chunkStorage;
         this.position = position;
         blocks = new BlockData[CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE];
     }
@@ -56,42 +53,25 @@ public class Chunk : IDisposable
     public void setChunkState(ChunkState wantedChunkState) {
         switch (wantedChunkState) {
             case ChunkState.EMPTY:
-                if (chunkStrategy is not ChunkEmptyStrategy) {
-                    chunkStrategy = new ChunkEmptyStrategy(this);
-                    chunkStrategy.init();
-                }
-
+                chunkStrategy = new ChunkEmptyStrategy(this);
                 return;
             case ChunkState.GENERATEDTERRAIN:
-                if (chunkStrategy is not ChunkTerrainGeneratedStrategy) {
-                    chunkStrategy = new ChunkTerrainGeneratedStrategy(this);
-                    chunkStrategy.init();
-                }
-
+                chunkStrategy = new ChunkTerrainGeneratedStrategy(this);
                 break;
             case ChunkState.BLOCKGENERATED:
                 if (chunkState == ChunkState.DRAWABLE) {
                     chunkStrategy.Dispose();
-                    chunkStrategy = new ChunkBlockGeneratedStrategy(this);
-                    chunkState = ChunkState.BLOCKGENERATED;
-                    break;
                 }
-
-                if (chunkStrategy is not ChunkBlockGeneratedStrategy) {
-                    chunkStrategy = new ChunkBlockGeneratedStrategy(this);
-                    chunkStrategy.init();
-                }
-
+                chunkStrategy = new ChunkBlockGeneratedStrategy(this);
                 break;
             case ChunkState.DRAWABLE:
-                if (chunkStrategy is not ChunkDrawableStrategy) {
-                    chunkStrategy = new ChunkDrawableStrategy(this);
-                    chunkStrategy.init();
-                }
-
+                chunkStrategy = new ChunkDrawableStrategy(this);
                 break;
         }
+        this.chunkState = wantedChunkState;
     }
+    
+    public void initChunkState() => chunkStrategy.init();
     
     public void loadChunkState() => chunkStrategy.load();
         
@@ -141,8 +121,6 @@ public class Chunk : IDisposable
             }
         }
     }
-
-    public void save() => chunkStorage.SaveChunk(this);
 
     public override string ToString() {
         return $"Chunk {position.X} {position.Y} {position.Z} chunkState: {chunkState} \n";

@@ -23,6 +23,9 @@ public class ChunkDrawableStrategy : ChunkStrategy
 
 
     public ChunkDrawableStrategy(Chunk chunk) : base(chunk) {
+        if (chunk.chunkState != ChunkState.BLOCKGENERATED) {
+            throw new Exception("failed to init chunkDrawableStrategy because the chunk is not BLOCKGENERATED");
+        }
     }
 
 
@@ -32,9 +35,6 @@ public class ChunkDrawableStrategy : ChunkStrategy
     }
 
     public override void init() {
-        if (chunk.chunkState != ChunkState.BLOCKGENERATED) {
-            throw new Exception("failed to init chunkDrawableStrategy because the chunk is not BLOCKGENERATED");
-        }
         setupNeighbors();
     }
 

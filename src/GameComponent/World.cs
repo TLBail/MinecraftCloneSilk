@@ -22,7 +22,7 @@ public enum WorldMode
 public class World : GameObject
 {
     private Player player;
-    public int radius { get; set; } = 4;
+    public int radius { get; set; } = 1;
     private readonly WorldUI worldUi;
     public WorldNaturalGeneration worldNaturalGeneration;
     public WorldMode worldMode { get; set; }
@@ -30,14 +30,14 @@ public class World : GameObject
 
     private Vector3D<int> lastPlayerChunkPosition = new Vector3D<int>(-1);
 
-    private ChunkStorage chunkStorage;
+    private RegionStorage regionStorage;
 
     public World(Game game, WorldMode worldMode = WorldMode.EMPTY) : base(game) {
         this.worldMode = worldMode;
         worldUi = new WorldUI(this);
         worldNaturalGeneration = new WorldNaturalGeneration();
-        chunkStorage = new ChunkStorage("./Worlds/newWorld");
-        chunkManager = new ChunkManager(radius, worldNaturalGeneration, chunkStorage);
+        regionStorage = new RegionStorage("./Worlds/newWorld");
+        chunkManager = new ChunkManager(radius, worldNaturalGeneration, regionStorage);
     }
 
 
