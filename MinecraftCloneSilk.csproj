@@ -26,21 +26,18 @@
     <Compile Remove="UnitTest\**" />
     <Compile Remove="Benchmarker\**" />
     <Compile Remove="Benchmark\**" />
-    <Compile Remove="Worlds\**" />
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Remove="UnitTest\**" />
     <EmbeddedResource Remove="Benchmarker\**" />
     <EmbeddedResource Remove="Benchmark\**" />
-    <EmbeddedResource Remove="Worlds\**" />
   </ItemGroup>
 
   <ItemGroup>
     <None Remove="UnitTest\**" />
     <None Remove="Benchmarker\**" />
     <None Remove="Benchmark\**" />
-    <None Remove="Worlds\**" />
     <None Remove=".gitattributes" />
     <None Remove=".gitignore" />
   </ItemGroup>
@@ -69,6 +66,11 @@
     <Content Include="Shader\color\VertexShader.glsl" />
     <Content Include="Shader\Skybox\FragmentShader.glsl" />
     <Content Include="Shader\Skybox\VertexShader.glsl" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Worlds\" />
+    <Folder Include="Worlds\newWorld\" />
   </ItemGroup>
 
 </Project>

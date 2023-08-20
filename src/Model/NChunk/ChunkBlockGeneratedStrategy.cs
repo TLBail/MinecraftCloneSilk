@@ -21,28 +21,14 @@ public class ChunkBlockGeneratedStrategy : ChunkStrategy
     public ChunkBlockGeneratedStrategy(Chunk chunk) : base(chunk) {
     }
 
-    private bool isChunkInMemory = false;
     public override void init() {
-        if (chunk.chunkState != ChunkState.GENERATEDTERRAIN) {
-            if (!chunk.chunkStorage.isChunkExistInMemory(chunk.position)) {
-                throw new Exception("try to init a chunk with a wrong state");
-            } else {
-                isChunkInMemory = true;
-            } 
-        } else {
-            minimumChunkStateOfNeighborsValue = ChunkState.GENERATEDTERRAIN;
-        }
+        minimumChunkStateOfNeighborsValue = ChunkState.GENERATEDTERRAIN;
         setupNeighbors();
-
     }
 
     public override void load() {
-        if (isChunkInMemory) {
-            chunk.chunkStorage.LoadBlocks(chunk);
-        } else {
-            generateStruture();
-            chunk.blockModified = true;
-        }
+        generateStruture();
+        chunk.blockModified = true;
     }
 
     public override void finish() {

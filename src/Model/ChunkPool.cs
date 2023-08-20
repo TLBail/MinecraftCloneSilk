@@ -12,9 +12,9 @@ public class ChunkPool : IDisposable
 
     public IChunkManager chunkManager { get; init; }
     public WorldGenerator worldGenerator { get; init; }
-    public ChunkStorage chunkStorage { get; init; }
+    public IChunkStorage chunkStorage { get; init; }
     
-    public ChunkPool(IChunkManager chunkManager, WorldGenerator worldGenerator, ChunkStorage chunkStorage) {
+    public ChunkPool(IChunkManager chunkManager, WorldGenerator worldGenerator, IChunkStorage chunkStorage) {
         this.chunkManager = chunkManager;
         this.worldGenerator = worldGenerator;
         this.chunkStorage = chunkStorage;
@@ -35,7 +35,7 @@ public class ChunkPool : IDisposable
     } 
     
     private Chunk buildChunk(Vector3D<int> position) {
-        return new Chunk(position, chunkManager, worldGenerator, chunkStorage);
+        return new Chunk(position, chunkManager, worldGenerator);
     }
 
 

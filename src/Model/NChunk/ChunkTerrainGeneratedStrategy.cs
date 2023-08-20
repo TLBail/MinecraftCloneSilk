@@ -9,19 +9,12 @@ public class ChunkTerrainGeneratedStrategy : ChunkStrategy
         }
     }
 
-    private bool isChunkInMemory;
     
     public override void init() {
-        isChunkInMemory = chunk.chunkStorage.isChunkExistInMemory(chunk.position);
     }
 
     public override void load() {
-
-        if (isChunkInMemory) {
-            chunk.chunkStorage.LoadBlocks(chunk);
-        } else {
-            generateTerrain();
-        }
+        generateTerrain();
     }
 
     public override void finish() {
