@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using System.Runtime.InteropServices;
 using MinecraftCloneSilk.Core;
 using MinecraftCloneSilk.GameComponent;
 using Silk.NET.Maths;
@@ -108,7 +109,7 @@ public class ChunkDrawableStrategy : ChunkStrategy
 
 
     public override ReadOnlySpan<CubeVertex> getVertices() {
-        return vertices.ToArray();
+        return CollectionsMarshal.AsSpan(vertices);
     }
 
     private void sendCubeVertices() {
@@ -128,8 +129,7 @@ public class ChunkDrawableStrategy : ChunkStrategy
                             .Equals(BlockFactory.AIR_BLOCK)) continue;
                     FaceFlag faces = getFaces(x, y, z);
                     if (faces > 0) {
-                        vertices.AddRange(Chunk.blockFactory.blocksReadOnly[block.id].textureBlock
-                            .getCubeVertices(faces, new Vector3D<float>(x, y, z), positionFloat));
+                        Chunk.blockFactory.blocksReadOnly[block.id].textureBlock.AddCubeVerticesToList(vertices, faces, new Vector3D<float>(x, y, z), positionFloat);
                     }
                 }
             }

@@ -31,4 +31,16 @@ public static class ChunkManagerTools
         }
         return chunkLoadOrder;
     }
+    
+    
+    public static Chunk getBlockGeneratedChunk(IChunkManager chunkManager,ChunkLoader chunkLoader, Vector3D<int> position) {
+        Chunk chunk = chunkManager.getChunk(position);
+        Stack<ChunkLoadingTask> chunkLoadingTasks = new Stack<ChunkLoadingTask>();
+        chunkLoadingTasks.Push(new ChunkLoadingTask(chunk, ChunkState.BLOCKGENERATED));
+        chunkLoader.addChunks(getChunkDependent(chunkManager, chunkLoadingTasks));
+        chunkLoader.singleThreadLoading();
+        return chunk;
+    }
+
+
 }

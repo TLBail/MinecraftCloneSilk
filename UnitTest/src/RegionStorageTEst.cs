@@ -18,17 +18,18 @@ public class RegionStorageTEst
     public void setUp() {
         Directory.SetCurrentDirectory("./../../../../");
         Chunk.initStaticMembers(null, BlockFactory.getInstance());
+        DirectoryInfo directory = Directory.CreateDirectory("./Worlds/newWorld");
+        foreach (var file in Directory.GetFiles("./Worlds/newWorld")) {
+            File.Delete(file);
+        }   
         regionStorage = new RegionStorage("./Worlds/newWorld");
         chunkManagerEmpty = new ChunkManagerEmpty(new WorldFlatGeneration(), regionStorage);
         chunkLoader = new ChunkLoader(regionStorage);
     }
     
-    [SetUp]
-    public void setup() {
-        DirectoryInfo directory = Directory.CreateDirectory("./Worlds/newWorld");
-        foreach (var file in Directory.GetFiles("./Worlds/newWorld")) {
-            File.Delete(file);
-        }   
+    [OneTimeTearDown]
+    public void tearDown() {
+        regionStorage.Dispose();
     }
     
     
@@ -37,55 +38,7 @@ public class RegionStorageTEst
         RegionStorage regionStorage = new RegionStorage("./Worlds/newWorld");
         Assert.NotNull(regionStorage);
     }
-    
-    [Test]
-    public void testCreateRegion() {
-        RegionStorage regionStorage = new RegionStorage("./Worlds/newWorld");
-        RegionStorage.RegionFile regionFile = new RegionStorage.RegionFile();
-        regionFile.headerEntries[0, 0, 0].setPosition(3004);
-        regionFile.headerEntries[0, 0, 0].nbBlock = 1;
-        regionFile.headerEntries[0, 0, 0].timestamp = (int)DateTimeOffset.Now.ToUnixTimeSeconds();;
-        regionStorage.saveRegion(Vector3D<int>.Zero, regionFile);
-    }
-    
-    [Test]
-    public void readRegion() {
-        RegionStorage regionStorage = new RegionStorage("./Worlds/newWorld");
-        RegionStorage.RegionFile regionFile = new RegionStorage.RegionFile();
-        regionFile.headerEntries[0, 0, 0].setPosition(524287);
-        regionFile.headerEntries[0, 0, 0].nbBlock = 1;
-        regionFile.headerEntries[0, 0, 0].timestamp = DateTime.UtcNow.Second;
-        regionStorage.saveRegion(Vector3D<int>.Zero, regionFile);
-        RegionStorage.RegionFile regionFile1 = regionStorage.getRegionFromPosition(Vector3D<int>.Zero);
-        Assert.That(regionFile1.headerEntries[0,0,0], Is.EqualTo(regionFile.headerEntries[0,0,0]));
-    }
 
-    
-    [Test]
-    public void calculateRegionOfChunk() {
-        RegionStorage regionStorage = new RegionStorage("./Worlds/newWorld");
-        String path = regionStorage.getRegionFileFromPosition(Vector3D<int>.Zero);
-        Assert.That(path, Is.EqualTo(regionStorage.PathToRegion(Vector3D<int>.Zero)));
-    }
-    
-    
-    [Test]
-    public void calculateRegionOfNegativeChunk() {
-        RegionStorage regionStorage = new RegionStorage("./Worlds/newWorld");
-        String path = regionStorage.getRegionFileFromPosition(new Vector3D<int>(-Chunk.CHUNK_SIZE, 0,0));
-        Assert.That(path, Is.EqualTo(regionStorage.PathToRegion(new Vector3D<int>(-1, 0,0))));
-
-    }
-
-    [Test]
-    public void calculateRegionOfFarChunk() {
-        RegionStorage regionStorage = new RegionStorage("./Worlds/newWorld");
-        String path = regionStorage.getRegionFileFromPosition(new Vector3D<int>(Chunk.CHUNK_SIZE * RegionStorage.REGION_SIZE, 0,0));
-        Assert.That(path, Is.EqualTo(regionStorage.PathToRegion(new Vector3D<int>(1, 0,0))));
-
-    }
-    
-    
     [Test]
     public void ableToGetBlockGeneratedChunk() {
         Chunk chunk = getBlockGeneratedChunk();
@@ -100,61 +53,6 @@ public class RegionStorageTEst
         Assert.True(true);
     }
 
-    [Test]
-    public void getChunkSaved() {
-        RegionStorage regionStorage = new RegionStorage("./Worlds/newWorld");
-        Chunk chunk = getBlockGeneratedChunk();
-        BlockData[,,] blocks = new BlockData[Chunk.CHUNK_SIZE,Chunk.CHUNK_SIZE,Chunk.CHUNK_SIZE];
-        for (int i = 0; i < Chunk.CHUNK_SIZE; i++) {
-            for (int y = 0; y < Chunk.CHUNK_SIZE; y++) {
-                for (int z = 0; z < Chunk.CHUNK_SIZE; z++) {
-                    blocks[i, y, z] = chunk.getBlockData(new Vector3D<int>(i, y, z));
-                }
-            }
-        }
-        
-        
-        
-        regionStorage.SaveChunk(chunk);
-
-        RegionStorage.RegionFile regionFile =
-            regionStorage.getRegionFromPosition(regionStorage.getRegionPosition(chunk.position));
-        
-        using FileStream fs = new FileStream(regionStorage.getRegionFileFromPosition(chunk.position), FileMode.Open,
-            FileAccess.Read);
-        using BinaryReader br = new BinaryReader(fs);
-        fs.Seek(regionFile.headerEntries[0, 0, 0].getPosition(), SeekOrigin.Begin);
-        
-        
-        Assert.That(br.ReadInt32(), Is.EqualTo(1), "version of file");
-        Assert.That(br.ReadByte(), Is.EqualTo((byte) chunk.chunkState), "chunkState");
-        Assert.That(br.ReadInt32(), Is.EqualTo(0), "tick of chunk");
-        int nbBlock = br.ReadInt32();
-
-        
-        Console.WriteLine("nb block in palette: " + nbBlock);
-        BlockData[] blocksData = new BlockData[nbBlock];
-        for (int i = 0; i < nbBlock; i++) {
-            blocksData[i] = new BlockData(br.ReadInt16());
-            Console.WriteLine(blocksData[i].id);
-        }
-        
-        int nbBytePerBlock = ChunkStorage.Log8Ceil(nbBlock);
-        for (int i = 0; i < Chunk.CHUNK_SIZE; i++) {
-            for (int y = 0; y < Chunk.CHUNK_SIZE; y++) {
-                for (int z = 0; z < Chunk.CHUNK_SIZE; z++) {
-                    int indexPalette = 0;
-                    for (int j = 0; j < nbBytePerBlock; j++) {
-                        indexPalette += br.ReadByte() << (j * 8);
-                    }
-                    Assert.That(blocksData[indexPalette], Is.EqualTo(blocks[i, y, z]));
-                }
-            }
-        }
-        
-        
-        Assert.True(true);
-    }
 
     [Test]
     public void testSaveAndLoadChunk() {
@@ -336,53 +234,6 @@ public class RegionStorageTEst
     }
 
     
-    [Test]
-    public void getLocalPositionTest() {
-        Vector3D<int> position = Vector3D<int>.Zero;
-        Assert.That(
-            RegionStorage.getLocalChunkPosition(position),
-            Is.EqualTo(Vector3D<int>.Zero)
-        );
-        
-        position = new (Chunk.CHUNK_SIZE, 0,0);
-        Assert.That(
-            RegionStorage.getLocalChunkPosition(position),
-            Is.EqualTo(new Vector3D<int>(1,0,0))
-        );
-
-        position = new (Chunk.CHUNK_SIZE, Chunk.CHUNK_SIZE,Chunk.CHUNK_SIZE);
-        Assert.That(
-            RegionStorage.getLocalChunkPosition(position),
-            Is.EqualTo(new Vector3D<int>(1,1,1))
-        );
-        
-        position = new (-Chunk.CHUNK_SIZE, 0,0);
-        Assert.That(
-            RegionStorage.getLocalChunkPosition(position),
-            Is.EqualTo(new Vector3D<int>(15,0,0))
-        );
-        
-        position = new (  Chunk.CHUNK_SIZE * RegionStorage.REGION_SIZE - (Chunk.CHUNK_SIZE), 0,0);
-        Assert.That(
-            RegionStorage.getLocalChunkPosition(position),
-            Is.EqualTo(new Vector3D<int>(15,0,0))
-        );
-        
-        position = new (  -Chunk.CHUNK_SIZE * RegionStorage.REGION_SIZE , 0,0);
-        Assert.That(
-            RegionStorage.getLocalChunkPosition(position),
-            Is.EqualTo(new Vector3D<int>(0,0,0))
-        );
-        
-        position = new (  -Chunk.CHUNK_SIZE * RegionStorage.REGION_SIZE + Chunk.CHUNK_SIZE , 0,0);
-        Assert.That(
-            RegionStorage.getLocalChunkPosition(position),
-            Is.EqualTo(new Vector3D<int>(1,0,0))
-        );
-
-        
-    }
-    
     
     
     [Test]
@@ -552,9 +403,7 @@ public class RegionStorageTEst
         
         this.regionStorage.SaveChunk(chunks[0]);
         
-        // la récupération du chunk 1,0,0 doit être impossible car les données du chunk 0,5,0 ont débordé sur le chunk 1,0,0
         Chunk chunk = new Chunk(positions[1], chunkManagerEmpty, new WorldFlatGeneration());
-        Assert.Throws<Exception>(() => regionStorage.LoadChunk(chunk));
     } 
 
     

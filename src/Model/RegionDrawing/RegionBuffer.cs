@@ -51,13 +51,13 @@ public class RegionBuffer : IDisposable
             nbVertex += chunks[i].getVertices().Length;
         }
 
-        CubeVertex[] vertices = new CubeVertex[nbVertex];
+        Span<CubeVertex> vertices = stackalloc CubeVertex[nbVertex];
         int offset = 0;
         for (int i = 0; i < chunkCount; i++) {
             Chunk chunk = chunks[i];
             if(chunk.chunkState != ChunkState.DRAWABLE) continue;
             ReadOnlySpan<CubeVertex> verticesChunk1 = chunk.getVertices();
-            verticesChunk1.CopyTo(vertices.AsSpan(offset));
+            verticesChunk1.CopyTo(vertices[offset..]);
             offset += verticesChunk1.Length;
         }
 

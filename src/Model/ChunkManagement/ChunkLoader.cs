@@ -50,7 +50,7 @@ public class ChunkLoader
     }
 
     public bool update() {
-        return singleThreadLoading();
+        return multiThreadLoading();
     }
 
     public void reset() {
