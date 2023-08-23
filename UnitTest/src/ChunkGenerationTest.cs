@@ -19,7 +19,7 @@ public class ChunkGenerationTest
 
     [OneTimeSetUp]
     public  void initGame() {
-        
+        Directory.SetCurrentDirectory("./../../../../");
         Scene scene = new Scene(new List<InitGameData>()
             {
                 new (typeof(Player).FullName),
@@ -73,7 +73,7 @@ public class ChunkGenerationTest
         await game.waitForFrame(1);
         world = (World)game.gameObjects[typeof(World).FullName];
         world.chunkManager.addChunksToLoad(new List<Vector3D<int>>(){Vector3D<int>.Zero});
-        await game.waitForFrame(3);
+        await game.waitForFrame(10);
         world.setBlock(BlockFactory.AIR_BLOCK, Vector3D<int>.Zero);
         var block = world.getBlock(Vector3D<int>.Zero);
         Assert.True(block.name.Equals(BlockFactory.AIR_BLOCK));
@@ -85,7 +85,7 @@ public class ChunkGenerationTest
         await game.waitForFrame(1);
         world = (World)game.gameObjects[typeof(World).FullName];
         world.chunkManager.addChunksToLoad(new List<Vector3D<int>>(){Vector3D<int>.Zero});
-        await game.waitForFrame(3);
+        await game.waitForFrame(10);
         world.setBlock(BlockFactory.AIR_BLOCK, Vector3D<int>.Zero);
         var block = world.getBlock(Vector3D<int>.Zero);
         
@@ -100,7 +100,7 @@ public class ChunkGenerationTest
         await game.waitForFrame(1);
         world = (World)game.gameObjects[typeof(World).FullName];
         world.chunkManager.addChunksToLoad(new List<Vector3D<int>>(){Vector3D<int>.Zero});
-        await game.waitForFrame(3);
+        await game.waitForFrame(10);
         world.setBlock(BlockFactory.AIR_BLOCK, Vector3D<int>.Zero);
         var block = world.getBlock(Vector3D<int>.Zero);
         
@@ -148,14 +148,15 @@ public class ChunkGenerationTest
         });
         await game.waitForFrame(10);
         world.setBlock("metal", new Vector3D<int>((int)Chunk.CHUNK_SIZE * 2, 0, 0));
-
+        Assert.That(world.getBlock(new Vector3D<int>((int)Chunk.CHUNK_SIZE * 2, 0, 0)).name.Equals("metal"), Is.True);
+        
         world.chunkManager.tryToUnloadChunk(new Vector3D<int>((int)Chunk.CHUNK_SIZE * 2, 0, 0));
         await game.waitForFrame(10);
-        Assert.True(world.chunkManager.getChunk(new Vector3D<int>((int)Chunk.CHUNK_SIZE * 2, 0, 0)).chunkState == ChunkState.BLOCKGENERATED);
+        Assert.That(world.chunkManager.getChunk(new Vector3D<int>((int)Chunk.CHUNK_SIZE * 2, 0, 0)).chunkState, Is.EqualTo(ChunkState.EMPTY));
         
         world.chunkManager.tryToUnloadChunk(new Vector3D<int>((int)Chunk.CHUNK_SIZE, 0, 0));
         await game.waitForFrame(10);
-        Assert.True(world.chunkManager.getChunk(new Vector3D<int>((int)Chunk.CHUNK_SIZE, 0, 0)).chunkState == ChunkState.BLOCKGENERATED);
+        Assert.True(world.chunkManager.getChunk(new Vector3D<int>((int)Chunk.CHUNK_SIZE, 0, 0)).chunkState == ChunkState.EMPTY);
 
         world.chunkManager.tryToUnloadChunk(new Vector3D<int>((int)Chunk.CHUNK_SIZE * 2, 0, 0));
         await game.waitForFrame(10);
@@ -164,7 +165,9 @@ public class ChunkGenerationTest
 
         world.chunkManager.addChunksToLoad(new List<Vector3D<int>>(){new Vector3D<int>((int)Chunk.CHUNK_SIZE * 2, 0, 0)});
         await game.waitForFrame(10);
-        Assert.True(world.getBlock(new Vector3D<int>((int)Chunk.CHUNK_SIZE * 2, 0, 0)).name.Equals("metal"));
+        
+        
+        Assert.That(world.getBlock(new Vector3D<int>((int)Chunk.CHUNK_SIZE * 2, 0, 0)).name.Equals("metal"), Is.True);
 
     }
     
@@ -185,11 +188,11 @@ public class ChunkGenerationTest
         
         world.chunkManager.tryToUnloadChunk(new Vector3D<int>((int)Chunk.CHUNK_SIZE * 3, 0, 0));
         await game.waitForFrame(10);
-        Assert.True(world.chunkManager.getChunk(new Vector3D<int>((int)Chunk.CHUNK_SIZE * 3, 0, 0)).chunkState == ChunkState.BLOCKGENERATED);
+        Assert.That(world.chunkManager.getChunk(new Vector3D<int>((int)Chunk.CHUNK_SIZE * 3, 0, 0)).chunkState, Is.EqualTo(ChunkState.EMPTY));
         
         world.chunkManager.tryToUnloadChunk(new Vector3D<int>((int)Chunk.CHUNK_SIZE * 2, 0, 0));
         await game.waitForFrame(10);
-        Assert.True(world.chunkManager.getChunk(new Vector3D<int>((int)Chunk.CHUNK_SIZE * 2, 0, 0)).chunkState == ChunkState.BLOCKGENERATED);
+        Assert.That(world.chunkManager.getChunk(new Vector3D<int>((int)Chunk.CHUNK_SIZE * 2, 0, 0)).chunkState, Is.EqualTo(ChunkState.EMPTY));
         
         world.chunkManager.tryToUnloadChunk(new Vector3D<int>((int)Chunk.CHUNK_SIZE * 3, 0, 0));
         await game.waitForFrame(10);
@@ -199,7 +202,7 @@ public class ChunkGenerationTest
         
         world.chunkManager.tryToUnloadChunk(new Vector3D<int>((int)Chunk.CHUNK_SIZE, 0, 0));
         await game.waitForFrame(10);
-        Assert.True(world.chunkManager.getChunk(new Vector3D<int>((int)Chunk.CHUNK_SIZE, 0, 0)).chunkState == ChunkState.BLOCKGENERATED);
+        Assert.That(world.chunkManager.getChunk(new Vector3D<int>((int)Chunk.CHUNK_SIZE, 0, 0)).chunkState, Is.EqualTo(ChunkState.EMPTY));
 
         world.chunkManager.tryToUnloadChunk(new Vector3D<int>((int)Chunk.CHUNK_SIZE * 2, 0, 0));
         await game.waitForFrame(10);
@@ -207,7 +210,7 @@ public class ChunkGenerationTest
 
         world.chunkManager.addChunksToLoad(new List<Vector3D<int>>(){new Vector3D<int>((int)Chunk.CHUNK_SIZE * 3, 0, 0)});
         await game.waitForFrame(10);
-        Assert.True(world.getBlock(new Vector3D<int>((int)Chunk.CHUNK_SIZE * 3, 0, 0)).name.Equals("metal"));
+        Assert.That(world.getBlock(new Vector3D<int>((int)Chunk.CHUNK_SIZE * 3, 0, 0)).name, Is.EqualTo("metal"));
 
     }
 }

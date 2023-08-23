@@ -10,9 +10,9 @@ public class ChunkManagerEmpty : IChunkManager
     public Dictionary<Vector3D<int>, Chunk> chunks = new Dictionary<Vector3D<int>, Chunk>();
 
     public WorldGenerator worldGenerator;
-    public ChunkStorage chunkStorage;
+    public IChunkStorage chunkStorage;
 
-    public ChunkManagerEmpty(WorldGenerator worldGenerator, ChunkStorage chunkStorage) {
+    public ChunkManagerEmpty(WorldGenerator worldGenerator, IChunkStorage chunkStorage) {
         this.worldGenerator = worldGenerator;
         this.chunkStorage = chunkStorage;
     }
@@ -21,9 +21,10 @@ public class ChunkManagerEmpty : IChunkManager
         if (chunks.ContainsKey(position)) {
             return chunks[position];
         }    
-        chunks.Add(position, new Chunk(position, this, worldGenerator, chunkStorage));
+        chunks.Add(position, new Chunk(position, this, worldGenerator));
         return chunks[position];
     }
+    
 
     public void removeChunk(Vector3D<int> position) {
         chunks.Remove(position);

@@ -14,8 +14,6 @@ public class WorldNaturalGenerationBenchMark
     BlockData[,,] blocks;
     Vector3D<int> position = Vector3D<int>.Zero;
     public WorldNaturalGenerationBenchMark() {
-        TextureManager textureManager = TextureManager.getInstance();
-        textureManager.fakeLoad();
         blocks = new BlockData[16, 16, 16];
         worldNaturalGeneration = new WorldNaturalGeneration();
     }

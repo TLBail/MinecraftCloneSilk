@@ -16,6 +16,7 @@ public class PlayerTest
 
     [OneTimeSetUp]
     public  void initGame() {
+        Directory.SetCurrentDirectory("./../../../../");
         Scene scene = new Scene(new List<InitGameData>()
             {
                 new (typeof(Player).FullName),
@@ -56,7 +57,7 @@ public class PlayerTest
 
     [Test]
     public async Task playerRemoveBlockWithClick() {
-        await game.waitForFrame(1);
+        await game.waitForFrame(10);
         Player player = (Player)game.gameObjects[typeof(Player).FullName];
         world = (World)game.gameObjects[typeof(World).FullName];
         
@@ -69,7 +70,7 @@ public class PlayerTest
     
     [Test]
     public async Task playerAddBlockWithClick() {
-        await game.waitForFrame(1);
+        await game.waitForFrame(10);
         Player player = (Player)game.gameObjects[typeof(Player).FullName];
         world = (World)game.gameObjects[typeof(World).FullName];
         world.setBlock("stone", Vector3D<int>.Zero);

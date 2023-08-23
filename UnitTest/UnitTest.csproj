@@ -8,10 +8,14 @@
         <IsPackable>false</IsPackable>
 
         <LangVersion>11</LangVersion>
+
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <ChromeTracing>false</ChromeTracing>
     </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="BenchmarkDotNet" Version="0.13.2" />
+        <PackageReference Include="LightningDB" Version="0.15.0" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.3.2" />
         <PackageReference Include="NUnit" Version="3.13.3" />
         <PackageReference Include="NUnit3TestAdapter" Version="4.2.1" />
@@ -20,7 +24,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\MinecraftCloneSilk.csproj" />
+      <ProjectReference Include="..\App\MinecraftCloneSilk.csproj" />
     </ItemGroup>
 
 </Project>
