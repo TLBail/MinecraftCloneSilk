@@ -22,21 +22,18 @@ namespace MinecraftCloneSilk.Model
 
         }
 
-        public IEnumerable<CubeVertex> getCubeVertices(FaceFlag faceFlag, Vector3D<float> blockPosition, Vector3D<float> chunkPosition)
-        {
-            CubeVertex[] vertices = new CubeVertex[6 * FaceFlagUtils.nbFaces(faceFlag)];
-            int index = 0;
-            IEnumerator<Face> enumerator = FaceFlagUtils.getFaces(faceFlag);
-            while(enumerator.MoveNext()) {
-                Face face = enumerator.Current;
-                foreach (var vertex in cubeVertices[(int)face]) {
-                    vertices[index] = vertex;
-                    vertices[index].position += blockPosition + chunkPosition;
-                    index++;
+        public void AddCubeVerticesToList(List<CubeVertex> destinationList,FaceFlag faceFlag, Vector3D<float> blockPosition,
+            Vector3D<float> chunkPosition) {
+            foreach(Face face in FaceFlagUtils.getFaces(faceFlag)) {
+                foreach (CubeVertex vertex in cubeVertices[(int)face]) {
+                    CubeVertex cubeVertex = vertex;
+                    cubeVertex.position += blockPosition + chunkPosition;
+                    destinationList.Add(cubeVertex);
                 }
             }
-            return vertices;
         }
+
+ 
 
         private static Vector2D<float> bottomLeft(int textureX, int textureY) {
             return new Vector2D<float>( (32.0f * textureX) / 256.0f + 0.01f, (32.0f * textureY) / 256.0f  + 0.01f);

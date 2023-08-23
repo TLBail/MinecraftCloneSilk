@@ -50,7 +50,7 @@ namespace MinecraftCloneSilk.Model
 			return total;
 		}
 		
-		public static IEnumerator<Face> getFaces(FaceFlag facesFlag) {
+		public static IEnumerable<Face> getFaces(FaceFlag facesFlag) {
 			if ((facesFlag & FaceFlag.TOP) == FaceFlag.TOP) {
 				yield return Face.TOP;
 			}
