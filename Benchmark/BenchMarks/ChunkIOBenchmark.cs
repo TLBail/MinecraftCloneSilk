@@ -32,10 +32,7 @@ public class ChunkIOBenchmark
     private List<Chunk> chunks;
     [IterationSetup]
     public void setup() {
-        DirectoryInfo directory = Directory.CreateDirectory("./Worlds/newWorld");
-        foreach (var file in Directory.GetFiles("./Worlds/newWorld")) {
-            File.Delete(file);
-        }
+        regionStorage.Clear(); 
 
         chunks = new();
         for (int i = 0; i < 16; i++) {
