@@ -1,0 +1,31 @@
+{
+    "name": "metal",
+    "transparent": false,
+    "id": 5,
+    "texture": {
+        "TOP": [
+            0,
+            5
+        ],
+        "BOTTOM": [
+            0,
+            5
+        ],
+        "LEFT": [
+            1,
+            5
+        ],
+        "RIGHT": [
+            1,
+            5
+        ],
+        "FRONT": [
+            1,
+            5
+        ],
+        "BACK": [
+            1,
+            5
+        ]
+    }
+}

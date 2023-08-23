@@ -1,0 +1,31 @@
+{
+    "name": "stone",
+    "transparent": false,
+    "id": 7,
+    "texture": {
+        "TOP": [
+            1,
+            7
+        ],
+        "BOTTOM": [
+            1,
+            7
+        ],
+        "LEFT": [
+            1,
+            7
+        ],
+        "RIGHT": [
+            1,
+            7
+        ],
+        "FRONT": [
+            1,
+            7
+        ],
+        "BACK": [
+            1,
+            7
+        ]
+    }
+}
