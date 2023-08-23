@@ -9,8 +9,6 @@
     <GenerateProgramFile>false</GenerateProgramFile>
     <LangVersion>11</LangVersion>
     <ApplicationIcon>..\Assets\icons8_minecraft_logo.ico</ApplicationIcon>
-    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
-    <CompilerGeneratedFilesOutputPath>Generated</CompilerGeneratedFilesOutputPath>
     <IsOriginalProject>true</IsOriginalProject>
     <DisableFody Condition="'$(IsOriginalProject)'=='true' AND '$(Configuration)'!='Debug'">true</DisableFody>
   </PropertyGroup>
