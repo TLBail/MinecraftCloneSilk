@@ -1,4 +1,4 @@
-﻿using ChromeTracing.NET;
+﻿using MinecraftCloneSilk.Logger;
 
 namespace UnitTest;
 
