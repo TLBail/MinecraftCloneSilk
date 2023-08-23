@@ -1,0 +1,7 @@
+{
+    "texturesPath": [
+        "./Assets/crosshair.png",
+        "./Assets/spriteSheet.png",
+        "./Assets/blocks"
+    ]
+}
