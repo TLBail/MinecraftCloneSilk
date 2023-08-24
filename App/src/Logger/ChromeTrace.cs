@@ -16,16 +16,16 @@ namespace MinecraftCloneSilk.Logger;
 /// </summary>
 public static class ChromeTrace
 {
-    private static ChromeTraceImpl _impl;
-    internal static IChromeTracingLogger Logger { get; private set; }
+    private static ChromeTraceImpl? impl;
+    internal static IChromeTracingLogger? Logger { get; private set; }
 
 
-    private static Stopwatch _stopwatch;
+    private static Stopwatch? stopwatch;
 
     /// <summary>
     /// Chrome trace has microsecond granularity
     /// </summary>
-    internal static long ElapsedMicroseconds => _stopwatch.ElapsedMilliseconds * 1000;
+    internal static long ElapsedMicroseconds => stopwatch is not null ? stopwatch.ElapsedMilliseconds * 1000 : 0;
         
         
     public static void Init()
@@ -33,21 +33,21 @@ public static class ChromeTrace
         Init(new Logger());
     }
         
-    public static void Init(IChromeTracingLogger logger)
+    public static void Init(IChromeTracingLogger? logger)
     {
         Logger = logger;
             
-        _impl = new ChromeTraceImpl();
-        _stopwatch = new Stopwatch();
-        _stopwatch.Start();
+        impl = new ChromeTraceImpl();
+        stopwatch = new Stopwatch();
+        stopwatch.Start();
             
-        Logger.Log("ChromeTracing.NET successfully initialized!");
+        Logger?.Log("ChromeTracing.NET successfully initialized!");
     }
 
 
     public static void SetFileWriter(IFileWriter fileWriter)
     {
-        _impl.SetFileWriter(fileWriter);
+        impl?.SetFileWriter(fileWriter);
     }
         
         
@@ -66,14 +66,15 @@ public static class ChromeTrace
     /// </summary>
     public static void Dispose()
     {
-        _stopwatch.Stop();
+        stopwatch?.Stop();
         // TODO check for running TraceSessions
-        _impl.Dispose();
+        impl.Dispose();
     }
         
     internal static void AddEvent(IChromeEvent ev)
     {
-        _impl.AddEvent(ev);
+        if(impl is not null)
+            impl.AddEvent(ev);
     }
 
 
@@ -83,7 +84,8 @@ public static class ChromeTrace
     /// </summary>
     public static void Flush()
     {
-        _impl.Flush();
+        if(impl is not null)
+            impl.Flush();
     }
         
         
@@ -130,15 +132,5 @@ public static class ChromeTrace
             ElapsedMicroseconds
         ));
     }
-        
-    /*
-    public static void Count(string name, string process = "default")
-    {
-        AddEvent(new ChromeEventInstant(
-            name,
-            process,
-            ElapsedMicroseconds
-        ));
-    }
-    */
+
 }

@@ -1,7 +1,9 @@
-﻿using MinecraftCloneSilk.Model.NChunk;
+﻿using System.Diagnostics;
+using MinecraftCloneSilk.Model.NChunk;
 using MinecraftCloneSilk.Model.Storage;
+using Silk.NET.Maths;
 
-namespace MinecraftCloneSilk.Model;
+namespace MinecraftCloneSilk.Model.ChunkManagement;
 
 public class ChunkLoader
 {
@@ -21,21 +23,48 @@ public class ChunkLoader
         FINISHDRAW,
     }
 
-    public List<Chunk> chunksList;
-    public List<Chunk> chunkToLoadTerrain;
-    public List<Chunk> chunkToLoadBlock;
-    public List<Chunk> chunkToDraw;
-    public List<ChunkLoadingTask> chunkInMemory;
+    private List<Chunk> chunksList = new() ;
+    private List<Chunk> chunkToLoadTerrain = new();
+    private List<Chunk> chunkToLoadBlock = new ();
+    private List<Chunk> chunkToDraw = new();
+    private List<ChunkLoadingTask> chunkInMemory = new();
     private ChunkLoaderState chunkLoaderState;
-    private Task task;
+    private Task task = null!;
     private IChunkStorage chunkStorage;
 
     public ChunkLoader(IChunkStorage chunkStorage) {
         this.chunkStorage = chunkStorage;
-        reset();
+        chunkLoaderState = ChunkLoaderState.SETUPCHUNKINMEMORY;
     }
+    
+    [Logger.Timer]
+    public static List<Chunk> GetChunkDependent(IChunkManager chunkManager, Stack<ChunkLoadingTask> chunksToLoad) {
+        HashSet<Chunk> chunkLoadOrder = new HashSet<Chunk>(chunksToLoad.Count);
+        while (chunksToLoad.TryPop(out ChunkLoadingTask chunkTask)) {
+            if (!chunkLoadOrder.Contains(chunkTask.chunk)) {
+                chunkTask.chunk.addRequiredByChunkLoader();
+                chunkLoadOrder.Add(chunkTask.chunk);
+            }
+            
+            if (chunkTask.chunk.wantedChunkState < chunkTask.wantedChunkState) {
+                chunkTask.chunk.wantedChunkState = chunkTask.wantedChunkState;
+            }
+            Vector3D<int>[] dependantesChunkOffset =
+                ChunkStrategy.GetDependanteChunksOffsetOfAChunkState(chunkTask.wantedChunkState);
 
-    public void addChunk(Chunk chunk) {
+            for (int i = 0; i < dependantesChunkOffset.Length; i++) {
+                Vector3D<int> position = dependantesChunkOffset[i] + chunkTask.chunk.position;
+                Chunk chunk = chunkManager.GetChunk(position);
+                ChunkState wantedDependantChunkState =
+                    ChunkStrategy.GetMinimumChunkStateOfNeighbors(chunkTask.wantedChunkState);
+                chunksToLoad.Push(new ChunkLoadingTask(chunk, wantedDependantChunkState));
+            }
+        }
+        return chunkLoadOrder.ToList();
+    }
+    
+    
+    public void AddChunk(Chunk chunk) {
         if (chunk.chunkState >= chunk.wantedChunkState) return;
         ChunkState chunkStateInMemory = chunkStorage.GetChunkStateInStorage(chunk.position);
         if (chunkStateInMemory > chunk.chunkState) chunkInMemory.Add(new(chunk, chunkStateInMemory));
@@ -49,11 +78,11 @@ public class ChunkLoader
             chunkToDraw.Add(chunk);
     }
 
-    public bool update() {
-        return multiThreadLoading();
+    public bool Update() {
+        return MultiThreadLoading();
     }
 
-    public void reset() {
+    public void Reset() {
         chunkToDraw = new List<Chunk>();
         chunkToLoadBlock = new List<Chunk>();
         chunkToLoadTerrain = new List<Chunk>();
@@ -62,73 +91,73 @@ public class ChunkLoader
     }
 
 
-    public bool singleThreadLoading() {
+    public bool SingleThreadLoading() {
         foreach (ChunkLoadingTask chunkTask in chunkInMemory) {
-            chunkTask.chunk.setChunkState(chunkTask.wantedChunkState);
+            chunkTask.chunk.SetChunkState(chunkTask.wantedChunkState);
             chunkStorage.LoadChunk(chunkTask.chunk);
         }
 
         // case ChunkLoaderState.SETUPTERRAIN:
         foreach (Chunk chunk in chunkToLoadTerrain) {
-            chunk.setChunkState(ChunkState.GENERATEDTERRAIN);
-            chunk.initChunkState();
+            chunk.SetChunkState(ChunkState.GENERATEDTERRAIN);
+            chunk.InitChunkState();
         }
 
         // case ChunkLoaderState.LOADTERRAIN:
         foreach (Chunk chunk in chunkToLoadTerrain) {
-            chunk.loadChunkState();
+            chunk.LoadChunkState();
         }
 
         // case ChunkLoaderState.FINISHTERRAIN:
         foreach (Chunk chunk in chunkToLoadTerrain) {
-            chunk.finishChunkState();
+            chunk.FinishChunkState();
         }
 
         // case ChunkLoaderState.SETUPBLOCK:
         foreach (Chunk chunk in chunkToLoadBlock) {
-            chunk.setChunkState(ChunkState.BLOCKGENERATED);
-            chunk.initChunkState();
+            chunk.SetChunkState(ChunkState.BLOCKGENERATED);
+            chunk.InitChunkState();
         }
 
         // case ChunkLoaderState.LOADBLOCK:
         foreach (Chunk chunk in chunkToLoadBlock) {
-            chunk.loadChunkState();
+            chunk.LoadChunkState();
         }
 
         // case ChunkLoaderState.FINISHBLOCK:
         foreach (Chunk chunk in chunkToLoadBlock) {
-            chunk.finishChunkState();
+            chunk.FinishChunkState();
         }
 
         // case ChunkLoaderState.SETUPDRAW:
         foreach (Chunk chunk in chunkToDraw) {
-            chunk.setChunkState(ChunkState.DRAWABLE);
-            chunk.initChunkState();
+            chunk.SetChunkState(ChunkState.DRAWABLE);
+            chunk.InitChunkState();
         }
 
         // case ChunkLoaderState.LOADDRAW:
         foreach (Chunk chunk in chunkToDraw) {
-            chunk.loadChunkState();
+            chunk.LoadChunkState();
         }
 
         // case ChunkLoaderState.FINISHDRAW:
         foreach (Chunk chunk in chunkToDraw) {
-            chunk.finishChunkState();
+            chunk.FinishChunkState();
         }
 
         foreach (Chunk chunk in chunksList) {
-            chunk.isRequiredByChunkLoader = false;
+            chunk.removeRequiredByChunkLoader();
         }
     
-        reset();
+        Reset();
         return true;
     }
 
-    public bool multiThreadLoading() {
+    public bool MultiThreadLoading() {
         switch (chunkLoaderState) {
             case ChunkLoaderState.SETUPCHUNKINMEMORY:
                 foreach (ChunkLoadingTask chunk in chunkInMemory) {
-                    chunk.chunk.setChunkState(chunk.wantedChunkState);
+                    chunk.chunk.SetChunkState(chunk.wantedChunkState);
                 }
 
                 chunkLoaderState = ChunkLoaderState.LOADCHUNKINMEMORY;
@@ -137,91 +166,103 @@ public class ChunkLoader
                     chunkStorage.LoadChunks(chunkInMemory.Select(chunk => chunk.chunk).ToList());
                 }).ContinueWith((task) =>
                 {
-                    if (task.IsFaulted) throw task.Exception;
+                    if (task.IsFaulted) throw task.Exception!;
                     chunkLoaderState = ChunkLoaderState.FINISHCHUNKINMEMORY;
                 });
                 return false;
             case ChunkLoaderState.LOADCHUNKINMEMORY:
-                if (task.IsFaulted) throw task.Exception;
+                if (task.IsFaulted) throw task.Exception!;
                 return false;
             case ChunkLoaderState.FINISHCHUNKINMEMORY:
                 foreach (ChunkLoadingTask chunkLoadingTask in chunkInMemory) {
-                    chunkLoadingTask.chunk.finishChunkState();
+                    chunkLoadingTask.chunk.FinishChunkState();
                 }
 
                 chunkLoaderState = ChunkLoaderState.SETUPTERRAIN;
                 return false;
             case ChunkLoaderState.SETUPTERRAIN:
                 foreach (Chunk chunk in chunkToLoadTerrain) {
-                    chunk.setChunkState(ChunkState.GENERATEDTERRAIN);
-                    chunk.initChunkState();
+                    chunk.SetChunkState(ChunkState.GENERATEDTERRAIN);
+                    chunk.InitChunkState();
                 }
                 chunkLoaderState = ChunkLoaderState.LOADTERRAIN;
-                task = Parallel.ForEachAsync(chunkToLoadTerrain, async (chunk, token) => { chunk.loadChunkState(); })
+                task = Parallel.ForEachAsync(chunkToLoadTerrain, (chunk, token) =>
+                    {
+                        chunk.LoadChunkState();
+                        return default;
+                    })
                     .ContinueWith((task =>
                     {
-                        if (task.IsFaulted) throw task.Exception;
+                        if (task.IsFaulted) throw task.Exception!;
                         chunkLoaderState = ChunkLoaderState.FINISHTERRAIN;
                     }));
                 return false;
             case ChunkLoaderState.LOADTERRAIN:
-                if (task.IsFaulted) throw task.Exception;
+                if (task.IsFaulted) throw task.Exception!;
                 return false;
             case ChunkLoaderState.FINISHTERRAIN:
                 foreach (Chunk chunk in chunkToLoadTerrain) {
-                    chunk.finishChunkState();
+                    chunk.FinishChunkState();
                 }
 
                 chunkLoaderState = ChunkLoaderState.SETUPBLOCK;
                 return false;
             case ChunkLoaderState.SETUPBLOCK:
                 foreach (Chunk chunk in chunkToLoadBlock) {
-                    chunk.setChunkState(ChunkState.BLOCKGENERATED);
-                    chunk.initChunkState();
+                    chunk.SetChunkState(ChunkState.BLOCKGENERATED);
+                    chunk.InitChunkState();
                 }
 
                 chunkLoaderState = ChunkLoaderState.LOADBLOCK;
-                task = Parallel.ForEachAsync(chunkToLoadBlock, async (chunk, token) => { chunk.loadChunkState(); })
+                task = Parallel.ForEachAsync(chunkToLoadBlock,  (chunk, token) =>
+                    {
+                        chunk.LoadChunkState();
+                        return default;
+                    })
                     .ContinueWith((task =>
                     {
-                        if (task.IsFaulted) throw task.Exception;
+                        if (task.IsFaulted) throw task.Exception!;
                         chunkLoaderState = ChunkLoaderState.FINISHBLOCK;
                     }));
                 return false;
             case ChunkLoaderState.LOADBLOCK:
-                if (task.IsFaulted) throw task.Exception;
+                if (task.IsFaulted) throw task.Exception!;
                 return false;
             case ChunkLoaderState.FINISHBLOCK:
                 foreach (Chunk chunk in chunkToLoadBlock) {
-                    chunk.finishChunkState();
+                    chunk.FinishChunkState();
                 }
 
                 chunkLoaderState = ChunkLoaderState.SETUPDRAW;
                 return false;
             case ChunkLoaderState.SETUPDRAW:
                 foreach (Chunk chunk in chunkToDraw) {
-                    chunk.setChunkState(ChunkState.DRAWABLE);
-                    chunk.initChunkState();
+                    chunk.SetChunkState(ChunkState.DRAWABLE);
+                    chunk.InitChunkState();
                 }
 
                 chunkLoaderState = ChunkLoaderState.LOADDRAW;
-                task = Parallel.ForEachAsync(chunkToDraw, async (chunk, token) => { chunk.loadChunkState(); })
+                task = Parallel.ForEachAsync(chunkToDraw,  (chunk, token) =>
+                    {
+                        chunk.LoadChunkState();
+                        return default;
+                    })
                     .ContinueWith((task =>
                     {
-                        if (task.IsFaulted) throw task.Exception;
+                        if (task.IsFaulted) throw task.Exception!;
                         chunkLoaderState = ChunkLoaderState.FINISHDRAW;
                     }));
                 return false;
             case ChunkLoaderState.LOADDRAW:
-                if (task.IsFaulted) throw task.Exception;
+                if (task.IsFaulted) throw task.Exception!;
                 return false;
             case ChunkLoaderState.FINISHDRAW:
                 foreach (Chunk chunk in chunkToDraw) {
-                    chunk.finishChunkState();
+                    chunk.FinishChunkState();
                 }
 
                 foreach (Chunk chunk in chunksList) {
-                    chunk.isRequiredByChunkLoader = false;
+                    chunk.removeRequiredByChunkLoader();
                 }
 
                 return true;
@@ -232,10 +273,11 @@ public class ChunkLoader
     }
 
 
-    public void addChunks(List<Chunk> chunksList) {
+public void AddChunks(List<Chunk> chunksList) {
+        Debug.Assert(this.chunksList.Count == 0);
         this.chunksList = chunksList;
         foreach (Chunk chunk in chunksList) {
-            addChunk(chunk);
+            AddChunk(chunk);
         }
     }
 }

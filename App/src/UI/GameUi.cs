@@ -15,15 +15,15 @@ public class GameUi : UiWindow
     }
     public GameUi(Game game) : this(game, null) {}
 
-    protected override void  drawUi() {
+    protected override void  DrawUi() {
 
-        const float PAD = 0.0f;
+        const float pad = 0.0f;
         ImGuiViewportPtr viewport = ImGui.GetMainViewport();
         Vector2 workPos = viewport.WorkPos; // Use work area to avoid menu-bar/task-bar, if any!
         Vector2 workSize = viewport.WorkSize;
         Vector2 windowPos, windowPosPivot;
-        windowPos.X = workPos.X + PAD;
-        windowPos.Y = workPos.Y + PAD;
+        windowPos.X = workPos.X + pad;
+        windowPos.Y = workPos.Y + pad;
         windowPosPivot.X = 0.0f;
         windowPosPivot.Y = 0.0f;
         ImGui.SetNextWindowPos(windowPos, ImGuiCond.Always, windowPosPivot);
@@ -34,7 +34,7 @@ public class GameUi : UiWindow
 
         foreach (GameObject gameObject in game.gameObjects.Values) {
             if (!(gameObject is UiWindow) && ImGui.CollapsingHeader("gameObject : " + gameObject.GetType().Name)) {
-                gameObject.toImGui();
+                gameObject.ToImGui();
                 ImGui.Separator();
                 
             }

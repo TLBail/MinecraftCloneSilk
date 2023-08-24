@@ -9,12 +9,11 @@ namespace MinecraftCloneSilk.UI;
 
 public class Console : UiWindow
 {
-    public delegate void ExecCommand(string[] commandParams);
-    private Dictionary<string, ExecCommand> commands;
+    private Dictionary<string, Action<string[]>> commands;
 
-    private List<Log> logs;
+    private List<LogRecord> logs;
 
-    public record Log(string text, LogType logType, DateTime dateTime);
+    public record LogRecord(string text, LogType logType, DateTime dateTime);
 
     public enum LogType
     {
@@ -25,41 +24,39 @@ public class Console : UiWindow
     }
 
     private readonly bool autoscrool = true;
-    private int historyPos = -1;
     private readonly ImGuiWindowFlags windowFlags;
-    private bool autoScrool = true;
     private bool scrollToBottom;
     private IKeyboard keyboard;
 
     public Console(Game game) : base(game, null) {
         needMouse = false;
-        commands = new Dictionary<string, ExecCommand>();
-        keyboard = game.getKeyboard();
+        commands = new Dictionary<string, Action<string[]>>();
+        keyboard = game.GetKeyboard();
         windowFlags = ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.AlwaysAutoResize |
                       ImGuiWindowFlags.NoSavedSettings | ImGuiWindowFlags.NoNav | ImGuiWindowFlags.NoMove;
 
+        logs = new List<LogRecord>();
         commands.Add("/help", (commandParams) =>
         {
-            logs.Add(new Log("commands : ", LogType.NULL, DateTime.Now));
-            foreach (var key in commands.Keys) logs.Add(new Log("- " + key, LogType.NULL, DateTime.Now));
+            logs.Add(new LogRecord("commands : ", LogType.NULL, DateTime.Now));
+            foreach (var key in commands.Keys) logs.Add(new LogRecord("- " + key, LogType.NULL, DateTime.Now));
         });
         commands.Add("/clear", (commandParams) => { logs.Clear(); });
 
-        logs = new List<Log>();
     }
 
-    public void addCommand(string key, ExecCommand action) => commands.Add(key, action);
-    public void log(string text, LogType logType = LogType.NULL) => logs.Add(new Log(text, logType, DateTime.Now));
+    public void AddCommand(string key, Action<string[]> action) => commands.Add(key, action);
+    public void Log(string text, LogType logType = LogType.NULL) => logs.Add(new LogRecord(text, logType, DateTime.Now));
     
-    protected override unsafe void drawUi() {
-        const float PADX = 10.0f;
-        const float PADY = 200.0f;
+    protected override unsafe void DrawUi() {
+        const float padx = 10.0f;
+        const float pady = 200.0f;
         var viewport = ImGui.GetMainViewport();
         var workPos = viewport.WorkPos; // Use work area to avoid menu-bar/task-bar, if any!
         var workSize = viewport.WorkSize;
         Vector2 windowPos, windowPosPivot;
-        windowPos.X = workPos.X + PADX;
-        windowPos.Y = workPos.Y + workSize.Y - PADY;
+        windowPos.X = workPos.X + padx;
+        windowPos.Y = workPos.Y + workSize.Y - pady;
         windowPosPivot.X = 0.0f;
         windowPosPivot.Y = 1.0f;
         ImGui.SetNextWindowPos(windowPos, ImGuiCond.Always, windowPosPivot);
@@ -70,7 +67,7 @@ public class Console : UiWindow
         if (ImGui.BeginChild("ScroollingRegion", new Vector2(0, -footerHeigthToReserve), false,
                 ImGuiWindowFlags.HorizontalScrollbar)) {
             ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(4, 1));
-            foreach (var log in logs) drawLog(log);
+            foreach (var log in logs) DrawLog(log);
             if (scrollToBottom || (autoscrool && ImGui.GetScrollY() >= ImGui.GetScrollMaxY())) {
                 ImGui.SetScrollHereY(1.0f);
             }
@@ -108,11 +105,11 @@ public class Console : UiWindow
                     keyValuePair.Value?.Invoke(textCommand.Split()[1..]);
                 }
                 catch (Exception e) {
-                    log(e.Message, LogType.ERROR);
+                    Log(e.Message, LogType.ERROR);
                 }
                 return;
             }
-        log(textCommand, LogType.INFO);
+        Log(textCommand, LogType.INFO);
     }
 
     private unsafe int Callback(ImGuiInputTextCallbackData* data) {
@@ -127,11 +124,11 @@ public class Console : UiWindow
                     }
                 }
                 if (candidate.Count == 0) {
-                    log("No match for " + word);
+                    Log("No match for " + word);
                 }else{
-                    log("Possible matches: ");
+                    Log("Possible matches: ");
                     foreach (string command in candidate) {
-                        log("- " + command);
+                        Log("- " + command);
                     }
                 }
                 break;
@@ -141,8 +138,8 @@ public class Console : UiWindow
         return 0;
     }
 
-    private void drawLog(Log log) {
-        switch (log.logType) {
+    private void DrawLog(LogRecord logRecord) {
+        switch (logRecord.logType) {
             case LogType.INFO:
                 ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(1, 1, 1, 1));
                 break;
@@ -153,11 +150,11 @@ public class Console : UiWindow
                 ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(1, 1, 0, 1));
                 break;
             case LogType.NULL:
-                ImGui.Text(log.text);
+                ImGui.Text(logRecord.text);
                 return;
         }
 
-        ImGui.Text(log.dateTime.ToLongTimeString() + " : " + log.text);
+        ImGui.Text(logRecord.dateTime.ToLongTimeString() + " : " + logRecord.text);
         ImGui.PopStyleColor();
     }
 }

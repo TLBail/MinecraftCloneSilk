@@ -4,7 +4,7 @@ using MinecraftCloneSilk.Model.NChunk;
 using Silk.NET.OpenGL;
 using Texture = MinecraftCloneSilk.Core.Texture;
 
-namespace MinecraftCloneSilk.Model;
+namespace MinecraftCloneSilk.Model.RegionDrawing;
 
 public class ChunkBufferObjectManager
 {
@@ -23,32 +23,32 @@ public class ChunkBufferObjectManager
         this.cubeTexture = cubeTexture;
         this.game = game;
         game.drawables += Drawables;
-        game.updatables += Updatables;
-        this.gl = game.getGL();
+        game.updatables += Update;
+        this.gl = game.GetGl();
     }
 
 
 
-    public void addChunkToRegion(Chunk chunk) {
+    public void AddChunkToRegion(Chunk chunk) {
         if (regionsWithAvailableSpace.Count == 0) {
-            createNewRegionBuffer();
+            CreateNewRegionBuffer();
         }
 
         RegionBuffer regionBuffer = regionsWithAvailableSpace.Peek();
-        regionBuffer.addChunk(chunk);
-        if(regionBuffer.haveAvailableSpace()) {
+        regionBuffer.AddChunk(chunk);
+        if(regionBuffer.HaveAvailableSpace()) {
             regionsWithAvailableSpace.Pop();
         }
         regionBufferByChunk.Add(chunk, regionBuffer);
     }
     
-    public void needToUpdateChunk(Chunk chunk) {
+    public void NeedToUpdateChunk(Chunk chunk) {
         if(!regionsToUpdate.Contains(regionBufferByChunk[chunk])) regionsToUpdate.Add(regionBufferByChunk[chunk]);
     }
 
-    public void removeChunk(Chunk chunk) {
-        regionBufferByChunk[chunk]?.removeChunk(chunk);
-        needToUpdateChunk(chunk);
+    public void RemoveChunk(Chunk chunk) {
+        regionBufferByChunk[chunk]?.RemoveChunk(chunk);
+        NeedToUpdateChunk(chunk);
         if(!regionsWithAvailableSpace.Contains(regionBufferByChunk[chunk])) regionsWithAvailableSpace.Push(regionBufferByChunk[chunk]);
         regionBufferByChunk.Remove(chunk);
 
@@ -56,19 +56,19 @@ public class ChunkBufferObjectManager
 
     private void Drawables(GL gl, double deltatime) {
         foreach (RegionBuffer region in regions) {
-            region.draw();
+            region.Draw();
         }
     }
 
-    private void Updatables(double deltatime) {
+    private void Update(double deltatime) {
         foreach (RegionBuffer region in regionsToUpdate) {
-            region.update();
+            region.Update();
         }
         regionsToUpdate.Clear();
     }
 
     
-    private void createNewRegionBuffer() {
+    private void CreateNewRegionBuffer() {
         RegionBuffer region = new RegionBuffer(cubeTexture, gl);
         regionsWithAvailableSpace.Push(region);
         regions.Add(region);

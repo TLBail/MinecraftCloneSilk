@@ -4,19 +4,19 @@ using MinecraftCloneSilk.Model.NChunk;
 using Silk.NET.OpenGL;
 using Texture = MinecraftCloneSilk.Core.Texture;
 
-namespace MinecraftCloneSilk.Model;
+namespace MinecraftCloneSilk.Model.RegionDrawing;
 
 public class RegionBuffer : IDisposable
 {
-    private BufferObject<CubeVertex> Vbo;
-    private VertexArrayObject<CubeVertex, uint> Vao;
+    private BufferObject<CubeVertex>? vbo;
+    private VertexArrayObject<CubeVertex, uint>? vao;
     private Texture cubeTexture;
     private GL gl;
     private int nbVertex = 0;
 
     public const int CHUNKS_PER_REGION = 16;
 
-    private Chunk[] chunks;
+    private Chunk?[] chunks;
 
     private int chunkCount = 0;
 
@@ -24,70 +24,69 @@ public class RegionBuffer : IDisposable
     public RegionBuffer(Texture cubeTexture, GL gl) {
         this.cubeTexture = cubeTexture;
         this.gl = gl;
-
-        chunks = new Chunk[CHUNKS_PER_REGION];
+        chunks = new Chunk?[CHUNKS_PER_REGION];
     }
 
-    public void addChunk(Chunk chunk) {
+    public void AddChunk(Chunk chunk) {
         chunks[chunkCount] = chunk;
         chunkCount++;
     }
 
-    public void draw() {
+    public void Draw() {
         if (nbVertex == 0) return;
-        Vao.Bind();
-        Chunk.cubeShader.Use();
+        vao!.Bind();
+        Chunk.cubeShader!.Use();
         cubeTexture.Bind();
 
         gl.DrawArrays(PrimitiveType.Triangles, 0, (uint)nbVertex);
     }
 
-    public void update() {
+    public void Update() {
         
         
         nbVertex = 0;
         for (int i = 0; i < chunkCount; i++) {
-            if(chunks[i].chunkState != ChunkState.DRAWABLE) continue;
-            nbVertex += chunks[i].getVertices().Length;
+            if(chunks[i]!.chunkState != ChunkState.DRAWABLE) continue;
+            nbVertex += chunks[i]!.GetVertices().Length;
         }
 
         Span<CubeVertex> vertices = stackalloc CubeVertex[nbVertex];
         int offset = 0;
         for (int i = 0; i < chunkCount; i++) {
-            Chunk chunk = chunks[i];
+            Chunk chunk = chunks[i]!;
             if(chunk.chunkState != ChunkState.DRAWABLE) continue;
-            ReadOnlySpan<CubeVertex> verticesChunk1 = chunk.getVertices();
+            ReadOnlySpan<CubeVertex> verticesChunk1 = chunk.GetVertices();
             verticesChunk1.CopyTo(vertices[offset..]);
             offset += verticesChunk1.Length;
         }
 
-        Vbo?.Dispose();
-        Vao?.Dispose();
-        Vbo = new BufferObject<CubeVertex>(gl, vertices, BufferTargetARB.ArrayBuffer);
-        Vao = new VertexArrayObject<CubeVertex, uint>(gl, Vbo);
+        vbo?.Dispose();
+        vao?.Dispose();
+        vbo = new BufferObject<CubeVertex>(gl, vertices, BufferTargetARB.ArrayBuffer);
+        vao = new VertexArrayObject<CubeVertex, uint>(gl, vbo);
 
-        Vao.Bind();
-        Vao.VertexAttributePointer(0, 3, VertexAttribPointerType.Float, "position");
-        Vao.VertexAttributePointer(1, 2, VertexAttribPointerType.Float, "texCoords");
+        vao.Bind();
+        vao.VertexAttributePointer(0, 3, VertexAttribPointerType.Float, "position");
+        vao.VertexAttributePointer(1, 2, VertexAttribPointerType.Float, "texCoords");
     }
 
     public void Dispose() {
-        Vbo.Dispose();
-        Vao.Dispose();
+        vbo?.Dispose();
+        vao?.Dispose();
     }
 
-    public void addVertices(Chunk chunk, ReadOnlySpan<CubeVertex> vertices, int nbVertex) {
+    public void AddVertices(Chunk chunk, ReadOnlySpan<CubeVertex> vertices, int nbVertex) {
         this.nbVertex += nbVertex;
-        Vbo.Bind();
-        Vbo.sendData(vertices, 0);
+        vbo!.Bind();
+        vbo!.SendData(vertices, 0);
     }
 
 
-    public bool haveAvailableSpace() {
+    public bool HaveAvailableSpace() {
         return chunkCount >= CHUNKS_PER_REGION - 1;
     }
 
-    public void removeChunk(Chunk chunk) {
+    public void RemoveChunk(Chunk chunk) {
         int indexOfChunk = Array.IndexOf(chunks, chunk);
         int offset = 0;
         for (int i = 0; i < CHUNKS_PER_REGION; i++) {

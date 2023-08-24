@@ -39,7 +39,7 @@ public enum FaceExtended
 
 public static class FaceExtendedOffset
 {
-	public static Vector3D<int> getOffsetOfFace(FaceExtended face)
+	public static Vector3D<int> GetOffsetOfFace(FaceExtended face)
 	{
 		switch (face) {
 			case FaceExtended.TOP:

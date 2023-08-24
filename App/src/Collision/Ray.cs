@@ -29,7 +29,7 @@ public class Ray
     }
 
     
-    public List<Vector3D<int>> projetedCoords(float size)
+    public List<Vector3D<int>> ProjetedCoords(float size)
     {
         List<Vector3D<int>> hitedPosition = new List<Vector3D<int>>();
         for (float i = 0; i < size; i += 0.1f) {
@@ -99,7 +99,7 @@ public class Ray
         return hitedPosition;
     }
     
-    public Vector3D<int> projectToBlock(float offset)
+    public Vector3D<int> ProjectToBlock(float offset)
     {
         Vector3D<float> projetion = orig + Vector3D.Multiply(dir, offset);
         return new Vector3D<int>(

@@ -1,30 +1,24 @@
-﻿using System.Collections;
-using System.Collections.Concurrent;
-using System.Collections.Immutable;
+﻿using System.Collections.Concurrent;
 using System.Numerics;
 using ImGuiNET;
 using MinecraftCloneSilk.GameComponent;
-using MinecraftCloneSilk.Logger;
-using MinecraftCloneSilk.Model;
 using MinecraftCloneSilk.Model.NChunk;
-using MinecraftCloneSilk.Model.Storage;
+using MinecraftCloneSilk.Model.WorldGen;
 using Silk.NET.Maths;
-using Silk.NET.OpenGL;
-using Console = MinecraftCloneSilk.UI.Console;
 
-namespace MinecraftCloneSilk.Model;
+namespace MinecraftCloneSilk.Model.ChunkManagement;
 
 public class ChunkManager : IChunkManager, IDisposable
 {
     private readonly ConcurrentDictionary<Vector3D<int>, Chunk> chunks;
-    public WorldGenerator worldGenerator { get; set; }
+    public IWorldGenerator worldGenerator { get; set; }
     private List<Chunk> chunksToUpdate = new List<Chunk>();
     private ChunkPool chunkPool;
     private ChunkLoader? chunkLoader;
     private IChunkStorage chunkStorage;
     private List<Chunk> chunksToUnload;
 
-    public ChunkManager(int radius, WorldGenerator worldGenerator, IChunkStorage chunkStorage) {
+    public ChunkManager(int radius, IWorldGenerator worldGenerator, IChunkStorage chunkStorage) {
         chunks = new ConcurrentDictionary<Vector3D<int>, Chunk>(Environment.ProcessorCount * 2,
             radius * radius * radius);
         this.worldGenerator = worldGenerator;
@@ -34,13 +28,14 @@ public class ChunkManager : IChunkManager, IDisposable
     }
 
     [Logger.Timer]
-    public void update(double deltatime) {
+    public void Update(double deltatime) {
         if (chunkLoader == null) {
             if(chunksToUnload.Count > 0) {
                 chunkStorage.SaveChunks(chunksToUnload);
+                chunkPool.ReturnChunks(chunksToUnload);
                 chunksToUnload.Clear();
             }
-        }else if(chunkLoader.update()) {
+        }else if(chunkLoader.Update()) {
             chunkLoader = null;
         }
         foreach (Chunk chunk in chunksToUpdate) {
@@ -48,91 +43,101 @@ public class ChunkManager : IChunkManager, IDisposable
         }
     }
 
-    public int count() => chunks.Count;
-    public List<Chunk> getChunksList() => new List<Chunk>(chunks.Values);
+    public int Count() => chunks.Count;
+    public List<Chunk> GetChunksList() => new List<Chunk>(chunks.Values);
     public bool ContainsKey(Vector3D<int> position) => chunks.ContainsKey(position);
 
 
-    public void clear() {
+    public void Clear() {
         List<Chunk> chunksCopy = new List<Chunk>(chunks.Values);
         List<Chunk> chunkRemaining = new List<Chunk>();
         foreach (Chunk chunk in chunksCopy) {
-            forceUnloadChunk(chunk);
+            ForceUnloadChunk(chunk);
         }
     }
 
-    public Chunk getChunk(Vector3D<int> position) {
-        Chunk chunk = chunks.GetOrAdd(position, chunkPool.get);
+    public Chunk GetChunk(Vector3D<int> position) {
+        if (!chunks.TryGetValue(position, out Chunk? chunk)) {
+            chunk = chunks.GetOrAdd(position, chunkPool.Get);
+        }
         return chunk;
     }
+    
+    public bool ContainChunk(Vector3D<int> position) {
+        return chunks.ContainsKey(position);
+    }
 
-    public void addChunkToUpdate(Chunk chunk) {
+    public void AddChunkToUpdate(Chunk chunk) {
         chunksToUpdate.Add(chunk);
     }
 
-    public void removeChunkToUpdate(Chunk chunk) {
+    public void RemoveChunkToUpdate(Chunk chunk) {
         chunksToUpdate.Remove(chunk);
     }
 
-    public void updateRelevantChunks(List<Vector3D<int>> chunkRelevant) {
+    public void UpdateRelevantChunks(List<Vector3D<int>> chunkRelevant) {
         List<Vector3D<int>> chunkNotContainInChunks = new List<Vector3D<int>>();
         foreach (Vector3D<int> position in chunkRelevant) {
-            if (!chunks.TryGetValue(position, out Chunk chunk) || chunk.chunkState < ChunkState.DRAWABLE) {
+            if (!chunks.TryGetValue(position, out Chunk? chunk) || chunk.chunkState < ChunkState.DRAWABLE) {
                 chunkNotContainInChunks.Add(position);
             }
         }
 
-        addChunksToLoad(chunkNotContainInChunks);
+        AddChunksToLoad(chunkNotContainInChunks);
         IEnumerable<Vector3D<int>> chunksToDeletePosition = chunks.Keys.Except(chunkRelevant);
-        foreach (var chunkToDeletePosition in chunksToDeletePosition) tryToUnloadChunk(chunkToDeletePosition);
+        foreach (var chunkToDeletePosition in chunksToDeletePosition) TryToUnloadChunk(chunkToDeletePosition);
     }
 
-    public void addChunkToLoad(Vector3D<int> position) {
-        position = World.getChunkPosition(position);
-        addChunksToLoad(new List<Vector3D<int>> { position });
+    public void AddChunkToLoad(Vector3D<int> position) {
+        position = World.GetChunkPosition(position);
+        AddChunksToLoad(new List<Vector3D<int>> { position });
     }
 
-    public void addChunksToLoad(List<Vector3D<int>> positions) {
+    [Logger.Timer]
+    public void AddChunksToLoad(List<Vector3D<int>> positions) {
         if(this.chunkLoader != null) return; 
         Stack<ChunkLoadingTask> chunksToLoad = new Stack<ChunkLoadingTask>(positions.Count);
         foreach (Vector3D<int> position in positions) {
-            var chunk = getChunk(position);
+            var chunk = GetChunk(position);
             if (chunk.chunkState < ChunkState.DRAWABLE)
                 chunksToLoad.Push(new ChunkLoadingTask(chunk, ChunkState.DRAWABLE));
         }
         chunkLoader = new ChunkLoader(chunkStorage);
-        chunkLoader.addChunks(ChunkManagerTools.getChunkDependent(this,chunksToLoad));
+        chunkLoader.AddChunks(ChunkLoader.GetChunkDependent(this,chunksToLoad));
     }
 
 
-    public bool tryToUnloadChunk(Vector3D<int> position) {
+    public bool TryToUnloadChunk(Vector3D<int> position) {
         Chunk chunkToUnload = chunks[position];
-        if(chunkToUnload.isRequiredByChunkLoader) return false;
-        chunks.TryRemove(new KeyValuePair<Vector3D<int>, Chunk>(position, chunkToUnload));
-        chunkToUnload.Dispose();
-        chunksToUnload.Add(chunkToUnload);
+        if(chunkToUnload.isRequiredByChunkLoader()) return false;
+        if (chunks.TryRemove(new KeyValuePair<Vector3D<int>, Chunk>(position, chunkToUnload))) {
+            chunkToUnload.Dispose();
+            chunksToUnload.Add(chunkToUnload);
+        } else {
+            throw new Exception("try remove chunk that is not in chunks");
+        }
         return true;
     }
 
-    private void forceUnloadChunk(Chunk chunkToUnload) {
-        if(chunkToUnload.isRequiredByChunkLoader) return;
+    private void ForceUnloadChunk(Chunk chunkToUnload) {
+        if(chunkToUnload.isRequiredByChunkLoader()) return;
         chunks.TryRemove(new KeyValuePair<Vector3D<int>, Chunk>(chunkToUnload.position, chunkToUnload));
         chunkToUnload.Dispose();
         chunksToUnload.Add(chunkToUnload);
     }
     
 
-    public void toImGui() {
+    public void ToImGui() {
         ImGui.Text("number of chunks " + chunks.Count);
-        ImGui.Text("number of chunks in pool " + chunkPool.count());
+        ImGui.Text("number of chunks in pool " + chunkPool.Count());
         if (ImGui.Button("reload Chunks")) {
-            clear();
+            Clear();
         }
 
         if (ImGui.CollapsingHeader("chunks", ImGuiTreeNodeFlags.Bullet)) {
             if (ImGui.BeginChild("chunksRegion", new Vector2(0, 300), false, ImGuiWindowFlags.HorizontalScrollbar)) {
                 ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(4, 1));
-                foreach (Chunk chunk in getChunksList()) {
+                foreach (Chunk chunk in GetChunksList()) {
                     ImGui.Text("chunk " + chunk.position + " " + chunk.chunkState);
                 }
 

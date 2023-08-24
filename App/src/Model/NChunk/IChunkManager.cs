@@ -4,7 +4,8 @@ namespace MinecraftCloneSilk.Model.NChunk;
 
 public interface IChunkManager
 {
-    public Chunk getChunk(Vector3D<int> position);
-    public void addChunkToUpdate(Chunk chunk);
-    public void removeChunkToUpdate(Chunk chunk);
+    public Chunk GetChunk(Vector3D<int> position);
+    public void AddChunkToUpdate(Chunk chunk);
+    public void RemoveChunkToUpdate(Chunk chunk);
+    bool ContainChunk(Vector3D<int> position);
 }

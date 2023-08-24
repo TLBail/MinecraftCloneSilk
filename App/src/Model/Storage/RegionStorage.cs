@@ -2,6 +2,7 @@
 using LightningDB;
 using MinecraftCloneSilk.Core;
 using MinecraftCloneSilk.Logger;
+using MinecraftCloneSilk.Model.ChunkManagement;
 using MinecraftCloneSilk.Model.NChunk;
 using NUnit.Framework;
 using Silk.NET.Maths;
@@ -16,7 +17,7 @@ public class RegionStorage : IChunkStorage, IDisposable
     
     LightningEnvironment env;
     LightningDatabase db;
-    private const string dbName = "world";
+    private const string DB_NAME = "world";
 
     public RegionStorage(string pathToChunkFolder) {
         var directory = Directory.CreateDirectory(pathToChunkFolder);
@@ -29,7 +30,7 @@ public class RegionStorage : IChunkStorage, IDisposable
         env = new LightningEnvironment(pathToChunkFolder, envConf);
         env.Open();
         using var tx = env.BeginTransaction();
-        db = tx.OpenDatabase(dbName,configuration: new DatabaseConfiguration { Flags = DatabaseOpenFlags.Create });
+        db = tx.OpenDatabase(DB_NAME,configuration: new DatabaseConfiguration { Flags = DatabaseOpenFlags.Create });
         tx.Put(db, "version"u8, "1"u8);
         tx.Commit();
     }
@@ -51,6 +52,7 @@ public class RegionStorage : IChunkStorage, IDisposable
             if(resultCode != MDBResultCode.Success) {
                 throw new Exception("Can't save chunk" + resultCode);
             }
+            chunk.blockModified = false;
         }
         tx.Commit();
     }
@@ -65,7 +67,7 @@ public class RegionStorage : IChunkStorage, IDisposable
         ChunkStorage.LoadBlocks(new MemoryStream(value.CopyToNewArray()), chunk);
     }
 
-    public bool isChunkExistInMemory(Vector3D<int> position) {
+    public bool IsChunkExistInMemory(Vector3D<int> position) {
         Span<byte> mykey = stackalloc byte[12];
         MathHelper.EncodeVector3Int(mykey, position.X, position.Y, position.Z);
         using var tx = env.BeginTransaction(TransactionBeginFlags.ReadOnly);

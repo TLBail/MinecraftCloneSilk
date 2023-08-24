@@ -11,15 +11,13 @@ namespace MinecraftCloneSilk.Model
         public bool airBlock = true;
         public bool transparent = true;
         public BlockData blockData;
-        public TextureBlock textureBlock;
-        public Texture fullTexture { get; private set; } 
+        public TextureBlock? textureBlock;
+        public Texture? fullTexture { get; private set; }
 
-        public Block(Vector3D<int> position) : this(position, BlockFactory.AIR_BLOCK, true, 0, null) { }
-        
-        
+
         public Block(BlockJson blockJson) : this(Vector3D<int>.Zero, blockJson.name,  blockJson.transparent, blockJson.id, new TextureBlock(blockJson)) {}
 
-        public Block(Vector3D<int> position, string name, bool transparent,int id, TextureBlock textureBlock)
+        public Block(Vector3D<int> position, string name = BlockFactory.AIR_BLOCK, bool transparent = true,int id = 0, TextureBlock? textureBlock = null)
         {
             airBlock = BlockFactory.AIR_BLOCK.Equals(name) || id == 0; 
             this.position = position;
@@ -27,11 +25,11 @@ namespace MinecraftCloneSilk.Model
             this.transparent = transparent;
             blockData = new BlockData(id);
             this.textureBlock = textureBlock;
-            this.fullTexture = (!airBlock) ? TextureManager.getInstance().textures.TryGetValue(name + ".png", out Texture value) ? value: null : null;
+            this.fullTexture = (!airBlock) ? TextureManager.GetInstance().textures.TryGetValue(name + ".png", out Texture? value) ? value: null : null;
         }
 
 
-        public BlockData getBlockData() => blockData;
+        public BlockData GetBlockData() => blockData;
 
         public override string ToString()
         {

@@ -2,6 +2,7 @@
 using System.Runtime.InteropServices;
 using MinecraftCloneSilk.Core;
 using MinecraftCloneSilk.GameComponent;
+using MinecraftCloneSilk.Model.RegionDrawing;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL;
 using Shader = MinecraftCloneSilk.Core.Shader;
@@ -16,9 +17,8 @@ public class ChunkDrawableStrategy : ChunkStrategy
     private bool needToSendVertices = false;
     private bool needToUpdateChunkVertices = false;
 
-    private Action disposeAction;
-    private List<CubeVertex> vertices;
-    private static ChunkBufferObjectManager chunkBufferObjectManager;
+    private List<CubeVertex>? vertices;
+    private static ChunkBufferObjectManager? chunkBufferObjectManager;
 
     private int nbVertex = 0;
 
@@ -35,36 +35,36 @@ public class ChunkDrawableStrategy : ChunkStrategy
             chunkBufferObjectManager = new ChunkBufferObjectManager(cubeTexture, game);
     }
 
-    public override void init() {
+    public override void Init() {
         setupNeighbors();
     }
 
-    public override void load() {
-        initVertices();
+    public override void Load() {
+        InitVertices();
     }
 
-    public override void finish() {
+    public override void Finish() {
         chunk.chunkState = ChunkState.DRAWABLE;
-        chunk.chunkManager.addChunkToUpdate(chunk);
+        chunk.chunkManager.AddChunkToUpdate(chunk);
     }
 
 
     protected virtual void setupNeighbors() {
         chunk.chunksNeighbors = new Chunk[6];
         foreach (Face face in Enum.GetValues(typeof(Face))) {
-            Chunk newChunk = chunk.chunkManager.getChunk(chunk.position + (FaceOffset.getOffsetOfFace(face) * Chunk.CHUNK_SIZE));
-            if(newChunk.chunkState < minimumChunkStateOfNeighbors()) {
+            Chunk newChunk = chunk.chunkManager.GetChunk(chunk.position + (FaceOffset.GetOffsetOfFace(face) * Chunk.CHUNK_SIZE));
+            if(newChunk.chunkState < MinimumChunkStateOfNeighbors()) {
                 throw new Exception("try to setup a chunk with a lower state than the minimum");
             }
             chunk.chunksNeighbors[(int)face] = newChunk;
         }
     }
 
-    public override ChunkState getChunkStateOfStrategy() => ChunkState.DRAWABLE;
+    public override ChunkState GetChunkStateOfStrategy() => ChunkState.DRAWABLE;
 
 
-    public override void updateChunkVertex() {
-        updateCubeVertices();
+    public override void UpdateChunkVertex() {
+        UpdateCubeVertices();
         if (!openGlSetup && nbVertex == 0) {
             needToUpdateChunkVertices = false;
             return;
@@ -74,25 +74,24 @@ public class ChunkDrawableStrategy : ChunkStrategy
         needToUpdateChunkVertices = false;
     }
 
-    public override void update(double deltaTime) {
-        if (nbVertex > 0 && !openGlSetup) setOpenGl();
-        if (openGlSetup && needToSendVertices) sendCubeVertices();
-        if (needToUpdateChunkVertices) updateChunkVertex();
-        disposeAction?.Invoke();
+    public override void Update(double deltaTime) {
+        if (nbVertex > 0 && !openGlSetup) SetOpenGl();
+        if (openGlSetup && needToSendVertices) SendCubeVertices();
+        if (needToUpdateChunkVertices) UpdateChunkVertex();
     }
 
 
-    public override void setBlock(int x, int y, int z, string name) {
-        chunk.blocks[x, y, z].id = Chunk.blockFactory.getBlockIdByName(name);
+    public override void SetBlock(int x, int y, int z, string name) {
+        chunk.blocks[x, y, z].id = Chunk.blockFactory!.GetBlockIdByName(name);
 
-        updateBlocksAround(x, y, z);
+        UpdateBlocksAround(x, y, z);
         needToUpdateChunkVertices = true;
     }
 
-    public override ChunkState minimumChunkStateOfNeighbors() => ChunkState.BLOCKGENERATED;
+    public override ChunkState MinimumChunkStateOfNeighbors() => ChunkState.BLOCKGENERATED;
 
-    private void initVertices() {
-        updateCubeVertices();
+    private void InitVertices() {
+        UpdateCubeVertices();
         if (nbVertex == 0) {
             return;
         }
@@ -101,23 +100,23 @@ public class ChunkDrawableStrategy : ChunkStrategy
     }
 
 
-    private void setOpenGl() {
-        chunkBufferObjectManager.addChunkToRegion(chunk);
+    private void SetOpenGl() {
+        chunkBufferObjectManager!.AddChunkToRegion(chunk);
         visible = true;
         openGlSetup = true;
     }
 
 
-    public override ReadOnlySpan<CubeVertex> getVertices() {
+    public override ReadOnlySpan<CubeVertex> GetVertices() {
         return CollectionsMarshal.AsSpan(vertices);
     }
 
-    private void sendCubeVertices() {
-        chunkBufferObjectManager.needToUpdateChunk(chunk);
+    private void SendCubeVertices() {
+        chunkBufferObjectManager!.NeedToUpdateChunk(chunk);
         needToSendVertices = false;
     }
 
-    private void updateCubeVertices() {
+    private void UpdateCubeVertices() {
         Vector3D<float> positionFloat =
             new Vector3D<float>(chunk.position.X, chunk.position.Y, chunk.position.Z);
         vertices = new List<CubeVertex>();
@@ -125,11 +124,11 @@ public class ChunkDrawableStrategy : ChunkStrategy
             for (int y = 0; y < Chunk.CHUNK_SIZE; y++) {
                 for (int z = 0; z < Chunk.CHUNK_SIZE; z++) {
                     BlockData block = chunk.blocks[x, y, z];
-                    if (block.id == 0 || Chunk.blockFactory.getBlockNameById(block.id)
+                    if (block.id == 0 || Chunk.blockFactory!.GetBlockNameById(block.id)
                             .Equals(BlockFactory.AIR_BLOCK)) continue;
-                    FaceFlag faces = getFaces(x, y, z);
+                    FaceFlag faces = GetFaces(x, y, z);
                     if (faces > 0) {
-                        Chunk.blockFactory.blocksReadOnly[block.id].textureBlock.AddCubeVerticesToList(vertices, faces, new Vector3D<float>(x, y, z), positionFloat);
+                        Chunk.blockFactory.blocksReadOnly[block.id].textureBlock!.AddCubeVerticesToList(vertices, faces, new Vector3D<float>(x, y, z), positionFloat);
                     }
                 }
             }
@@ -138,82 +137,82 @@ public class ChunkDrawableStrategy : ChunkStrategy
         nbVertex = vertices.Count;
     }
 
-    private FaceFlag getFaces(int x, int y, int z) {
+    private FaceFlag GetFaces(int x, int y, int z) {
         FaceFlag faceFlag = FaceFlag.EMPTY;
-        if (isBlockTransparent(x - 1, y, z)) {
+        if (IsBlockTransparent(x - 1, y, z)) {
             //X
             faceFlag |= FaceFlag.RIGHT;
         }
 
-        if (isBlockTransparent(x + 1, y, z)) {
+        if (IsBlockTransparent(x + 1, y, z)) {
             faceFlag |= FaceFlag.LEFT;
         }
 
-        if (isBlockTransparent(x, y - 1, z)) {
+        if (IsBlockTransparent(x, y - 1, z)) {
             // Y
             faceFlag |= FaceFlag.BOTTOM;
         }
 
-        if (isBlockTransparent(x, y + 1, z)) {
+        if (IsBlockTransparent(x, y + 1, z)) {
             faceFlag |= FaceFlag.TOP;
         }
 
-        if (isBlockTransparent(x, y, z - 1)) {
+        if (IsBlockTransparent(x, y, z - 1)) {
             // Z
             faceFlag |= FaceFlag.BACK;
         }
 
-        if (isBlockTransparent(x, y, z + 1)) {
+        if (IsBlockTransparent(x, y, z + 1)) {
             faceFlag |= FaceFlag.FRONT;
         }
 
         return faceFlag;
     }
 
-    private bool isBlockTransparent(int x, int y, int z) {
+    private bool IsBlockTransparent(int x, int y, int z) {
         BlockData blockData;
         if (y < 0) {
-            blockData = chunk.chunksNeighbors[(int)Face.BOTTOM]
-                .getBlockData(new Vector3D<int>(x, y + (int)Chunk.CHUNK_SIZE, z));
+            blockData = chunk.chunksNeighbors![(int)Face.BOTTOM]
+                .GetBlockData(new Vector3D<int>(x, y + (int)Chunk.CHUNK_SIZE, z));
         } else if (y >= Chunk.CHUNK_SIZE) {
-            blockData = chunk.chunksNeighbors[(int)Face.TOP]
-                .getBlockData(new Vector3D<int>(x, y - (int)Chunk.CHUNK_SIZE, z));
+            blockData = chunk.chunksNeighbors![(int)Face.TOP]
+                .GetBlockData(new Vector3D<int>(x, y - (int)Chunk.CHUNK_SIZE, z));
         } else if (x < 0) {
-            blockData = chunk.chunksNeighbors[(int)Face.LEFT]
-                .getBlockData(new Vector3D<int>(x + (int)Chunk.CHUNK_SIZE, y, z));
+            blockData = chunk.chunksNeighbors![(int)Face.LEFT]
+                .GetBlockData(new Vector3D<int>(x + (int)Chunk.CHUNK_SIZE, y, z));
         } else if (x >= Chunk.CHUNK_SIZE) {
-            blockData = chunk.chunksNeighbors[(int)Face.RIGHT]
-                .getBlockData(new Vector3D<int>(x - (int)Chunk.CHUNK_SIZE, y, z));
+            blockData = chunk.chunksNeighbors![(int)Face.RIGHT]
+                .GetBlockData(new Vector3D<int>(x - (int)Chunk.CHUNK_SIZE, y, z));
         } else if (z < 0) {
-            blockData = chunk.chunksNeighbors[(int)Face.BACK]
-                .getBlockData(new Vector3D<int>(x, y, z + (int)Chunk.CHUNK_SIZE));
+            blockData = chunk.chunksNeighbors![(int)Face.BACK]
+                .GetBlockData(new Vector3D<int>(x, y, z + (int)Chunk.CHUNK_SIZE));
         } else if (z >= Chunk.CHUNK_SIZE) {
-            blockData = chunk.chunksNeighbors[(int)Face.FRONT]
-                .getBlockData(new Vector3D<int>(x, y, z - (int)Chunk.CHUNK_SIZE));
+            blockData = chunk.chunksNeighbors![(int)Face.FRONT]
+                .GetBlockData(new Vector3D<int>(x, y, z - (int)Chunk.CHUNK_SIZE));
         } else {
             blockData = chunk.blocks[x, y, z];
         }
 
-        return blockData.id == 0 || Chunk.blockFactory.isBlockTransparent(blockData);
+        return blockData.id == 0 || Chunk.blockFactory!.IsBlockTransparent(blockData);
     }
 
 
-    internal void updateBlocksAround(int x, int y, int z) {
-        if (x == 0) chunk.chunksNeighbors[(int)Face.LEFT].updateChunkVertex();
-        if (x == Chunk.CHUNK_SIZE - 1) chunk.chunksNeighbors[(int)Face.RIGHT].updateChunkVertex();
+    internal void UpdateBlocksAround(int x, int y, int z) {
+        if (x == 0) chunk.chunksNeighbors![(int)Face.LEFT].UpdateChunkVertex();
+        if (x == Chunk.CHUNK_SIZE - 1) chunk.chunksNeighbors![(int)Face.RIGHT].UpdateChunkVertex();
 
-        if (y == 0) chunk.chunksNeighbors[(int)Face.BOTTOM].updateChunkVertex();
+        if (y == 0) chunk.chunksNeighbors![(int)Face.BOTTOM].UpdateChunkVertex();
         ;
-        if (y == Chunk.CHUNK_SIZE - 1) chunk.chunksNeighbors[(int)Face.TOP].updateChunkVertex();
+        if (y == Chunk.CHUNK_SIZE - 1) chunk.chunksNeighbors![(int)Face.TOP].UpdateChunkVertex();
 
-        if (z == 0) chunk.chunksNeighbors[(int)Face.BACK].updateChunkVertex();
-        if (z == Chunk.CHUNK_SIZE - 1) chunk.chunksNeighbors[(int)Face.FRONT].updateChunkVertex();
+        if (z == 0) chunk.chunksNeighbors![(int)Face.BACK].UpdateChunkVertex();
+        if (z == Chunk.CHUNK_SIZE - 1) chunk.chunksNeighbors![(int)Face.FRONT].UpdateChunkVertex();
     }
 
-    public void hide() {
+    public void Hide() {
         if (!visible) return;
         visible = false;
-        chunkBufferObjectManager.removeChunk(chunk);
+        chunkBufferObjectManager!.RemoveChunk(chunk);
     }
 
     protected override Vector3D<float> ChunkStrategyColor() => new Vector3D<float>(1, 1, 0);
@@ -221,20 +220,20 @@ public class ChunkDrawableStrategy : ChunkStrategy
 
     public override void Dispose() {
         if (visible) {
-            hide();
+            Hide();
         }
 
-        chunk.chunkManager.removeChunkToUpdate(chunk);
+        chunk.chunkManager.RemoveChunkToUpdate(chunk);
     }
 
 
     static ChunkDrawableStrategy() {
         Face[] faces = (Face[])Enum.GetValues(typeof(Face));
-        dependatesChunkOffset = new Vector3D<int>[faces.Length];
+        DependatesChunkOffset = new Vector3D<int>[faces.Length];
         for (int i = 0; i < faces.Length; i++) {
-            dependatesChunkOffset[i] = FaceOffset.getOffsetOfFace(faces[i]) * Chunk.CHUNK_SIZE;
+            DependatesChunkOffset[i] = FaceOffset.GetOffsetOfFace(faces[i]) * Chunk.CHUNK_SIZE;
         }
     }
 
-    public static readonly Vector3D<int>[] dependatesChunkOffset;
+    public static readonly Vector3D<int>[] DependatesChunkOffset;
 }

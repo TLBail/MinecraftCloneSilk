@@ -9,26 +9,27 @@ namespace MinecraftCloneSilk.UI;
 public class GeneralInfo : UiWindow
 {
 
-    public GeneralInfo(Game game, Key? key) : base(game, key) {
+    public GeneralInfo(Game game) : this(game, null){}
+    public GeneralInfo(Game game, Key? key = null) : base(game, key) {
         needMouse = false;
     }
-    public GeneralInfo(Game game) : this(game, null){}
+
     static int corner = 1;
     
-    protected override void drawUi() {
+    protected override void DrawUi() {
 
         ImGuiIOPtr io = ImGui.GetIO();
         
         ImGuiWindowFlags windowFlags = ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoSavedSettings  | ImGuiWindowFlags.NoFocusOnAppearing  | ImGuiWindowFlags.NoNav;
         if (corner != -1)
         {
-            const float PAD = 10.0f;
+            const float pad = 10.0f;
             ImGuiViewportPtr viewport = ImGui.GetMainViewport();
             Vector2 workPos = viewport.WorkPos; // Use work area to avoid menu-bar/task-bar, if any!
             Vector2 workSize = viewport.WorkSize;
             Vector2 windowPos, windowPosPivot;
-            windowPos.X = (corner == 1) ? (workPos.X + workSize.X - PAD) : (workPos.X + PAD);
-            windowPos.Y = (corner == 2) ? (workPos.Y + workSize.Y - PAD) : (workPos.Y + PAD);
+            windowPos.X = (corner == 1) ? (workPos.X + workSize.X - pad) : (workPos.X + pad);
+            windowPos.Y = (corner == 2) ? (workPos.Y + workSize.Y - pad) : (workPos.Y + pad);
             windowPosPivot.X = (corner == 1) ? 1.0f : 0.0f;
             windowPosPivot.Y = (corner == 2) ? 1.0f : 0.0f;
             ImGui.SetNextWindowPos(windowPos, ImGuiCond.Always, windowPosPivot);

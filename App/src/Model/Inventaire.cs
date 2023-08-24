@@ -20,22 +20,22 @@ public class Inventaire
         inventoryBlocks = new InventoryBlock[INVENTORYSIZE + ITEMBARSIZE];
         this.player = player;
         int x = 0;
-        foreach (var keyValuePair in BlockFactory.getInstance().blocksReadOnly) {
+        foreach (var keyValuePair in BlockFactory.GetInstance().blocksReadOnly) {
             inventoryBlocks[x] = new InventoryBlock(keyValuePair.Value, 1, new Vector2D<int>(x, x));
             x = (x + 1) % INVENTORYSIZE;
         }
         
     }
 
-    public bool haveBlockToPlace() {
+    public bool HaveBlockToPlace() {
         return inventoryBlocks[activeIndex] != null;
     }
 
-    public InventoryBlock getActiveBlock() {
+    public InventoryBlock? GetActiveBlock() {
         return inventoryBlocks[activeIndex];
     }
     
-    public void moveActiveIndexByScroolOffset(float offset) {
+    public void MoveActiveIndexByScroolOffset(float offset) {
         if (offset > 0) {
             activeIndex--;
         } else {
@@ -46,10 +46,10 @@ public class Inventaire
         if (activeIndex < INVENTORYSIZE) activeIndex = INVENTORYSIZE + ITEMBARSIZE - 1;
     }
 
-    public Span<InventoryBlock?> getInventoryBlocksFromItemBar() =>
+    public Span<InventoryBlock?> GetInventoryBlocksFromItemBar() =>
         new Span<InventoryBlock?>(inventoryBlocks, INVENTORYSIZE, INVENTORYSIZE + ITEMBARSIZE);
     
-    public InventoryBlock get(int x) {
+    public InventoryBlock? Get(int x) {
         if (x >= INVENTORYSIZE  || x < 0 )
             throw new GameException(player, "trying to access inventory with wrong position");
         return inventoryBlocks[x];

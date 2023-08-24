@@ -17,14 +17,22 @@ public struct BlockData
         this.id = br.ReadInt16();
     }
 
-    public byte[] tobyte() {
+    public byte[] Tobyte() {
         return BitConverter.GetBytes((short)id);
     }
 
-    public const int sizeofSerializeData = 2;
+    public const int SIZEOF_SERIALIZE_DATA = 2;
 
     public override bool Equals(object? obj) {
         return obj is BlockData data && id == data.id;
+    }
+
+    public bool Equals(BlockData other) {
+        return id == other.id;
+    }
+
+    public override int GetHashCode() {
+        return id;
     }
 }
 

@@ -18,17 +18,17 @@ public class DebugRayManager : GameObject
     static float newendY = 5;
     static float newendZ = 5;
 
-    private World world;
+    private World world = null!;
 
     
     public DebugRayManager(Game game) : base(game) {}
 
-    protected override void start() {
-        world = (World)game.gameObjects[typeof(World).FullName];
+    protected override void Start() {
+        world = (World)game.gameObjects[typeof(World).FullName!];
     }
 
 
-    public override void toImGui() {
+    public override void ToImGui() {
         ImGui.Text("ray coordonnate");
 
         ImGui.InputFloat("start x", ref newX);
@@ -46,9 +46,9 @@ public class DebugRayManager : GameObject
 
 
         if (ImGui.Button("add ray around chunk")) {
-            foreach(Chunk chunk in world.getWorldChunks())
+            foreach(Chunk chunk in world.GetWorldChunks())
             {
-                chunk.debug();
+                chunk.Debug();
             }
         }
     }

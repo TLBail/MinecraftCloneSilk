@@ -18,10 +18,10 @@ public class PlaneCollisionTest
             new Vector3D<float>(0f, 0f, 0f)
         );
         float distance = 10;
-        Assert.IsTrue(plane.intersect(ray, ref distance));
+        Assert.IsTrue(plane.Intersect(ray, ref distance));
         
         Ray rayThatDontIntersect = new Ray(Vector3D<float>.Zero, new Vector3D<float>(-1.0f, 0.0f, 0.0f));
-        Assert.IsFalse(plane.intersect(rayThatDontIntersect, ref distance));
+        Assert.IsFalse(plane.Intersect(rayThatDontIntersect, ref distance));
         
         
         Plane planeInverse = new Plane(
@@ -31,7 +31,7 @@ public class PlaneCollisionTest
             new Vector3D<float>(0f, 0f, 0f)
         );
         
-        Assert.IsFalse(planeInverse.intersect(ray, ref distance));
+        Assert.IsFalse(planeInverse.Intersect(ray, ref distance));
 
     }
 }

@@ -10,17 +10,15 @@ namespace MinecraftCloneSilk.Core
         where TVertexType : unmanaged
         where TIndexType : unmanaged
     {
-        private uint _handle;
-        private GL _gl;
+        private uint handle;
+        private GL gl;
         private bool disposed = false;
-        
-        public VertexArrayObject(GL gl, BufferObject<TVertexType> vbo) : this(gl, vbo, null){ }
 
-        public VertexArrayObject(GL gl, BufferObject<TVertexType> vbo, BufferObject<TIndexType> ebo)
+        public VertexArrayObject(GL gl, BufferObject<TVertexType> vbo, BufferObject<TIndexType>? ebo = null)
         {
-            _gl = gl;
+            this.gl = gl;
 
-            _handle = _gl.GenVertexArray();
+            handle = this.gl.GenVertexArray();
             Bind();
             vbo.Bind();
             ebo?.Bind();
@@ -28,13 +26,13 @@ namespace MinecraftCloneSilk.Core
 
         public unsafe void VertexAttributePointer(uint index, int count, VertexAttribPointerType type, string fieldName)
         {
-            _gl.VertexAttribPointer(index, count, type, false,(uint) sizeof(TVertexType), (void*) (Marshal.OffsetOf(typeof(TVertexType), fieldName)));
-            _gl.EnableVertexAttribArray(index);
+            gl.VertexAttribPointer(index, count, type, false,(uint) sizeof(TVertexType), (void*) (Marshal.OffsetOf(typeof(TVertexType), fieldName)));
+            gl.EnableVertexAttribArray(index);
         }
 
         public void Bind()
         {
-            _gl.BindVertexArray(_handle);
+            gl.BindVertexArray(handle);
         }
 
         ~VertexArrayObject() {
@@ -44,7 +42,7 @@ namespace MinecraftCloneSilk.Core
         protected void Dispose(bool disposing) {
             if (!disposed) {
                 if (disposing) {
-                    _gl.DeleteVertexArray(_handle);
+                    gl.DeleteVertexArray(handle);
                 }
                 disposed = true;
             }

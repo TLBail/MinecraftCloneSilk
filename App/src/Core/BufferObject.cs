@@ -8,44 +8,44 @@ namespace MinecraftCloneSilk.Core
     public class BufferObject<TDataType> : IDisposable
         where TDataType : unmanaged
     {
-        private uint _handle;
-        private BufferTargetARB _bufferType;
-        private GL _gl;
+        private uint handle;
+        private BufferTargetARB bufferType;
+        private GL gl;
         private bool disposed = false;
 
         public unsafe BufferObject(GL gl, Span<TDataType> data, BufferTargetARB bufferType)
         {
-            _gl = gl;
-            _bufferType = bufferType;
+            this.gl = gl;
+            this.bufferType = bufferType;
 
     
-            _handle = _gl.GenBuffer();
+            handle = this.gl.GenBuffer();
             Bind();
             fixed (void* d = data)
             {
-                _gl.BufferData(bufferType, (nuint)(data.Length * sizeof(TDataType)), d, BufferUsageARB.StaticDraw);
+                this.gl.BufferData(bufferType, (nuint)(data.Length * sizeof(TDataType)), d, BufferUsageARB.StaticDraw);
             }
         }
 
         public unsafe BufferObject(GL gl, int nbVertex, BufferTargetARB bufferType)
         {
-            this._gl = gl;
-            _bufferType = bufferType;
+            this.gl = gl;
+            this.bufferType = bufferType;
 
-            _handle = gl.GenBuffer();
+            handle = gl.GenBuffer();
             Bind();
             gl.BufferData(bufferType, (nuint)(nbVertex * sizeof(TDataType)), null, BufferUsageARB.DynamicDraw);
         }
 
-        public void  sendData(ReadOnlySpan<TDataType> data, nint offset)
+        public void SendData(ReadOnlySpan<TDataType> data, nint offset)
         {
-            _gl.BufferSubData(_bufferType, offset,  data);
+            gl.BufferSubData(bufferType, offset,  data);
         }
         
         
         public void Bind()
         {
-            _gl.BindBuffer(_bufferType, _handle);
+            gl.BindBuffer(bufferType, handle);
         }
 
         ~BufferObject() {
@@ -61,7 +61,7 @@ namespace MinecraftCloneSilk.Core
         protected void Dispose(bool disposing) {
             if (!disposed) {
                 if (disposing) {
-                    _gl.DeleteBuffer(_handle);
+                    gl.DeleteBuffer(handle);
                 }
                 disposed = true;
             }            

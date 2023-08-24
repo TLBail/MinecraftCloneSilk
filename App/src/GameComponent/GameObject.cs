@@ -9,20 +9,20 @@ public abstract class GameObject
     protected GameObject(Game game)
     {
         this.game = game;
-        game.startables += start;
-        game.updatables += update;
-        game.stopable += stop;
+        game.startables += Start;
+        game.updatables += Update;
+        game.stopable += Stop;
     }
 
-    protected virtual void stop() { }
+    protected virtual void Stop() { }
 
-    protected GameObject() : this(Game.getInstance()){    }
+    protected GameObject() : this(Game.GetInstance()){    }
 
-    protected virtual  void start() {}
+    protected virtual  void Start() {}
 
-    protected virtual void update(double deltaTime) {}
+    protected virtual void Update(double deltaTime) {}
 
-    public virtual void toImGui()
+    public virtual void ToImGui()
     {
         ImGui.Text("gameObject : " + this.GetType().Name);
     }

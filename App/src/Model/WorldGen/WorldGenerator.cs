@@ -1,8 +1,8 @@
 ﻿using Silk.NET.Maths;
 
-namespace MinecraftCloneSilk.Model;
+namespace MinecraftCloneSilk.Model.WorldGen;
 
-public interface WorldGenerator
+public interface IWorldGenerator
 {
-    public void generateTerrain(Vector3D<int> chunkPosition, BlockData[,,] blocks);
+    public void GenerateTerrain(Vector3D<int> chunkPosition, BlockData[,,] blocks);
 }

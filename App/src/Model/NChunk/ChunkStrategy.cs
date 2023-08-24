@@ -7,21 +7,17 @@ namespace MinecraftCloneSilk.Model.NChunk;
 
 public abstract class ChunkStrategy
 {
-
-    public abstract ChunkState getChunkStateOfStrategy();
-
-    public static Vector3D<int>[] getDependanteChunksOffsetOfAChunkState(ChunkState chunkState) {
+    public static Vector3D<int>[] GetDependanteChunksOffsetOfAChunkState(ChunkState chunkState) {
         switch (chunkState) {
             case ChunkState.DRAWABLE:
-                return ChunkDrawableStrategy.dependatesChunkOffset;
+                return ChunkDrawableStrategy.DependatesChunkOffset;
             case ChunkState.BLOCKGENERATED:
-                return ChunkBlockGeneratedStrategy.dependatesChunkOffset;
+                return ChunkBlockGeneratedStrategy.DependatesChunkOffset;
             default:
                 return Array.Empty<Vector3D<int>>();
         }
     }
-
-    public static ChunkState getMinimumChunkStateOfNeighbors(ChunkState chunkState) {
+    public static ChunkState GetMinimumChunkStateOfNeighbors(ChunkState chunkState) {
         switch (chunkState) {
             case ChunkState.DRAWABLE:
                 return ChunkState.BLOCKGENERATED;
@@ -32,38 +28,39 @@ public abstract class ChunkStrategy
         }
     }
     
-    protected Chunk chunk;
+    protected readonly Chunk chunk;
 
-    public ChunkStrategy(Chunk chunk) {
+    protected ChunkStrategy(Chunk chunk) {
         this.chunk = chunk;
     }
     
-    public virtual ChunkState minimumChunkStateOfNeighbors() => ChunkState.EMPTY;
+    public abstract ChunkState GetChunkStateOfStrategy();
+    public virtual ChunkState MinimumChunkStateOfNeighbors() => ChunkState.EMPTY;
 
-    public virtual BlockData getBlockData(Vector3D<int> localPosition) {
+    public virtual BlockData GetBlockData(Vector3D<int> localPosition) {
         if (localPosition.Y < 0) {
-            return chunk.chunksNeighbors[(int)Face.BOTTOM]!
-                .getBlockData(new Vector3D<int>(localPosition.X, localPosition.Y + (int)Chunk.CHUNK_SIZE,
+            return chunk.chunksNeighbors![(int)Face.BOTTOM]!
+                .GetBlockData(new Vector3D<int>(localPosition.X, localPosition.Y + (int)Chunk.CHUNK_SIZE,
                     localPosition.Z));
         } else if (localPosition.Y >= Chunk.CHUNK_SIZE) {
-            return chunk.chunksNeighbors[(int)Face.TOP]!
-                .getBlockData(new Vector3D<int>(localPosition.X, localPosition.Y - (int)Chunk.CHUNK_SIZE,
+            return chunk.chunksNeighbors![(int)Face.TOP]!
+                .GetBlockData(new Vector3D<int>(localPosition.X, localPosition.Y - (int)Chunk.CHUNK_SIZE,
                     localPosition.Z));
         } else if (localPosition.X < 0) {
-            return chunk.chunksNeighbors[(int)Face.LEFT]!
-                .getBlockData(new Vector3D<int>(localPosition.X + (int)Chunk.CHUNK_SIZE, localPosition.Y,
+            return chunk.chunksNeighbors![(int)Face.LEFT]!
+                .GetBlockData(new Vector3D<int>(localPosition.X + (int)Chunk.CHUNK_SIZE, localPosition.Y,
                     localPosition.Z));
         } else if (localPosition.X >= Chunk.CHUNK_SIZE) {
-            return chunk.chunksNeighbors[(int)Face.RIGHT]!
-                .getBlockData(new Vector3D<int>(localPosition.X - (int)Chunk.CHUNK_SIZE, localPosition.Y,
+            return chunk.chunksNeighbors![(int)Face.RIGHT]!
+                .GetBlockData(new Vector3D<int>(localPosition.X - (int)Chunk.CHUNK_SIZE, localPosition.Y,
                     localPosition.Z));
         } else if (localPosition.Z < 0) {
-            return chunk.chunksNeighbors[(int)Face.BACK]!
-                .getBlockData(new Vector3D<int>(localPosition.X, localPosition.Y,
+            return chunk.chunksNeighbors![(int)Face.BACK]!
+                .GetBlockData(new Vector3D<int>(localPosition.X, localPosition.Y,
                     localPosition.Z + (int)Chunk.CHUNK_SIZE));
         } else if (localPosition.Z >= Chunk.CHUNK_SIZE) {
-            return chunk.chunksNeighbors[(int)Face.FRONT]!
-                .getBlockData(new Vector3D<int>(localPosition.X, localPosition.Y,
+            return chunk.chunksNeighbors![(int)Face.FRONT]!
+                .GetBlockData(new Vector3D<int>(localPosition.X, localPosition.Y,
                     localPosition.Z - (int)Chunk.CHUNK_SIZE));
         } else {
             return chunk.blocks[localPosition.X, localPosition.Y, localPosition.Z];
@@ -71,28 +68,28 @@ public abstract class ChunkStrategy
     }
 
 
-    public virtual void updateChunkVertex() {
+    public virtual void UpdateChunkVertex() {
     }
 
-    public virtual void draw(GL gl, double deltaTime) {
+    public virtual void Draw(GL gl, double deltaTime) {
     }
 
-    public abstract void setBlock(int x, int y, int z, string name);
+    public abstract void SetBlock(int x, int y, int z, string name);
 
-    public virtual Block getBlock(int x, int y, int z) {
-        var blockData = getBlockData(new Vector3D<int>(x, y, z));
-        return Chunk.blockFactory.buildFromBlockData(new Vector3D<int>(x, y, z), blockData);
+    public virtual Block GetBlock(int x, int y, int z) {
+        var blockData = GetBlockData(new Vector3D<int>(x, y, z));
+        return Chunk.blockFactory!.BuildFromBlockData(new Vector3D<int>(x, y, z), blockData);
     }
 
     public virtual void Dispose() {
     }
 
-    public virtual void update(double deltaTime) {
+    public virtual void Update(double deltaTime) {
     }
 
     protected virtual Vector3D<float> ChunkStrategyColor() => new Vector3D<float>(1, 0, 0);
 
-    public void debug(bool? setDebug = null) {
+    public void Debug(bool? setDebug = null) {
         chunk.debugMode = setDebug ?? !chunk.debugMode;
 
         if (!chunk.debugMode) {
@@ -146,14 +143,14 @@ public abstract class ChunkStrategy
         }
     }
 
-    public virtual void init() {
+    public virtual void Init() {
     }
 
-    public virtual ReadOnlySpan<CubeVertex> getVertices() {
+    public virtual ReadOnlySpan<CubeVertex> GetVertices() {
         throw new Exception("not availabe for this chunk state : " + chunk.chunkState.ToString());
     }
 
-    public virtual void load() { }
+    public virtual void Load() { }
 
-    public virtual void finish() {}
+    public virtual void Finish() {}
 }

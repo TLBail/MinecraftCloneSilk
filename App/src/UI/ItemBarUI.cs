@@ -10,70 +10,69 @@ namespace MinecraftCloneSilk.UI;
 
 public class ItemBarUi : UiWindow
 {
-    private IMouse mouse;
+    private IMouse? mouse;
     private ImGuiIOPtr imGuiIo;
-    private static bool p_open;
+    private static bool pOpen;
     private const string DNDCELL = "DND_CELL";
-    private Texture texture;
-    private Texture[] textures;
-    private Player player;
-    private Inventaire inventaire;
+    private Texture texture = null!;
+    private Texture[] textures = null!;
+    private Player player = null!;
+    private Inventaire inventaire = null!;
     
     public ItemBarUi(Game game) : base(game, null) {
-        mouse = game.getMouse();
+        mouse = game.GetMouse();
         needMouse = false;
     }
     
     
 
-    protected override void start() {
-        var dic = BlockFactory.getInstance().blocksReadOnly;
-        texture = new Texture(game.getGL(), "./Assets/blocks/stone.png");
+    protected override void Start() {
+        var dic = BlockFactory.GetInstance().blocksReadOnly;
+        texture = new Texture(game.GetGl(), "./Assets/blocks/stone.png");
         textures = new Texture[dic.Count - 1];
         int index = 0;
         foreach (var keyValue in dic) {
-        if(keyValue.Value.name.Equals(BlockFactory.AIR_BLOCK)) continue;
-        //     blockNames[index] = keyValue.Value.name;
-            textures[index] = new Texture(game.getGL(),"./Assets/blocks/" + keyValue.Value.name + ".png");
-            index++;
+            if (!keyValue.Value.name.Equals(BlockFactory.AIR_BLOCK)) {
+                textures[index] = new Texture(game.GetGl(), "./Assets/blocks/" + keyValue.Value.name + ".png");
+                index++;
+            }
         }
         
-        mouse.Scroll += MouseOnScroll;
+        mouse!.Scroll += MouseOnScroll;
         imGuiIo = ImGui.GetIO();
-        player = (Player)game.gameObjects[typeof(Player).FullName];
+        player = (Player)game.gameObjects[typeof(Player).FullName!];
         inventaire = player.inventaire;
     }
 
     private void MouseOnScroll(IMouse mouse, ScrollWheel scrollWheel) {
-        inventaire.moveActiveIndexByScroolOffset(scrollWheel.Y);
+        inventaire.MoveActiveIndexByScroolOffset(scrollWheel.Y);
     }
 
-    protected override void drawUi() {
+    protected override void DrawUi() {
         ImGuiWindowFlags windowFlags  = ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoSavedSettings | ImGuiWindowFlags.NoFocusOnAppearing| ImGuiWindowFlags.NoNav;
-        const float PAD = 10.0f;
+        const float pad = 10.0f;
         ImGuiViewportPtr viewport = ImGui.GetMainViewport();
-        Vector2 work_pos = viewport.WorkPos; // Use work area to avoid menu-bar/task-bar, if any!
-        Vector2 work_size = viewport.WorkSize;
-        Vector2 window_pos, window_pos_pivot;
-        window_pos.X = (work_pos.X + work_size.X) * 0.75f ;
-        window_pos.Y = (work_pos.Y + work_size.Y - PAD);
-        window_pos_pivot.X = 1.0f;// : 0.0f;
-        window_pos_pivot.Y = 1.0f; // : 0.0f;
-        ImGui.SetNextWindowPos(window_pos, ImGuiCond.Always, window_pos_pivot);
+        Vector2 workPos = viewport.WorkPos; // Use work area to avoid menu-bar/task-bar, if any!
+        Vector2 workSize = viewport.WorkSize;
+        Vector2 windowPos, windowPosPivot;
+        windowPos.X = (workPos.X + workSize.X) * 0.75f ;
+        windowPos.Y = (workPos.Y + workSize.Y - pad);
+        windowPosPivot.X = 1.0f;// : 0.0f;
+        windowPosPivot.Y = 1.0f; // : 0.0f;
+        ImGui.SetNextWindowPos(windowPos, ImGuiCond.Always, windowPosPivot);
         windowFlags |= ImGuiWindowFlags.NoMove;
         ImGui.SetNextWindowBgAlpha(0.35f); // Transparent background
-        if (ImGui.Begin("item bar", ref p_open, windowFlags)) {
+        if (ImGui.Begin("item bar", ref pOpen, windowFlags)) {
             for (int i = Inventaire.STARTING_ITEM_BAR_INDEX; i <= Inventaire.ENDING_ITEM_BAR_INDEX; i++) {
-                itemUi(i);
+                ItemUi(i);
             }
             ImGui.End();
         }
 
     }
 
-    private unsafe void itemUi(int index) {
-        string blockName = "";
-        if (inventaire.inventoryBlocks[index] != null) blockName = inventaire.inventoryBlocks[index].block.name;
+    private unsafe void ItemUi(int index) {
+        string blockName = inventaire.inventoryBlocks[index]?.block.name ?? "";
         
         ImGui.PushID(index);
         
@@ -91,7 +90,7 @@ public class ItemBarUi : UiWindow
         //image
         if (blockName.Length > 0) {
             if(inventaire.inventoryBlocks[index]!.block.fullTexture != null)
-                ImGui.ImageButton((IntPtr)inventaire.inventoryBlocks[index]!.block.fullTexture._handle,
+                ImGui.ImageButton((IntPtr)inventaire.inventoryBlocks[index]!.block.fullTexture!.handle,
                     new Vector2(100, 100));
         } else {
             ImGui.Button(blockName, new Vector2(100, 100));

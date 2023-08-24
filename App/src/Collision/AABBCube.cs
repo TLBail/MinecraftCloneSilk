@@ -1,7 +1,7 @@
 ﻿using MinecraftCloneSilk.Collision;
 using Silk.NET.Maths;
 
-namespace MinecraftCloneSilk;
+namespace MinecraftCloneSilk.Collision;
 
 public class AABBCube
 {
@@ -14,7 +14,7 @@ public class AABBCube
     }
     
     
-    public bool intersect(Ray r, float t)
+    public bool Intersect(Ray r, float t)
     {
         float tmin, tmax, tymin, tymax, tzmin, tzmax;
 
@@ -52,7 +52,7 @@ public class AABBCube
         return true;
     }
 
-    public HitInfo intersect(Ray r)
+    public HitInfo Intersect(Ray r)
     {
         float tmin, tmax, tymin, tymax, tzmin, tzmax;
 

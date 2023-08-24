@@ -8,20 +8,20 @@ namespace MinecraftCloneSilk.Logger.Serialization;
 /// </summary>
 internal class JsonBuilder
 {
-    private bool _busy;
-    private StringBuilder _str;
+    private bool busy;
+    private StringBuilder str;
 
     public JsonBuilder()
     {
-        _str = new StringBuilder();
+        str = new StringBuilder();
     }
 
     private void Append(string str)
     {
-        string c = _busy ? ", " : "{ ";
-        _str.Append(c);
-        _str.Append(str);
-        _busy = true;
+        string c = busy ? ", " : "{ ";
+        this.str.Append(c);
+        this.str.Append(str);
+        busy = true;
     }
         
         
@@ -43,7 +43,7 @@ internal class JsonBuilder
 
     public string Build()
     {
-        _str.Append("}");
-        return _str.ToString();
+        str.Append("}");
+        return str.ToString();
     }
 }

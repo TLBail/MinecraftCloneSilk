@@ -24,7 +24,7 @@ public class PlayerTest
                 new (typeof(Console).FullName),
             }
         );
-        game = Game.getInstance(scene, false);
+        game = Game.GetInstance(scene, false);
         gameThread = new Thread(() => {
             game.Run();
         });
@@ -39,45 +39,45 @@ public class PlayerTest
     
     [SetUp]
     public async Task setUp() {
-        await game.waitForFrame(1);
+        await game.WaitForFrame(1);
         world = (World)game.gameObjects[typeof(World).FullName];
-        world.chunkManager.addChunkToLoad(Vector3D<int>.Zero);
-        await game.waitForFrame(3);
+        world.chunkManager.AddChunkToLoad(Vector3D<int>.Zero);
+        await game.WaitForFrame(3);
         
     }
 
     [TearDown]
     public async Task tearDown() {
-        await game.waitForFrame(1);
+        await game.WaitForFrame(1);
         world = (World)game.gameObjects[typeof(World).FullName];
-        world.chunkManager.clear();
-        await game.waitForFrame(10);
+        world.chunkManager.Clear();
+        await game.WaitForFrame(10);
 
     }
 
     [Test]
     public async Task playerRemoveBlockWithClick() {
-        await game.waitForFrame(10);
+        await game.WaitForFrame(10);
         Player player = (Player)game.gameObjects[typeof(Player).FullName];
         world = (World)game.gameObjects[typeof(World).FullName];
         
-        world.setBlock("stone", Vector3D<int>.Zero);
-        Assert.True((world.getBlock(Vector3D<int>.Zero)).name.Equals("stone"));
+        world.SetBlock("stone", Vector3D<int>.Zero);
+        Assert.True((world.GetBlock(Vector3D<int>.Zero)).name.Equals("stone"));
         player.position = Vector3.Zero;
-        player.onMouseClick(null, MouseButton.Left);
-        Assert.True((world.getBlock(Vector3D<int>.Zero)).name.Equals(BlockFactory.AIR_BLOCK));
+        player.OnMouseClick(null, MouseButton.Left);
+        Assert.True((world.GetBlock(Vector3D<int>.Zero)).name.Equals(BlockFactory.AIR_BLOCK));
     }
     
     [Test]
     public async Task playerAddBlockWithClick() {
-        await game.waitForFrame(10);
+        await game.WaitForFrame(10);
         Player player = (Player)game.gameObjects[typeof(Player).FullName];
         world = (World)game.gameObjects[typeof(World).FullName];
-        world.setBlock("stone", Vector3D<int>.Zero);
-        Assert.True((world.getBlock(Vector3D<int>.Zero)).name.Equals("stone"));
+        world.SetBlock("stone", Vector3D<int>.Zero);
+        Assert.True((world.GetBlock(Vector3D<int>.Zero)).name.Equals("stone"));
         player.position = Vector3.Zero;
-        player.onMouseClick(null, MouseButton.Left);
-        Assert.True((world.getBlock(Vector3D<int>.Zero)).name.Equals(BlockFactory.AIR_BLOCK));
+        player.OnMouseClick(null, MouseButton.Left);
+        Assert.True((world.GetBlock(Vector3D<int>.Zero)).name.Equals(BlockFactory.AIR_BLOCK));
     }
 
 }

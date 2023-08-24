@@ -7,27 +7,27 @@ namespace MinecraftCloneSilk.Model;
 
 public class BlockFactory
 {
-    private static BlockFactory instance;
+    private static BlockFactory? instance;
     
-    private static readonly Object _lock = new Object();
+    private static readonly Object Lock = new Object();
     
     private Dictionary<int, Block> blocks = new Dictionary<int, Block>();
 
     private List<int> transparentBlockId = new List<int>();
 
-    public string getBlockNameById(int id) => blocks.TryGetValue(id, out Block value) ? value.name : AIR_BLOCK;
+    public string GetBlockNameById(int id) => blocks.TryGetValue(id, out Block? value) ? value.name : AIR_BLOCK;
 
     private Dictionary<string, Block> blockNameToBlockDictionary = new Dictionary<string, Block>();
 
-    public int getBlockIdByName(string name) =>
-        blockNameToBlockDictionary.TryGetValue(name, out Block value) ? value.blockData.id : 0;
+    public int GetBlockIdByName(string name) =>
+        blockNameToBlockDictionary.TryGetValue(name, out Block? value) ? value.blockData.id : 0;
 
     public ReadOnlyDictionary<int, Block> blocksReadOnly => new ReadOnlyDictionary<int, Block>(blocks);
 
-    public static BlockFactory getInstance()
+    public static BlockFactory GetInstance()
     {
         if (instance == null) {
-            lock (_lock) {
+            lock (Lock) {
                 if (instance == null) {
                     instance = new BlockFactory();
                 }
@@ -44,21 +44,21 @@ public class BlockFactory
     
     private BlockFactory() {
         string[] files = Directory.GetFiles(PATH_TO_JSON);
-        addBlock(new Block(Vector3D<int>.Zero));
+        AddBlock(new Block(Vector3D<int>.Zero));
         foreach(string filepath in files)
         {
             string jsonString = File.ReadAllText(filepath);
             BlockJson blockJson = JsonSerializer.Deserialize<BlockJson>(jsonString)!;
-            addBlock(new Block(blockJson));
+            AddBlock(new Block(blockJson));
         }
     }
 
 
-    public Block build(Vector3D<int> position, int id)
+    public Block Build(Vector3D<int> position, int id)
     {
         Block block;
-        if (blocks.ContainsKey(id)) {
-            block = (Block)blocks[id].Clone();
+        if (blocks.TryGetValue(id, out var blockModel)) {
+            block = (Block)blockModel.Clone();
         }
         else {
             block = (Block)blocks[AIR_BLOCK_ID].Clone();
@@ -69,25 +69,25 @@ public class BlockFactory
     }
 
 
-    public BlockData getBlockData(string name)
+    public BlockData GetBlockData(string name)
     {
-        if (blockNameToBlockDictionary.ContainsKey(name)) {
-            return blockNameToBlockDictionary[name].getBlockData();
+        if (blockNameToBlockDictionary.TryGetValue(name, out var value)) {
+            return value.GetBlockData();
         }
-        return blocks[AIR_BLOCK_ID].getBlockData();
+        return blocks[AIR_BLOCK_ID].GetBlockData();
     }
 
-    public BlockData getBlockData(int id) {
-        return blocks.TryGetValue(id, out Block block) ? block.blockData : blocks[AIR_BLOCK_ID].blockData;
+    public BlockData GetBlockData(int id) {
+        return blocks.TryGetValue(id, out Block? block) ? block.blockData : blocks[AIR_BLOCK_ID].blockData;
     }
 
 
-    public Block buildFromBlockData(Vector3D<int> position, BlockData blockData)
+    public Block BuildFromBlockData(Vector3D<int> position, BlockData blockData)
     {
-        return build(position, blockData.id );
+        return Build(position, blockData.id );
     }
 
-    public bool isBlockTransparent(BlockData blockData)
+    public bool IsBlockTransparent(BlockData blockData)
     {
         for (var i = 0; i < transparentBlockId.Count; i++) {
             if (transparentBlockId[i].Equals(blockData.id)) return true;
@@ -95,7 +95,7 @@ public class BlockFactory
         return false;
     }
 
-    private void addBlock(Block block)
+    private void AddBlock(Block block)
     {
         blocks.Add(block.blockData.id, block);
         blockNameToBlockDictionary.Add(block.name, block);

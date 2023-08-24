@@ -1,6 +1,7 @@
 ﻿using BenchmarkDotNet.Attributes;
 using MinecraftCloneSilk.Core;
 using MinecraftCloneSilk.Model;
+using MinecraftCloneSilk.Model.WorldGen;
 using Silk.NET.Maths;
 
 namespace Benchmark.BenchMarks;
@@ -20,7 +21,7 @@ public class WorldNaturalGenerationBenchMark
 
     [Benchmark]
     public void createAllBlockForAChunk() {
-        worldNaturalGeneration.generateTerrain(position, blocks);
+        worldNaturalGeneration.GenerateTerrain(position, blocks);
     }
     
 }

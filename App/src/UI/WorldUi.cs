@@ -1,26 +1,24 @@
-﻿using System.Numerics;
-using ImGuiNET;
+﻿using ImGuiNET;
 using MinecraftCloneSilk.GameComponent;
 using MinecraftCloneSilk.Model;
-using MinecraftCloneSilk.Model.NChunk;
-using Silk.NET.Input;
+using MinecraftCloneSilk.Model.WorldGen;
 using Silk.NET.Maths;
 
 namespace MinecraftCloneSilk.UI;
 
-public class WorldUI
+public class WorldUi
 {
-    private World world;
-    private string[] blockNames;
-    public WorldUI(World world)
+    private readonly World world;
+    private readonly string[] blockNames;
+    public WorldUi(World world)
     {
         this.world = world;
         chunkRenderDistance = this.world.radius;
         worldMode = world.worldMode.ToString();
-        blockNames = new string[BlockFactory.getInstance().blocksReadOnly.Count];
+        blockNames = new string[BlockFactory.GetInstance().blocksReadOnly.Count];
         int index = 0;
-        foreach (int id in BlockFactory.getInstance().blocksReadOnly.Keys) {
-            blockNames[index] = BlockFactory.getInstance().getBlockNameById(id);
+        foreach (int id in BlockFactory.GetInstance().blocksReadOnly.Keys) {
+            blockNames[index] = BlockFactory.GetInstance().GetBlockNameById(id);
             index++;
         }
 
@@ -33,26 +31,25 @@ public class WorldUI
     private static string newBlockName = "metal";
     private static string worldMode = "EMPTY";
 
-    private string previousWorldMode;
     private static WorldNaturalGeneration.GenerationParameter parameter;
     private static int chunkRenderDistance;
     
     
-    public void drawUi() {
-        blockManagementUi();
+    public void DrawUi() {
+        BlockManagementUi();
         ImGui.Separator();
-        worldGenerationUi();
+        WorldGenerationUi();
         ImGui.Separator();
-        chunkManager();
+        ChunkManager();
         
     }
 
-    private void chunkManager() {
-        world.chunkManager.toImGui();
+    private void ChunkManager() {
+        world.chunkManager.ToImGui();
     }
     
     
-    private void blockManagementUi() {
+    private void BlockManagementUi() {
         if (ImGui.DragInt("chunk render distance", ref chunkRenderDistance, 1, 1, 30)) {
             world.radius = chunkRenderDistance;
         }
@@ -62,10 +59,10 @@ public class WorldUI
         if(ImGui.BeginCombo("blockname",newBlockName )) {
             for (int n = 0; n < blockNames.Length; n++)
             {
-                bool is_selected = (newBlockName == blockNames[n]);
-                if (ImGui.Selectable(blockNames[n], is_selected))
+                bool isSelected = (newBlockName == blockNames[n]);
+                if (ImGui.Selectable(blockNames[n], isSelected))
                     newBlockName = blockNames[n];
-                if (is_selected)
+                if (isSelected)
                     ImGui.SetItemDefaultFocus();   // Set the initial focus when opening the combo (scrolling + for keyboard navigation support in the upcoming navigation branch)
             }
             ImGui.EndCombo();
@@ -77,26 +74,26 @@ public class WorldUI
         ImGui.InputInt("new block y", ref newBlockY);
         ImGui.InputInt("new block z", ref newBlockZ);
         if (ImGui.Button("set block")) {
-            world.setBlock(newBlockName, new Vector3D<int>(newBlockX, newBlockY, newBlockZ));
+            world.SetBlock(newBlockName, new Vector3D<int>(newBlockX, newBlockY, newBlockZ));
         }
 
         WorldMode[] worldModes = (WorldMode[])Enum.GetValues(typeof(WorldMode));
         if(ImGui.BeginCombo("worldMode",worldMode )) {
             for (int n = 0; n < worldModes.Length; n++)
             {
-                bool is_selected = (worldMode == worldModes[n].ToString());
-                if (ImGui.Selectable(worldModes[n].ToString(), is_selected)) {
+                bool isSelected = (worldMode == worldModes[n].ToString());
+                if (ImGui.Selectable(worldModes[n].ToString(), isSelected)) {
                     worldMode = worldModes[n].ToString();
-                    world.setWorldMode(Enum.Parse<WorldMode>(worldMode));                    
+                    world.SetWorldMode(Enum.Parse<WorldMode>(worldMode));                    
                 }
-                if (is_selected)
+                if (isSelected)
                     ImGui.SetItemDefaultFocus();   // Set the initial focus when opening the combo (scrolling + for keyboard navigation support in the upcoming navigation branch)
             }
             ImGui.EndCombo();
         }
     }
 
-    private void worldGenerationUi() {
+    private void WorldGenerationUi() {
         if (ImGui.CollapsingHeader("World generation", ImGuiTreeNodeFlags.Bullet) ){
         
             ImGui.InputInt("seed", ref WorldNaturalGeneration.seed);

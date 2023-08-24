@@ -10,41 +10,40 @@ namespace MinecraftCloneSilk.UI;
 
 public class InventaireUi : UiWindow
 {
-    private Inventaire inventaire;
+    private Inventaire inventaire = null!;
     private const string DNDCELL = "DND_CELL";
-    private const ImGuiWindowFlags flags = ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoTitleBar;
+    private const ImGuiWindowFlags FLAGS = ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoTitleBar;
     private OpenGl openGl;
     public InventaireUi(Game game) : base(game, Key.E) {
         this.openGl = game.openGl;
     }
 
-    protected override void setVisible(IKeyboard keyboard, Key key, int a) {
+    protected override void SetVisible(IKeyboard keyboard, Key key, int a) {
         if(key != this.key) return;
-        base.setVisible(keyboard, key, a);
-        openGl.setCursorMode(visible ? CursorModeValue.CursorNormal : CursorModeValue.CursorDisabled);
+        base.SetVisible(keyboard, key, a);
+        openGl.SetCursorMode(visible ? CursorModeValue.CursorNormal : CursorModeValue.CursorDisabled);
     }
 
-    protected override void start() {
-        inventaire = ((Player)game.gameObjects[typeof(Player).FullName]).inventaire;
+    protected override void Start() {
+        inventaire = ((Player)game.gameObjects[typeof(Player).FullName!]).inventaire;
     }
 
-    protected override void drawUi() {
-        ImGui.Begin("Inventaire", flags);
+    protected override void DrawUi() {
+        ImGui.Begin("Inventaire", FLAGS);
         ImGui.Text("inventaire");
         var footerHeigthToReserve = ImGui.GetStyle().ItemSpacing.Y + ImGui.GetFrameHeightWithSpacing();
         if (ImGui.BeginChild("inventoryblocks", new Vector2(0, -footerHeigthToReserve), false)) {
             for (int x = 0; x < Inventaire.INVENTORYSIZE; x++) {
                 if(x > 0 && x % 8== 0)ImGui.NewLine();
-                itemUi(x);
+                ItemUi(x);
             }
         }
         ImGui.End();
     }
     
     
-    private unsafe void itemUi(int index) {
-        string blockName = "";
-        if (inventaire.get(index) != null) blockName = inventaire.get(index).block.name;
+    private unsafe void ItemUi(int index) {
+        string blockName = inventaire.inventoryBlocks[index]?.block.name ?? "";
         
         ImGui.PushID(index);
         
@@ -56,7 +55,7 @@ public class InventaireUi : UiWindow
         
         if (blockName.Length > 0) {
             if(inventaire.inventoryBlocks[index]!.block.fullTexture != null)
-                ImGui.ImageButton((IntPtr)inventaire.inventoryBlocks[index]!.block.fullTexture._handle,
+                ImGui.ImageButton((IntPtr)inventaire.inventoryBlocks[index]!.block.fullTexture!.handle,
                 new Vector2(100, 100));
         } else {
             ImGui.Button(blockName, new Vector2(100, 100));

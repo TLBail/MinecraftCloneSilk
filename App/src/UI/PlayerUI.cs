@@ -15,14 +15,14 @@ public class PlayerUi
     public PlayerUi(Player player)
     {
         this.player = player;
-        playerInteraction = player.getPlayerInteractionToWorld();
+        playerInteraction = player.GetPlayerInteractionToWorld();
     }
 
-    public void start(PlayerInteractionToWorld playerInteractionToWorld) {
+    public void Start(PlayerInteractionToWorld playerInteractionToWorld) {
         playerInteraction = playerInteractionToWorld;
     }
     
-    private Chunk lastChunkDebuged;
+    private Chunk? lastChunkDebuged;
     static float newPlayerX = 5;
     static float newPlayerY = 5;
     static float newPlayerZ = 5;
@@ -34,7 +34,7 @@ public class PlayerUi
     static int i = 3;
     
     
-    public void drawUi()
+    public void DrawUi()
     {
         ImGui.Text("player coordonate");
         ImGui.Text("x : [ " + player.position.X.ToString("0.00") +
@@ -49,41 +49,40 @@ public class PlayerUi
             player.position = new Vector3(newPlayerX, newPlayerY, newPlayerZ);
         }
         
-        switchPlayerDebug();    
+        SwitchPlayerDebug();    
         
         ImGui.Separator();
         
-        if (playerInteraction.haveHitedBlock()) {
-            Block block = playerInteraction.getBlock();
+        if (playerInteraction.HaveHitedBlock()) {
+            Block block = playerInteraction.GetBlock()!;
             ImGui.Text("intersect with :");
-
             ImGui.Text(block.ToString());
-            Chunk? chunkToDebug = playerInteraction.getChunk();
+            Chunk? chunkToDebug = playerInteraction.GetChunk();
             if (chunkToDebug != null) {
                 ImGui.Text("world coord block " + (chunkToDebug.position + block.position));
             }
             if (chunkToDebug != null &&  chunkToDebug != lastChunkDebuged) {
                 ImGui.Text("world coord block " + chunkToDebug.position + block.position);
                 if (hoveredHiglihtMode) {
-                    lastChunkDebuged?.debug(false);
-                    chunkToDebug?.debug(true);
+                    lastChunkDebuged?.Debug(false);
+                    chunkToDebug?.Debug(true);
                     lastChunkDebuged =  chunkToDebug;
                 }
             }
 
-            Face? face = playerInteraction.getFace();
+            Face? face = playerInteraction.GetFace();
             ImGui.Text("face toucher : " + face.ToString());
         }
         else {
             ImGui.Text("nothing intersect with player");
         }
 
-        switchDebugChunkHovered();
+        SwitchDebugChunkHovered();
 
     }
 
   
-    private void switchDebugChunkHovered()
+    private void SwitchDebugChunkHovered()
     {
 
         if (hoveredHiglihtMode == true) {
@@ -107,7 +106,7 @@ public class PlayerUi
         }
     }
     
-    private void switchPlayerDebug()
+    private void SwitchPlayerDebug()
     {
         
 
@@ -122,7 +121,7 @@ public class PlayerUi
             if (ImGui.IsItemClicked(0))
             {
                 isPlayerDebugEnabled = !isPlayerDebugEnabled;
-                player.debug();
+                player.Debug();
             }
             ImGui.PopStyleColor(3);
             ImGui.PopID();
@@ -131,7 +130,7 @@ public class PlayerUi
         {
             if (ImGui.Button("enable player debug click")) {
                 isPlayerDebugEnabled = true;
-                player.debug(true);
+                player.Debug(true);
             }
         }
     }

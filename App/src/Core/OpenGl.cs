@@ -26,18 +26,18 @@ namespace MinecraftCloneSilk.Core
     public class OpenGl
     {
         public IWindow window { get; private set; }
-        public IInputContext input { get; private set; }
-        public GL Gl { get; private set; }
-        public IKeyboard primaryKeyboard { get; private set; }
-        public IMouse primaryMouse { get; private set; }
+        public IInputContext input { get; private set; } = null!;
+        public GL Gl { get; private set; } = null!;
+        public IKeyboard primaryKeyboard { get; private set; } = null!;
+        public IMouse primaryMouse { get; private set; } = null!;
 
-        ImGuiController imGuiController = null;
+        ImGuiController imGuiController = null!;
 
         public Game game;
 
         public uint uboWorld;
 
-        private static readonly Color CLEAR_COLOR = Color.Lavender;
+        private static readonly Color ClearColor = Color.Lavender;
 
         private Glfw glfw;
 
@@ -90,24 +90,20 @@ namespace MinecraftCloneSilk.Core
                 bytePtr++;
             }
             Console.WriteLine("Vendor : " + Encoding.ASCII.GetString(vendor.ToArray()) );
-            loadIcon();
+            LoadIcon();
             
             imGuiController = new ImGuiController(Gl, window, input);
             
-            primaryKeyboard = input.Keyboards.FirstOrDefault();
-            primaryMouse = input.Mice.FirstOrDefault();
-
-            if (primaryKeyboard != null)
-            {
-                primaryKeyboard.KeyDown += KeyDown;
-            }
+            primaryKeyboard = input.Keyboards.FirstOrDefault()!;
+            primaryMouse = input.Mice.FirstOrDefault()!;
+            primaryKeyboard.KeyDown += KeyDown;
             
-            enableFaceCulling();
+            EnableFaceCulling();
             Thread.CurrentThread.Priority = ThreadPriority.Highest;
-            game.start(Gl);
+            game.Start(Gl);
         }
 
-        private void loadIcon() {
+        private void LoadIcon() {
             Configuration configuration = Configuration.Default;
             configuration.PreferContiguousImageBuffers = true;
             using (var img = Image.Load<Rgba32>(configuration, PATHICON))
@@ -122,7 +118,7 @@ namespace MinecraftCloneSilk.Core
 
 
 
-        private unsafe void initUniformBuffers()
+        private unsafe void InitUniformBuffers()
         {
             uboWorld = Gl.GenBuffer();
             Gl.BindBuffer(BufferTargetARB.UniformBuffer, uboWorld);
@@ -132,9 +128,9 @@ namespace MinecraftCloneSilk.Core
             Gl.BindBufferRange(BufferTargetARB.UniformBuffer, 0, uboWorld, 0, (nuint)(2 * sizeof(Matrix4X4<float>)));
         }
 
-        private void enableFaceCulling()
+        private void EnableFaceCulling()
         {
-            initUniformBuffers();
+            InitUniformBuffers();
             Gl.Enable(GLEnum.CullFace);
             Gl.CullFace(GLEnum.Front);
             Gl.FrontFace(GLEnum.CW);
@@ -144,22 +140,22 @@ namespace MinecraftCloneSilk.Core
         {
 
             if (!running) {
-                closeWindow();
+                CloseWindow();
                 return;
             }
             imGuiController.Update((float)deltaTime);
-            game.update(deltaTime);
+            game.Update(deltaTime);
         }
 
         private unsafe void OnRender(double delta)
         {
 
             Gl.Enable(EnableCap.DepthTest);
-            Gl.ClearColor(CLEAR_COLOR);
+            Gl.ClearColor(ClearColor);
             Gl.Clear((uint)(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit));
 
-            game.draw(Gl, delta);
-            game.drawUI();
+            game.Draw(Gl, delta);
+            game.DrawUi();
 
             imGuiController.Render();
         }
@@ -177,20 +173,20 @@ namespace MinecraftCloneSilk.Core
             Gl?.Dispose();
         }
 
-        public unsafe void setCursorMode(CursorModeValue cursorMode)
+        public unsafe void SetCursorMode(CursorModeValue cursorMode)
         {
             glfw.SetInputMode((WindowHandle*)window.Handle, CursorStateAttribute.Cursor, cursorMode);
         }
 
-        public bool cursorIsNotAvailable() => getCursorMode() != CursorModeValue.CursorNormal;
+        public bool CursorIsNotAvailable() => GetCursorMode() != CursorModeValue.CursorNormal;
         
-        public unsafe CursorModeValue getCursorMode()
+        public unsafe CursorModeValue GetCursorMode()
         {
             return (CursorModeValue)glfw
                 .GetInputMode((WindowHandle*)window.Handle, CursorStateAttribute.Cursor);
         }
 
-        private void closeWindow() {
+        private void CloseWindow() {
             window.Close();
         }
 
@@ -206,7 +202,7 @@ namespace MinecraftCloneSilk.Core
             {
                 unsafe
                 {
-                    setCursorMode((getCursorMode() == CursorModeValue.CursorNormal) ? CursorModeValue.CursorDisabled : CursorModeValue.CursorNormal);
+                    SetCursorMode((GetCursorMode() == CursorModeValue.CursorNormal) ? CursorModeValue.CursorDisabled : CursorModeValue.CursorNormal);
                 }
             }
         }

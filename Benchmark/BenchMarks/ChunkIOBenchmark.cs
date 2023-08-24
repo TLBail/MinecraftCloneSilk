@@ -1,7 +1,9 @@
 ﻿using BenchmarkDotNet.Attributes;
 using MinecraftCloneSilk.Model;
+using MinecraftCloneSilk.Model.ChunkManagement;
 using MinecraftCloneSilk.Model.NChunk;
 using MinecraftCloneSilk.Model.Storage;
+using MinecraftCloneSilk.Model.WorldGen;
 using NUnit.Framework;
 using Silk.NET.Maths;
 using UnitTest.fakeClass;
@@ -18,7 +20,7 @@ public class ChunkIOBenchmark
     [GlobalSetup]
     public void globalSetup() {
         Directory.SetCurrentDirectory("./../../../../../../../../");
-        Chunk.initStaticMembers(null, BlockFactory.getInstance());
+        Chunk.InitStaticMembers(null, BlockFactory.GetInstance());
         regionStorage = new RegionStorage("./Worlds/newWorld");
         chunkManagerEmpty = new ChunkManagerEmpty(new WorldFlatGeneration(), regionStorage);
         chunkLoader = new ChunkLoader(regionStorage);
@@ -54,11 +56,11 @@ public class ChunkIOBenchmark
     
     
     private Chunk getBlockGeneratedChunk(Vector3D<int> position) {
-        Chunk chunk = chunkManagerEmpty.getChunk(position);
+        Chunk chunk = chunkManagerEmpty.GetChunk(position);
         Stack<ChunkLoadingTask> chunkLoadingTasks = new Stack<ChunkLoadingTask>();
         chunkLoadingTasks.Push(new ChunkLoadingTask(chunk, ChunkState.BLOCKGENERATED));
-        chunkLoader.addChunks(ChunkManagerTools.getChunkDependent(chunkManagerEmpty, chunkLoadingTasks));
-        chunkLoader.singleThreadLoading();
+        chunkLoader.AddChunks(ChunkLoader.GetChunkDependent(chunkManagerEmpty, chunkLoadingTasks));
+        chunkLoader.SingleThreadLoading();
         return chunk;
     }
 

@@ -24,8 +24,8 @@ public class CollisionSquareTEst
 
         Plane plane = new Plane(A, B , D, Vector3D<float>.Zero);
 
-        Assert.IsTrue(plane.intersect(ray).haveHited);
-        Assert.IsTrue(square.intersect(ray));
+        Assert.IsTrue(plane.Intersect(ray).haveHited);
+        Assert.IsTrue(square.Intersect(ray));
         
     }
 
@@ -45,8 +45,8 @@ public class CollisionSquareTEst
 
         Plane plane = new Plane(A, B , D, Vector3D<float>.Zero);
 
-        Assert.IsFalse(plane.intersect(ray).haveHited);
-        Assert.IsFalse(square.intersect(ray));
+        Assert.IsFalse(plane.Intersect(ray).haveHited);
+        Assert.IsFalse(square.Intersect(ray));
 
     }
     
@@ -66,8 +66,8 @@ public class CollisionSquareTEst
 
         Plane plane = new Plane(A, B , D, Vector3D<float>.Zero);
 
-        Assert.IsTrue(plane.intersect(ray).haveHited);
-        Assert.IsFalse(square.intersect(ray));
+        Assert.IsTrue(plane.Intersect(ray).haveHited);
+        Assert.IsFalse(square.Intersect(ray));
 
     }
     [Test]
@@ -93,8 +93,8 @@ public class CollisionSquareTEst
 
         Plane plane = new Plane(D,C,A, new Vector3D<float>(position.X - 0.5f, position.Y, position.Z));
 
-        Assert.IsTrue(plane.intersect(ray).haveHited);
-        Assert.IsTrue(square.intersect(ray));
+        Assert.IsTrue(plane.Intersect(ray).haveHited);
+        Assert.IsTrue(square.Intersect(ray));
 
     }
     
@@ -114,7 +114,7 @@ public class CollisionSquareTEst
             new Vector3D<float>(position.X - 0.5f, position.Y - 0.5f, position.Z + 0.5f)
             , new Vector3D<float>(position.X - 0.5f, position.Y, position.Z));
 
-        Assert.IsTrue(plane.intersect(ray).haveHited);
+        Assert.IsTrue(plane.Intersect(ray).haveHited);
     }
     
     

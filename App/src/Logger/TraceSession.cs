@@ -10,19 +10,19 @@ public class TraceSession : IDisposable
     // TODO implement interface to allow profiling single-tick events and nested sessions
 
 
-    private readonly string _name;
-    private readonly long _start;
+    private readonly string name;
+    private readonly long start;
         
     internal string ProcessId { get; }
         
-    private bool _stopped;
+    private bool stopped;
         
     internal TraceSession(string name, string processId)
     {
-        _name = name;
+        this.name = name;
         ProcessId = processId;
-        _start = ChromeTrace.ElapsedMicroseconds;
-        _stopped = false;
+        start = ChromeTrace.ElapsedMicroseconds;
+        stopped = false;
     }
 
     /// <summary>
@@ -30,22 +30,22 @@ public class TraceSession : IDisposable
     /// </summary>
     public void Dispose()
     {
-        if (!_stopped)
+        if (!stopped)
             Stop();
     }
         
     private void Stop()
     {
-        if (_stopped)
+        if (stopped)
             return;
 
-        _stopped = true;
+        stopped = true;
         long end =  ChromeTrace.ElapsedMicroseconds;
             
         ChromeEventComplete ev = new ChromeEventComplete(
-            _name,
+            name,
             ProcessId,
-            _start,
+            start,
             end
         );
             

@@ -24,39 +24,39 @@ public class Square
         this.point4 = point4;
     }
 
-    public bool intersect(Ray ray)
+    public bool Intersect(Ray ray)
     {
-        HitInfo HitInfo = plane.intersect(ray);
-        if (HitInfo.haveHited == false) return false;
-        float t = HitInfo.fNorm;
+        HitInfo hitInfo = plane.Intersect(ray);
+        if (hitInfo.haveHited == false) return false;
+        float t = hitInfo.fNorm;
         
         
         Vector3D<float> intersectPoint = ray.orig + (t * ray.dir);
-        float o1 = orient(intersectPoint, point1, point2, plane.planeNormal);
-        float o2 = orient(intersectPoint, point2, point3, plane.planeNormal);
-        float o3 = orient(intersectPoint, point3, point4, plane.planeNormal);
-        float o4 = orient(intersectPoint, point4, point1, plane.planeNormal);
+        float o1 = Orient(intersectPoint, point1, point2, plane.planeNormal);
+        float o2 = Orient(intersectPoint, point2, point3, plane.planeNormal);
+        float o3 = Orient(intersectPoint, point3, point4, plane.planeNormal);
+        float o4 = Orient(intersectPoint, point4, point1, plane.planeNormal);
         return (o1 >= 0 && o2 >= 0 && o3 >= 0 && o4 >= 0) ||
                (o1 <= 0 && o2 <= 0 && o3 <= 0 && o4 <= 0);
     }
     
-    public HitInfo intersectInfo(Ray ray)
+    public HitInfo IntersectInfo(Ray ray)
     {
-        HitInfo hitInfo = plane.intersect(ray);
+        HitInfo hitInfo = plane.Intersect(ray);
         if (hitInfo.haveHited == false) return new HitInfo(false, hitInfo.fNorm) ;
         float t = hitInfo.fNorm;
         
         
         Vector3D<float> intersectPoint = ray.orig + (t * ray.dir);
-        float o1 = orient(intersectPoint, point1, point2, plane.planeNormal);
-        float o2 = orient(intersectPoint, point2, point3, plane.planeNormal);
-        float o3 = orient(intersectPoint, point3, point4, plane.planeNormal);
-        float o4 = orient(intersectPoint, point4, point1, plane.planeNormal);
+        float o1 = Orient(intersectPoint, point1, point2, plane.planeNormal);
+        float o2 = Orient(intersectPoint, point2, point3, plane.planeNormal);
+        float o3 = Orient(intersectPoint, point3, point4, plane.planeNormal);
+        float o4 = Orient(intersectPoint, point4, point1, plane.planeNormal);
         return new HitInfo( (o1 >= 0 && o2 >= 0 && o3 >= 0 && o4 >= 0) ||
                (o1 <= 0 && o2 <= 0 && o3 <= 0 && o4 <= 0), hitInfo.fNorm);
     }
 
-    private float orient(Vector3D<float> a, Vector3D<float> b, Vector3D<float> c, Vector3D<float> n)
+    private float Orient(Vector3D<float> a, Vector3D<float> b, Vector3D<float> c, Vector3D<float> n)
     {
         return Vector3D.Dot(Vector3D.Cross((b - a), (c - a)), n);
     }

@@ -27,13 +27,13 @@ public class Line : IDisposable
 {
    
     
-    private static readonly Vector3D<float> DEFAULT_COLOR = new Vector3D<float>(1.0f, 0, 0);
+    private static readonly Vector3D<float> DefaultColor = new Vector3D<float>(1.0f, 0, 0);
 
-    private BufferObject<LineVertex> Vbo;
-    private VertexArrayObject<LineVertex, uint> Vao;
+    private BufferObject<LineVertex> vbo;
+    private VertexArrayObject<LineVertex, uint> vao;
     
-    private static Shader rayShader;
-    private GL Gl;
+    private static Shader? rayShader;
+    private GL gl;
     private Game game;
     
     private int nbVertices;
@@ -49,54 +49,53 @@ public class Line : IDisposable
         }, lineType) { }
 
     public Line(LineVertex[] vertices, LineType lineType = LineType.LINE) {
-        game = Game.getInstance();
-        Gl = game.getGL();
+        game = Game.GetInstance();
+        gl = game.GetGl();
         game.drawables += Drawables;
         nbVertices = vertices.Length;
         this.lineType = lineType;
         
-        Vbo = new BufferObject<LineVertex>(Gl, vertices, BufferTargetARB.ArrayBuffer);
-        Vao = new VertexArrayObject<LineVertex, uint>(Gl, Vbo);
+        vbo = new BufferObject<LineVertex>(gl, vertices, BufferTargetARB.ArrayBuffer);
+        vao = new VertexArrayObject<LineVertex, uint>(gl, vbo);
         
-        Vao.Bind();
-        Vao.VertexAttributePointer(0, 3, VertexAttribPointerType.Float, "position");
-        Vao.VertexAttributePointer(1, 3, VertexAttribPointerType.Float, "color");
+        vao.Bind();
+        vao.VertexAttributePointer(0, 3, VertexAttribPointerType.Float, "position");
+        vao.VertexAttributePointer(1, 3, VertexAttribPointerType.Float, "color");
 
         if (rayShader == null) {
-            rayShader = new Shader(Gl, "./Shader/3dPosOneColorUni/VertexShader.glsl",
+            rayShader = new Shader(gl, "./Shader/3dPosOneColorUni/VertexShader.glsl",
                 "./Shader/3dPosOneColorUni/FragmentShader.glsl");
         }   
     }
 
 
-    public Line(Vector3D<float> start, Vector3D<float> end) : this(start,  end, DEFAULT_COLOR){}
+    public Line(Vector3D<float> start, Vector3D<float> end) : this(start,  end, DefaultColor){}
 
     public void Dispose()
     {
         game.drawables -= Drawables;
-        Vao.Dispose();
-        Vbo.Dispose();
+        vao.Dispose();
+        vbo.Dispose();
     }
     
     private void Drawables(GL gl, double deltatime)
     {
-        Vao.Bind();
-        rayShader.Use();
+        vao.Bind();
+        rayShader!.Use();
         
         
-        var model = Matrix4x4.Identity;
-        model = Matrix4x4.CreateTranslation(new Vector3(0,0,0));
+        Matrix4x4 model = Matrix4x4.CreateTranslation(new Vector3(0,0,0));
         rayShader.SetUniform("model", model);
 
         switch (lineType) {
             case LineType.LINE:
-                Gl.DrawArrays(PrimitiveType.Lines, 0, (uint)nbVertices);
+                this.gl.DrawArrays(PrimitiveType.Lines, 0, (uint)nbVertices);
                 break;
             case LineType.LOOP:
-                Gl.DrawArrays(PrimitiveType.LineLoop, 0, (uint)nbVertices);
+                this.gl.DrawArrays(PrimitiveType.LineLoop, 0, (uint)nbVertices);
                 break;
             case LineType.STRIP:
-                Gl.DrawArrays(PrimitiveType.LineStrip, 0, (uint)nbVertices);
+                this.gl.DrawArrays(PrimitiveType.LineStrip, 0, (uint)nbVertices);
                 break;
         }
     }

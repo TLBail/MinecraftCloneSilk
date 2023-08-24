@@ -9,42 +9,45 @@ namespace MinecraftCloneSilk.Model.NChunk;
 
 public class ChunkBlockGeneratedStrategy : ChunkStrategy
 {
-    public override ChunkState getChunkStateOfStrategy() => ChunkState.BLOCKGENERATED;
+    public override ChunkState GetChunkStateOfStrategy() => ChunkState.BLOCKGENERATED;
 
     private ChunkState minimumChunkStateOfNeighborsValue = ChunkState.EMPTY;
-    public override ChunkState minimumChunkStateOfNeighbors() => minimumChunkStateOfNeighborsValue;
+    public override ChunkState MinimumChunkStateOfNeighbors() => minimumChunkStateOfNeighborsValue;
 
-    public override void setBlock(int x, int y, int z, string name) {
-        chunk.blocks[x, y, z].id = Chunk.blockFactory.getBlockIdByName(name);
+    public override void SetBlock(int x, int y, int z, string name) {
+        chunk.blocks[x, y, z].id = Chunk.blockFactory!.GetBlockIdByName(name);
     }
 
     public ChunkBlockGeneratedStrategy(Chunk chunk) : base(chunk) {
     }
 
-    public override void init() {
+    public override void Init() {
         minimumChunkStateOfNeighborsValue = ChunkState.GENERATEDTERRAIN;
-        setupNeighbors();
+        SetupNeighbors();
     }
 
-    public override void load() {
-        generateStruture();
+    public override void Load() {
+        GenerateStruture();
         chunk.blockModified = true;
     }
 
-    public override void finish() {
+    public override void Finish() {
         minimumChunkStateOfNeighborsValue = ChunkState.EMPTY;
         chunk.chunkState = ChunkState.BLOCKGENERATED;
     }
 
 
-    private void setupNeighbors() {
+    private void SetupNeighbors() {
         chunk.chunksNeighbors = new Chunk[26];
         foreach (FaceExtended face in Enum.GetValues(typeof(FaceExtended))) {
-            Chunk newChunk =
-                chunk.chunkManager.getChunk(chunk.position + (FaceExtendedOffset.getOffsetOfFace(face) * Chunk.CHUNK_SIZE));
-            if(newChunk.chunkState < minimumChunkStateOfNeighborsValue) {
-                throw new Exception("try to setup a chunk with a lower state than the minimum");
-            }
+            Vector3D<int> position = chunk.position + (FaceExtendedOffset.GetOffsetOfFace(face) * Chunk.CHUNK_SIZE);
+            System.Diagnostics.Debug.Assert(chunk.chunkManager.ContainChunk(position),
+                "chunk must be already generated");
+            Chunk newChunk = chunk.chunkManager.GetChunk(position);
+            System.Diagnostics.Debug.Assert(
+                newChunk.chunkState >= minimumChunkStateOfNeighborsValue,
+                " chunk must be at least at the same state as the minimum chunk state of neighborsh"
+                );
             chunk.chunksNeighbors[(int)face] = newChunk;
         }
     }
@@ -54,8 +57,8 @@ public class ChunkBlockGeneratedStrategy : ChunkStrategy
 
     private bool haveTreeOnThisCoord(int x, int z) => x % 20 == 0 && z % 20 == 0;
 
-    private void generateStruture() {
-        int idGrass = Chunk.blockFactory.getBlockIdByName("grass");
+    private void GenerateStruture() {
+        int idGrass = Chunk.blockFactory!.GetBlockIdByName("grass");
         for (int x = 0; x < Chunk.CHUNK_SIZE; x++) {
             for (int y = 0; y < Chunk.CHUNK_SIZE; y++) {
                 for (int z = 0; z < Chunk.CHUNK_SIZE; z++) {
@@ -68,7 +71,8 @@ public class ChunkBlockGeneratedStrategy : ChunkStrategy
         }
     }
 
-    protected virtual void setBlockData(int x, int y, int z, BlockData blockData) {
+    protected virtual void SetBlockData(int x, int y, int z, BlockData blockData) {
+        if(chunk.chunksNeighbors is null) throw new Exception("chunk neighbors not setup");
         if (y < 0) {
             if (x < 0) {
                 if (z < 0) {
@@ -199,8 +203,8 @@ public class ChunkBlockGeneratedStrategy : ChunkStrategy
 
     private void addTreeOnThisBlock(int x, int y, int z) {
         foreach (var strucutreBlock in treeStructure) {
-            setBlockData(x + strucutreBlock.x, y + strucutreBlock.y, z + strucutreBlock.z,
-                Chunk.blockFactory.getBlockData(strucutreBlock.id));
+            SetBlockData(x + strucutreBlock.x, y + strucutreBlock.y, z + strucutreBlock.z,
+                Chunk.blockFactory!.GetBlockData(strucutreBlock.id));
         }
     }
 
@@ -258,12 +262,12 @@ public class ChunkBlockGeneratedStrategy : ChunkStrategy
 
     static ChunkBlockGeneratedStrategy() {
         FaceExtended[] faces = (FaceExtended[])Enum.GetValues(typeof(FaceExtended));
-        dependatesChunkOffset = new Vector3D<int>[faces.Length];
+        DependatesChunkOffset = new Vector3D<int>[faces.Length];
         for (int i = 0; i < faces.Length; i++) {
-            dependatesChunkOffset[i] = FaceExtendedOffset.getOffsetOfFace(faces[i]) * Chunk.CHUNK_SIZE;
+            DependatesChunkOffset[i] = FaceExtendedOffset.GetOffsetOfFace(faces[i]) * Chunk.CHUNK_SIZE;
         }
     }
 
-    public static readonly Vector3D<int>[] dependatesChunkOffset;
+    public static readonly Vector3D<int>[] DependatesChunkOffset;
 
 }

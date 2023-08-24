@@ -9,8 +9,8 @@ public class PlayerInteractionToWorld
 {
     private readonly World world;
     private readonly Player player;
-    private Block block;
-    private Chunk chunk;
+    private Block? block;
+    private Chunk? chunk;
     private Face? face;
 
     private bool haveUpdated;
@@ -18,15 +18,15 @@ public class PlayerInteractionToWorld
     public PlayerInteractionToWorld(World world, Player player) {
         this.world = world;
         this.player = player;
-        Game.getInstance().updatables += Updatables;
+        Game.GetInstance().updatables += Update;
     }
 
-    private void Updatables(double deltatime) {
+    private void Update(double deltatime) {
         haveUpdated = false;
     }
 
 
-    public void updateBlock() {
+    public void UpdateBlock() {
         if (haveUpdated) {
             return;
         }
@@ -38,7 +38,7 @@ public class PlayerInteractionToWorld
         block = null;
         face = null;
         var playerPositionf = new Vector3D<float>(player.position.X, player.position.Y, player.position.Z);
-        var ray = new Ray(playerPositionf, player.getDirection3D());
+        var ray = new Ray(playerPositionf, player.GetDirection3D());
 
         var bestHitDistance = float.MaxValue;
 
@@ -63,12 +63,12 @@ public class PlayerInteractionToWorld
                 0.5f + blockPosition.Y,
                 0.5f + blockPosition.Z
             );
-            var hit = aabbCube.intersect(ray);
+            var hit = aabbCube.Intersect(ray);
             if (hit.haveHited) {
-                if(!world.containChunkKey(World.getChunkPosition(blockPosition))) continue;
-                var chunkTested = world.getChunk(blockPosition);
+                if(!world.ContainChunkKey(World.GetChunkPosition(blockPosition))) continue;
+                var chunkTested = world.GetChunk(blockPosition);
                 if(chunkTested.chunkState < ChunkState.BLOCKGENERATED) continue;
-                var testedBlock = chunkTested.getBlock(World.getLocalPosition(blockPosition));
+                var testedBlock = chunkTested.GetBlock(World.GetLocalPosition(blockPosition));
                 if (!testedBlock.airBlock) {
                     if (block == null || bestHitDistance > Math.Abs(hit.fNorm)) {
                         chunk = chunkTested;
@@ -80,15 +80,15 @@ public class PlayerInteractionToWorld
         }
 
 
-        if (haveHitedBlock()) {
-            updateFace(ray);
+        if (HaveHitedBlock()) {
+            UpdateFace(chunk!, ray);
         }
     }
 
 
-    private void updateFace(Ray ray) {
+    private void UpdateFace(Chunk chunk, Ray ray) {
         //z-
-        var rblock = block;
+        var rblock = block!;
         var position = rblock.position.As<float>() + chunk.position.As<float>();
         var collidingPlaneBackFace = new Square(
             new Vector3D<float>(position.X - 0.5f, position.Y - 0.5f, position.Z - 0.5f),
@@ -97,7 +97,7 @@ public class PlayerInteractionToWorld
             new Vector3D<float>(position.X - 0.5f, position.Y + 0.5f, position.Z - 0.5f),
             new Vector3D<float>(position.X, position.Y, position.Z - 0.5f)
         );
-        if (collidingPlaneBackFace.intersect(ray)) {
+        if (collidingPlaneBackFace.Intersect(ray)) {
             face = Face.BACK;
             return;
         }
@@ -110,7 +110,7 @@ public class PlayerInteractionToWorld
             new Vector3D<float>(position.X - 0.5f, position.Y - 0.5f, position.Z + 0.5f),
             new Vector3D<float>(position.X, position.Y, position.Z + 0.5f)
         );
-        if (collidingPlaneFrontFace.intersect(ray)) {
+        if (collidingPlaneFrontFace.Intersect(ray)) {
             face = Face.FRONT;
             return;
         }
@@ -123,7 +123,7 @@ public class PlayerInteractionToWorld
             new Vector3D<float>(position.X - 0.5f, position.Y - 0.5f, position.Z + 0.5f),
             new Vector3D<float>(position.X - 0.5f, position.Y, position.Z)
         );
-        if (collidingPlaneLeftFace.intersect(ray)) {
+        if (collidingPlaneLeftFace.Intersect(ray)) {
             face = Face.LEFT;
             return;
         }
@@ -136,7 +136,7 @@ public class PlayerInteractionToWorld
             new Vector3D<float>(position.X + 0.5f, position.Y - 0.5f, position.Z - 0.5f),
             new Vector3D<float>(position.X + 0.5f, position.Y, position.Z)
         );
-        if (collidingPlaneRightFace.intersect(ray)) {
+        if (collidingPlaneRightFace.Intersect(ray)) {
             face = Face.RIGHT;
             return;
         }
@@ -149,7 +149,7 @@ public class PlayerInteractionToWorld
             new Vector3D<float>(position.X - 0.5f, position.Y - 0.5f, position.Z - 0.5f),
             new Vector3D<float>(position.X, position.Y - 0.5f, position.Z)
         );
-        if (collidingPlaneBottomFace.intersect(ray)) {
+        if (collidingPlaneBottomFace.Intersect(ray)) {
             face = Face.BOTTOM;
             return;
         }
@@ -162,30 +162,30 @@ public class PlayerInteractionToWorld
             new Vector3D<float>(position.X - 0.5f, position.Y + 0.5f, position.Z + 0.5f),
             new Vector3D<float>(position.X, position.Y + 0.5f, position.Z)
         );
-        if (collidingPlaneTopFace.intersect(ray)) {
+        if (collidingPlaneTopFace.Intersect(ray)) {
             face = Face.TOP;
         }
     }
 
 
-    public bool haveHitedBlock() {
-        updateBlock();
+    public bool HaveHitedBlock() {
+        UpdateBlock();
         return block != null;
     }
 
-    public Block getBlock() {
-        updateBlock();
+    public Block? GetBlock() {
+        UpdateBlock();
         return block;
     }
 
-    public Chunk getChunk() {
-        updateBlock();
+    public Chunk? GetChunk() {
+        UpdateBlock();
         return chunk;
     }
 
 
-    public Face? getFace() {
-        updateBlock();
+    public Face? GetFace() {
+        UpdateBlock();
         return face;
     }
 }

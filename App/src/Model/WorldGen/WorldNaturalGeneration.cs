@@ -2,22 +2,22 @@
 using MinecraftCloneSilk.Model.NChunk;
 using Silk.NET.Maths;
 
-namespace MinecraftCloneSilk.Model;
+namespace MinecraftCloneSilk.Model.WorldGen;
 
-public class WorldNaturalGeneration : WorldGenerator
+public class WorldNaturalGeneration : IWorldGenerator
 {
     private FastNoise noiseGenerator;
     public static int seed = 1234;
-    private static BlockFactory blockFactory;
+    private static BlockFactory? blockFactory;
 
     public WorldNaturalGeneration()
     {
         noiseGenerator = new FastNoise(seed);
-        if(blockFactory == null) blockFactory = BlockFactory.getInstance();
+        if(blockFactory == null) blockFactory = BlockFactory.GetInstance();
     }
     
     
-    public void generateTerrain(Vector3D<int> position, BlockData[,,] blocks)
+    public void GenerateTerrain(Vector3D<int> position, BlockData[,,] blocks)
     {
 
         for (int i = 0; i < Chunk.CHUNK_SIZE; i++) {
@@ -25,7 +25,7 @@ public class WorldNaturalGeneration : WorldGenerator
                 double x = (double)j / ((double)Chunk.CHUNK_SIZE);
                 double z = (double)i / ((double)Chunk.CHUNK_SIZE);
 
-                int globalY =calculateGlobalY(position, x, z);
+                int globalY =CalculateGlobalY(position, x, z);
                 x *= Chunk.CHUNK_SIZE;
                 z *= Chunk.CHUNK_SIZE;
 
@@ -34,21 +34,21 @@ public class WorldNaturalGeneration : WorldGenerator
                     int localY = (int)(globalY % Chunk.CHUNK_SIZE);
                     if (localY < 0)
                         localY = (int)(Chunk.CHUNK_SIZE + localY);
-                    blocks[(int)x,localY,(int)z] = blockFactory.getBlockData("grass");
+                    blocks[(int)x,localY,(int)z] = blockFactory!.GetBlockData("grass");
                     for (int g = localY - 1; g >= 0 && g >= localY - 4; g--)
                     {
-                        blocks[(int)x,g,(int)z] = blockFactory.getBlockData("stone");
+                        blocks[(int)x,g,(int)z] = blockFactory!.GetBlockData("stone");
                     }
                     for (int g = localY - 5; g >= 0; g--)
                     {
-                        blocks[(int)x,g,(int)z] = blockFactory.getBlockData("stone");
+                        blocks[(int)x,g,(int)z] = blockFactory!.GetBlockData("stone");
                     }
                 }
                 else if (globalY >= position.Y + Chunk.CHUNK_SIZE)
                 {
                     for (int y = 0; y < Chunk.CHUNK_SIZE; y++)
                     {
-                        blocks[j, y,i] = blockFactory.getBlockData("stone");
+                        blocks[j, y,i] = blockFactory!.GetBlockData("stone");
                     }
                 }
             }
@@ -75,7 +75,7 @@ public class WorldNaturalGeneration : WorldGenerator
         new (0.01f, 3)        //petit variation
     };
     
-    private int calculateGlobalY(Vector3D<int> position, double x, double z)
+    private int CalculateGlobalY(Vector3D<int> position, double x, double z)
     {
         float baseX = (float)((position.X / Chunk.CHUNK_SIZE) + x);
         float baseZ = (float)((position.Z / Chunk.CHUNK_SIZE) + z);

@@ -27,7 +27,7 @@ namespace MinecraftCloneSilk.Model
 
 	public static class FaceFlagUtils
 	{
-		public static int nbFaces(FaceFlag facesFlag) {
+		public static int NbFaces(FaceFlag facesFlag) {
 			int total = 0;
 			if ((facesFlag & FaceFlag.TOP) == FaceFlag.TOP) {
 				total++;
@@ -50,7 +50,7 @@ namespace MinecraftCloneSilk.Model
 			return total;
 		}
 		
-		public static IEnumerable<Face> getFaces(FaceFlag facesFlag) {
+		public static IEnumerable<Face> GetFaces(FaceFlag facesFlag) {
 			if ((facesFlag & FaceFlag.TOP) == FaceFlag.TOP) {
 				yield return Face.TOP;
 			}
@@ -75,7 +75,7 @@ namespace MinecraftCloneSilk.Model
 	
 	public static class FaceOffset
 	{
-		public static Vector3D<int> getOffsetOfFace(Face face)
+		public static Vector3D<int> GetOffsetOfFace(Face face)
 		{
 			switch (face) {
 				case Face.TOP:

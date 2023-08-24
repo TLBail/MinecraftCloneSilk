@@ -18,25 +18,26 @@ namespace MinecraftCloneSilk.Core
         public float Yaw { get; set; } = -90f;
         public float Pitch { get; set; }
 
-        private float Zoom = 45f;
-        private Vector2 LastMousePosition;
+        private float zoom = 45f;
+        private Vector2 lastMousePosition;
         private bool isZoomActive = false;
         private IMouse mouse;
         
-        public Camera() : this(Vector3.UnitZ * 6, Vector3.UnitZ * -1, Vector3.UnitY, 800 / 600)
+        public Camera() 
         {
-            Game game = Game.getInstance();
-            IWindow window = game.getWindow();
+            Setup(Vector3.UnitZ * 6, Vector3.UnitZ * -1, Vector3.UnitY, 800f / 600f);
+            Game game = Game.GetInstance();
+            IWindow window = game.GetWindow();
             Vector2D<int> size = window.GetFullSize();
             AspectRatio = (float)size.X / (float)size.Y;
             window.FramebufferResize += FrameBufferResize;
             game.mainCamera = this;
-            mouse = game.getMouse();
+            mouse = game.GetMouse();
             mouse.Cursor.CursorMode = CursorMode.Normal;
             mouse.MouseMove += OnMouseMove;
         }
 
-        public void setZoomActive(bool active) {
+        public void SetZoomActive(bool active) {
             if(isZoomActive == active) return;
             if (active) {
                 mouse.Scroll += OnMouseWheel;
@@ -45,7 +46,7 @@ namespace MinecraftCloneSilk.Core
             }
         }
 
-        public Camera(Vector3 position, Vector3 front, Vector3 up, float aspectRatio)
+        private void Setup(Vector3 position, Vector3 front, Vector3 up, float aspectRatio)
         {
             Position = position;
             AspectRatio = aspectRatio;
@@ -56,7 +57,7 @@ namespace MinecraftCloneSilk.Core
         public void ModifyZoom(float zoomAmount)
         {
             //We don't want to be able to zoom in too close or too far away so clamp to these values
-            Zoom = Math.Clamp(Zoom - zoomAmount, 1.0f, 45f);
+            zoom = Math.Clamp(zoom - zoomAmount, 1.0f, 45f);
         }
 
         public void ModifyDirection(float xOffset, float yOffset)
@@ -82,18 +83,18 @@ namespace MinecraftCloneSilk.Core
 
         public Matrix4x4 GetProjectionMatrix()
         {
-            return Matrix4x4.CreatePerspectiveFieldOfView(MathHelper.DegreesToRadians(Zoom), AspectRatio, 0.1f, 1000.0f);
+            return Matrix4x4.CreatePerspectiveFieldOfView(MathHelper.DegreesToRadians(zoom), AspectRatio, 0.1f, 1000.0f);
         }
 
         private unsafe void OnMouseMove(IMouse mouse, Vector2 position)
         {
             var lookSensitivity = 0.1f;
-            if (LastMousePosition == default) { LastMousePosition = position; }
+            if (lastMousePosition == default) { lastMousePosition = position; }
             else
             {
-                var xOffset = (position.X - LastMousePosition.X) * lookSensitivity;
-                var yOffset = (position.Y - LastMousePosition.Y) * lookSensitivity;
-                LastMousePosition = position;
+                var xOffset = (position.X - lastMousePosition.X) * lookSensitivity;
+                var yOffset = (position.Y - lastMousePosition.Y) * lookSensitivity;
+                lastMousePosition = position;
 
                 ModifyDirection(xOffset, yOffset);
             }

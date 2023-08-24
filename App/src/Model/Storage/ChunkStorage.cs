@@ -1,5 +1,6 @@
 ﻿using System.IO.Compression;
 using System.Text;
+using MinecraftCloneSilk.Model.ChunkManagement;
 using MinecraftCloneSilk.Model.NChunk;
 using Silk.NET.Maths;
 
@@ -46,11 +47,11 @@ public class ChunkStorage : IChunkStorage
         int tick = 0; //Todo specify tick
         binaryWriter.Write(tick);
         
-        Dictionary<int, BlockData> palette = getPallette(chunk);
+        Dictionary<int, BlockData> palette = GetPallette(chunk);
         
         binaryWriter.Write(palette.Count);
         foreach (BlockData blockData in palette.Values) {
-            for (int j = 0; j < BlockData.sizeofSerializeData; j++) {
+            for (int j = 0; j < BlockData.SIZEOF_SERIALIZE_DATA; j++) {
                 binaryWriter.Write((byte) (blockData.id >> (8 * j)));
             }
         }
@@ -64,7 +65,7 @@ public class ChunkStorage : IChunkStorage
             for (int x = 0; x < Chunk.CHUNK_SIZE; x++) {
                 for (int y = 0; y < Chunk.CHUNK_SIZE; y++) {
                     for (int z = 0; z < Chunk.CHUNK_SIZE; z++) {
-                        int indexPalette = Array.IndexOf(arrayOfKey, chunk.getBlockData(new Vector3D<int>(x, y, z)).id);
+                        int indexPalette = Array.IndexOf(arrayOfKey, chunk.GetBlockData(new Vector3D<int>(x, y, z)).id);
                         for (int i = 0; i < bytesPerBlock; i++) {
                             bytes[index] = (byte)(indexPalette >> (i * 8));
                             index++;
@@ -78,15 +79,13 @@ public class ChunkStorage : IChunkStorage
     
     
 
-    private static Dictionary<int, BlockData> getPallette(Chunk chunk) {
+    private static Dictionary<int, BlockData> GetPallette(Chunk chunk) {
         Dictionary<int, BlockData> palette = new Dictionary<int, BlockData>();
         for (int x = 0; x < Chunk.CHUNK_SIZE; x++) {
             for (int y = 0; y < Chunk.CHUNK_SIZE; y++) {
                 for (int z = 0; z < Chunk.CHUNK_SIZE; z++) {
                     BlockData blockData = chunk.blocks[x, y, z];
-                    if(!palette.ContainsKey(blockData.id)) {
-                        palette[blockData.id] = blockData;
-                    }
+                    palette.TryAdd(blockData.id, blockData);
                 }
             }
         }
@@ -94,13 +93,13 @@ public class ChunkStorage : IChunkStorage
         return palette;
     }
 
-    public bool isChunkExistInMemory(Vector3D<int> position) {
+    public bool IsChunkExistInMemory(Vector3D<int> position) {
         return Directory.Exists(pathToChunkFolder) && File.Exists(PathToChunk(position));
     }
 
 
     public ChunkState GetChunkStateInStorage(Vector3D<int> position) {
-        if (!isChunkExistInMemory(position)) return ChunkState.EMPTY;
+        if (!IsChunkExistInMemory(position)) return ChunkState.EMPTY;
         using FileStream fs = File.Open(PathToChunk(position), FileMode.Open);
         using ZLibStream zs = new ZLibStream(fs, CompressionMode.Decompress, false);
         return GetChunkStateInStorage(zs);

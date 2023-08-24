@@ -8,11 +8,11 @@ namespace MinecraftCloneSilk.UI;
 public abstract class UiWindow : GameObject
 {
 
-    public const Key DEFAUlT_KEY = Key.F2;
+    public const Key DEFAULT_KEY = Key.F2;
     
     private OpenGl openGl;
     protected bool disableInteractionIfCursorIsNotAvailable = true;
-    private IKeyboard keyboard;
+    private IKeyboard? keyboard;
     protected Key? key;
     protected bool visible;
     protected bool needMouse = true;
@@ -22,32 +22,32 @@ public abstract class UiWindow : GameObject
         this.key = key;
         visible = (key == null);
         openGl = game.openGl;
-        game.uiDrawables += uiPipeline;
+        game.uiDrawables += UiPipeline;
         if (key.HasValue) {
-            keyboard = game.getKeyboard();
-            keyboard.KeyDown += setVisible;
+            keyboard = game.GetKeyboard();
+            keyboard.KeyDown += SetVisible;
         }
     }
 
-    protected virtual void setVisible(IKeyboard keyboard, Key key, int a) {
+    protected virtual void SetVisible(IKeyboard keyboard, Key key, int a) {
         if(keyboardUseInConsole) return;
         if (key == this.key) visible = !visible;
     }
 
-    public UiWindow() : this(Game.getInstance(), DEFAUlT_KEY) {    }
+    public UiWindow() : this(Game.GetInstance(), DEFAULT_KEY) {    }
 
-    public void uiPipeline() {
+    public void UiPipeline() {
         if(!visible) return;
         
         
-        if (needMouse && openGl.cursorIsNotAvailable()) {
+        if (needMouse && openGl.CursorIsNotAvailable()) {
             ImGui.BeginDisabled();
         }
-        drawUi();
-        if (needMouse && openGl.cursorIsNotAvailable()) {
+        DrawUi();
+        if (needMouse && openGl.CursorIsNotAvailable()) {
             ImGui.EndDisabled();
         }
     }
 
-    protected abstract void drawUi();
+    protected abstract void DrawUi();
 }

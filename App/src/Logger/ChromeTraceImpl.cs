@@ -8,15 +8,15 @@ namespace MinecraftCloneSilk.Logger;
 /// </summary>
 internal class ChromeTraceImpl
 {
-    private readonly List<IChromeEvent> _results;
+    private readonly List<IChromeEvent> results;
         
-    private IFileWriter _fileWriter;
+    private IFileWriter fileWriter;
         
 
     public ChromeTraceImpl()
     {
-        _results = new List<IChromeEvent>();
-        _fileWriter = new PcFileWriter();
+        results = new List<IChromeEvent>();
+        fileWriter = new PcFileWriter();
     }
 
     ~ChromeTraceImpl()
@@ -26,13 +26,13 @@ internal class ChromeTraceImpl
         
     public void SetFileWriter(IFileWriter fileWriter)
     {
-        _fileWriter = fileWriter;
+        this.fileWriter = fileWriter;
     }
         
         
     public void AddEvent(IChromeEvent ev)
     {
-        _results.Add(ev);
+        results.Add(ev);
     }
 
 
@@ -41,14 +41,14 @@ internal class ChromeTraceImpl
     {
         DateTime dt = DateTime.Now;
         string str = dt.ToLongTimeString().Replace(':', '_');
-        _fileWriter.WriteTemp(Write(), "flush_" + str + ".json");
+        fileWriter.WriteTemp(Write(), "flush_" + str + ".json");
     }
         
 
     public void Dispose()
     {
-        ChromeTrace.Logger.Log("ChromeTracing.NET disposing...");
-        _fileWriter.Write(Write(), "trace.json");
+        ChromeTrace.Logger?.Log("ChromeTracing.NET disposing...");
+        fileWriter.Write(Write(), "trace.json");
     }
 
 
@@ -58,14 +58,14 @@ internal class ChromeTraceImpl
 
         str.Append(WriteHeader());
             
-        if (_results.Count > 0)
+        if (results.Count > 0)
         {
-            for (int i = 0; i < _results.Count - 1; i++)
+            for (int i = 0; i < results.Count - 1; i++)
             {
-                str.Append(WriteProfile(_results[i]));
+                str.Append(WriteProfile(results[i]));
                 str.Append(",\n");
             }
-            str.Append(WriteProfile(_results[_results.Count-1]));
+            str.Append(WriteProfile(results[results.Count-1]));
         }
             
         str.Append(WriteFooter());

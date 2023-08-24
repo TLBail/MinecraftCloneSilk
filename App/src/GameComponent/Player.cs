@@ -14,14 +14,14 @@ namespace MinecraftCloneSilk.GameComponent
         private Camera camera;
         private IKeyboard primaryKeyboard;
         private float moveSpeed = 5.0f;
-        private const float sprintSpeed = 50.0f;
-        private IMouse mouse;
+        private const float SPRINT_SPEED = 50.0f;
+        private IMouse? mouse;
         private bool debugActivated = false;
         private PlayerUi playerUi;
-        private World world;
+        private World world = null!;
 
-        private PlayerInteractionToWorld? playerInteractionToWorld;
-        private Console console;
+        private PlayerInteractionToWorld playerInteractionToWorld = null!;
+        private Console console = null!;
         
         
         public Inventaire inventaire;
@@ -32,7 +32,7 @@ namespace MinecraftCloneSilk.GameComponent
             set
             {
                 camera.Position = value;
-                console.log(
+                console.Log(
                     "player position has been set at (" + position.X + "," + position.Y + "," + position.Z + ")");
             }
         }
@@ -41,56 +41,56 @@ namespace MinecraftCloneSilk.GameComponent
         {
             //Start a camera at position 3 on the Z axis, looking at position -1 on the Z axis
             camera = new Camera();
-            primaryKeyboard = game.getKeyboard();
-            this.mouse = game.getMouse();
+            primaryKeyboard = game.GetKeyboard();
+            this.mouse = game.GetMouse();
             this.playerUi = new PlayerUi(this);
-            mouse.MouseDown += onMouseClick;
+            mouse.MouseDown += OnMouseClick;
             inventaire = new Inventaire(this);
         }
 
-        public Vector3D<float> getDirection3D()
+        public Vector3D<float> GetDirection3D()
         {
             return new Vector3D<float>(camera.Front.X, camera.Front.Y, camera.Front.Z);
         }
 
-        public void onMouseClick(IMouse mouse, MouseButton mouseButton)
+        public void OnMouseClick(IMouse mouse, MouseButton mouseButton)
         {
-            if(debugActivated) showDebugRayOnClick();
-            Block block = playerInteractionToWorld.getBlock();
-            Chunk chunk = playerInteractionToWorld.getChunk(); 
-            if (block != null) {
+            if(debugActivated) ShowDebugRayOnClick();
+            Block? block = playerInteractionToWorld.GetBlock();
+            Chunk? chunk = playerInteractionToWorld.GetChunk(); 
+            if (block != null && chunk != null) {
                 if (mouseButton == MouseButton.Left) {
                     Vector3D<int> position = ((Block)block).position + chunk.position;
-                    world.setBlock(BlockFactory.AIR_BLOCK, position);
+                    world.SetBlock(BlockFactory.AIR_BLOCK, position);
                 }
-                if (mouseButton == MouseButton.Right && playerInteractionToWorld.getFace().HasValue && inventaire.haveBlockToPlace()) {
-                    Face face = (Face)playerInteractionToWorld.getFace();
-                    world.setBlock(inventaire.getActiveBlock().block.name,  chunk.position +  block.position + FaceOffset.getOffsetOfFace(face));
+                if (mouseButton == MouseButton.Right){
+                    Face? face = playerInteractionToWorld.GetFace();
+                    if (face is not null && inventaire.HaveBlockToPlace()) {
+                        world.SetBlock(inventaire.GetActiveBlock()!.block.name,
+                            chunk.position + block.position + FaceOffset.GetOffsetOfFace(face.Value));
+                    }
                 }
             }
         }
 
        
-        public PlayerInteractionToWorld? getPlayerInteractionToWorld()
+        public PlayerInteractionToWorld GetPlayerInteractionToWorld()
         {
             return playerInteractionToWorld;
         }
 
-        protected override void update(double deltaTime)
+        protected override void Update(double deltaTime)
         {
-            movePlayer(deltaTime);
-            if (mouse.IsButtonPressed(MouseButton.Left)) {
-                
-            }
+            MovePlayer(deltaTime);
         }
 
-        protected override void start()
+        protected override void Start()
         {
-            world = (World)game.gameObjects[typeof(World).FullName];
+            world = (World)game.gameObjects[typeof(World).FullName!];
             this.playerInteractionToWorld = new PlayerInteractionToWorld(world, this);
-            playerUi.start(playerInteractionToWorld);
-            console = (Console)game.gameObjects[typeof(Console).FullName];
-            console.addCommand("/tp", (commandParams) =>
+            playerUi.Start(playerInteractionToWorld);
+            console = (Console)game.gameObjects[typeof(Console).FullName!];
+            console.AddCommand("/tp", (commandParams) =>
             {
                 Vector3 newPosition = Vector3.Zero;
                 try {
@@ -100,21 +100,21 @@ namespace MinecraftCloneSilk.GameComponent
                         newPosition.Z = float.Parse(commandParams[2]);
                     }
                 }
-                catch (Exception e) {
+                catch (Exception) {
                     newPosition = Vector3.Zero;
-                    console.log("Invalid parameters", Console.LogType.ERROR);
+                    console.Log("Invalid parameters", Console.LogType.ERROR);
                 }
                 position = newPosition;
 
             });
         }
 
-        private void movePlayer(double deltaTime)
+        private void MovePlayer(double deltaTime)
         {
             var speed = moveSpeed * (float)deltaTime;
 
 
-            if (primaryKeyboard.IsKeyPressed(Key.ShiftLeft)) speed = sprintSpeed * (float)deltaTime;
+            if (primaryKeyboard.IsKeyPressed(Key.ShiftLeft)) speed = SPRINT_SPEED * (float)deltaTime;
 
                 
             if (primaryKeyboard.IsKeyPressed(Key.W))
@@ -151,7 +151,7 @@ namespace MinecraftCloneSilk.GameComponent
         }
 
 
-        private void showDebugRayOnClick()
+        private void ShowDebugRayOnClick()
         {
             float raySize = 20;
             new Line(new Vector3D<float>(position.X, position.Y, position.Z) , 
@@ -160,14 +160,14 @@ namespace MinecraftCloneSilk.GameComponent
                     position.Z + (camera.Front.Z * raySize)));
         }
 
-        public override void toImGui()
+        public override void ToImGui()
         {
-            playerUi.drawUi();
+            playerUi.DrawUi();
         }
         
         
        
-        public void debug(bool? setDebug = null)
+        public void Debug(bool? setDebug = null)
         {
             debugActivated = setDebug ?? !debugActivated;
         }

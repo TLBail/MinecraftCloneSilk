@@ -6,7 +6,7 @@ namespace MinecraftCloneSilk.UI;
 public class DemoWindow : UiWindow
 {
     public DemoWindow(Game game): base(game, null){}
-    protected override void drawUi() {
+    protected override void DrawUi() {
         ImGui.ShowDemoWindow();
     }
 }

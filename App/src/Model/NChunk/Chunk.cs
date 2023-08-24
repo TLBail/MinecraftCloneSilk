@@ -1,9 +1,11 @@
 ﻿using MinecraftCloneSilk.Core;
 using MinecraftCloneSilk.GameComponent;
 using MinecraftCloneSilk.Model.Storage;
+using MinecraftCloneSilk.Model.WorldGen;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL;
 using Shader = MinecraftCloneSilk.Core.Shader;
+// ReSharper disable All
 
 namespace MinecraftCloneSilk.Model.NChunk;
 
@@ -15,12 +17,12 @@ public class Chunk : IDisposable
     public const int CHUNK_SIZE = 16;
 
     internal IChunkManager chunkManager;
-    internal WorldGenerator worldGenerator;
+    internal IWorldGenerator worldGenerator;
 
     internal Line? debugRay;
     internal bool debugMode = false;
 
-    public Chunk[] chunksNeighbors;
+    public Chunk[]? chunksNeighbors;
 
     public ChunkState chunkState { get; internal set; }
     public ChunkState wantedChunkState;
@@ -28,14 +30,14 @@ public class Chunk : IDisposable
 
     internal ChunkStrategy chunkStrategy;
 
-    internal static Shader cubeShader;
-    internal static BlockFactory blockFactory;
+    internal static Shader? cubeShader;
+    internal static BlockFactory? blockFactory;
 
-    public bool isRequiredByChunkLoader = false;
+    private int requiredByChunkLoader = 0;
     private bool disposed = false;
     internal bool blockModified = false;
 
-    public Chunk(Vector3D<int> position, IChunkManager chunkManager, WorldGenerator worldGenerator) {
+    public Chunk(Vector3D<int> position, IChunkManager chunkManager, IWorldGenerator worldGenerator) {
         this.chunkState = DEFAULTSTARTINGCHUNKSTATE;
         this.wantedChunkState = DEFAULTSTARTINGCHUNKSTATE;
         this.chunkStrategy = new ChunkEmptyStrategy(this);
@@ -45,13 +47,13 @@ public class Chunk : IDisposable
         blocks = new BlockData[CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE];
     }
 
-    public static void initStaticMembers(Shader chunkShader, BlockFactory blockFactory) {
-        Chunk.cubeShader = chunkShader;
-        Chunk.blockFactory = blockFactory;
+    public static void InitStaticMembers(Shader? newCubeShader, BlockFactory? newBlockFactory) {
+        cubeShader = newCubeShader;
+        blockFactory = newBlockFactory;
     }
 
-    public void setChunkState(ChunkState wantedChunkState) {
-        switch (wantedChunkState) {
+    public void SetChunkState(ChunkState newChunkState) {
+        switch (newChunkState) {
             case ChunkState.EMPTY:
                 chunkStrategy = new ChunkEmptyStrategy(this);
                 return;
@@ -68,45 +70,41 @@ public class Chunk : IDisposable
                 chunkStrategy = new ChunkDrawableStrategy(this);
                 break;
         }
-        this.chunkState = wantedChunkState;
+        this.chunkState = newChunkState;
     }
     
-    public void initChunkState() => chunkStrategy.init();
-    
-    public void loadChunkState() => chunkStrategy.load();
-        
-    public void finishChunkState() => chunkStrategy.finish();
-    
-    public BlockData getBlockData(Vector3D<int> localPosition) {
-        return chunkStrategy.getBlockData(localPosition);
-    }
+    public void InitChunkState() => chunkStrategy.Init();
+    public void LoadChunkState() => chunkStrategy.Load();
+    public void FinishChunkState() => chunkStrategy.Finish();
+    public BlockData GetBlockData(Vector3D<int> localPosition) => chunkStrategy.GetBlockData(localPosition);
+    public ChunkState GetMinimumChunkStateOfNeighbors() =>  chunkStrategy.MinimumChunkStateOfNeighbors();
+    public Block GetBlock(Vector3D<int> blockPosition) => GetBlock(blockPosition.X, blockPosition.Y, blockPosition.Z);
+    public Block GetBlock(int x, int y, int z) => chunkStrategy.GetBlock(x, y, z);
 
-
-    public ChunkState getMinimumChunkStateOfNeighbors() {
-        return chunkStrategy.minimumChunkStateOfNeighbors();
-    } 
-    public Block getBlock(Vector3D<int> blockPosition) => getBlock(blockPosition.X, blockPosition.Y, blockPosition.Z);
-    public Block getBlock(int x, int y, int z) => chunkStrategy.getBlock(x, y, z);
-
-    public void setBlock(int x, int y, int z, string name) {
+    public void SetBlock(int x, int y, int z, string name) {
         blockModified = true;
-        chunkStrategy.setBlock(x, y, z, name);
+        chunkStrategy.SetBlock(x, y, z, name);
     }
 
-    public void updateChunkVertex() => chunkStrategy.updateChunkVertex();
-    public void debug(bool? setDebug = null) => chunkStrategy.debug(setDebug);
-    public void Update(double deltaTime) => chunkStrategy.update(deltaTime);
+    public void UpdateChunkVertex() => chunkStrategy.UpdateChunkVertex();
+    public void Debug(bool? setDebug = null) => chunkStrategy.Debug(setDebug);
+    public void Update(double deltaTime) => chunkStrategy.Update(deltaTime);
 
-    public ReadOnlySpan<CubeVertex> getVertices() => chunkStrategy.getVertices();
+    public ReadOnlySpan<CubeVertex> GetVertices() => chunkStrategy.GetVertices();
 
-    public void reset(Vector3D<int> position, IChunkManager chunkManager, WorldGenerator worldGenerator) {
-        if(isRequiredByChunkLoader) {
+    public bool isRequiredByChunkLoader() => requiredByChunkLoader > 0;
+    public void addRequiredByChunkLoader() => Interlocked.Increment(ref requiredByChunkLoader);
+    public void removeRequiredByChunkLoader() => Interlocked.Decrement(ref requiredByChunkLoader);
+    
+    
+    public void Reset(Vector3D<int> position, IChunkManager chunkManager, IWorldGenerator worldGenerator) {
+        if(isRequiredByChunkLoader()) {
             throw new Exception("Chunk is still required by chunk loader");
         }
         this.position = position;
         this.chunkManager = chunkManager;
         this.worldGenerator = worldGenerator;
-        debug(false);
+        Debug(false);
         chunksNeighbors = new Chunk[6];
         chunkState = DEFAULTSTARTINGCHUNKSTATE;
         wantedChunkState = DEFAULTSTARTINGCHUNKSTATE;
@@ -121,9 +119,14 @@ public class Chunk : IDisposable
             }
         }
     }
+    
 
     public override string ToString() {
         return $"Chunk {position.X} {position.Y} {position.Z} chunkState: {chunkState} \n";
+    }
+
+    public override int GetHashCode() {
+        return position.GetHashCode();
     }
 
     public void Dispose() {

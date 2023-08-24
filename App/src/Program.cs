@@ -1,14 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using MinecraftCloneSilk.Core;
+﻿using MinecraftCloneSilk.Core;
 using MinecraftCloneSilk.GameComponent;
 using MinecraftCloneSilk.UI;
-using Silk.NET.Input;
-using Silk.NET.Maths;
-using Silk.NET.Windowing;
 using Console = MinecraftCloneSilk.UI.Console;
 
 namespace MinecraftCloneSilk
@@ -20,21 +12,19 @@ namespace MinecraftCloneSilk
 
             List<InitGameData> gameObjectNames = new List<InitGameData>()
             {
-                new (typeof(Player).FullName),
-                new (typeof(World).FullName, new object[]{ WorldMode.DYNAMIC}),
-                new (typeof(Console).FullName),
-                new (typeof(DebugRayManager).FullName),
-                new (typeof(GameUi).FullName),
-                new (typeof(GeneralInfo).FullName),
-                new (typeof(ItemBarUi).FullName),
-                new (typeof(DemoWindow).FullName),
-                new (typeof(InventaireUi).FullName)
+                new (typeof(Player).FullName!),
+                new (typeof(World).FullName!, new object[]{ WorldMode.DYNAMIC}),
+                new (typeof(Console).FullName!),
+                new (typeof(DebugRayManager).FullName!),
+                new (typeof(GameUi).FullName!),
+                new (typeof(GeneralInfo).FullName!),
+                new (typeof(ItemBarUi).FullName!),
+                new (typeof(DemoWindow).FullName!),
+                new (typeof(InventaireUi).FullName!)
                 
             };
             Scene scene = new Scene(gameObjectNames);
-            Game game = Game.getInstance(scene);
-            
-            
+            Game game = Game.GetInstance(scene);
             game.Run();
         }
         
