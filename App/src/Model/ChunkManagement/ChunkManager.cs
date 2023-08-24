@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Numerics;
 using ImGuiNET;
 using MinecraftCloneSilk.GameComponent;
@@ -114,7 +115,8 @@ public class ChunkManager : IChunkManager, IDisposable
             chunkToUnload.Dispose();
             chunksToUnload.Add(chunkToUnload);
         } else {
-            throw new Exception("try remove chunk that is not in chunks");
+            Debug.Assert(false,"race condition while deleting chunk");
+            return false;
         }
         return true;
     }
