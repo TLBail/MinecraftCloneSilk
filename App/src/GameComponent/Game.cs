@@ -111,7 +111,7 @@ public sealed class Game
             "./Shader/3dPosOneTextUni/FragmentShader.glsl");
         chunkShader.Use();
         chunkShader.SetUniform("texture1", 0);
-        Chunk.InitStaticMembers(chunkShader, BlockFactory.GetInstance());
+        Chunk.InitStaticMembers(chunkShader, BlockFactory.GetInstance(), gl);
     }
 
 

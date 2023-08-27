@@ -5,7 +5,7 @@ namespace MinecraftCloneSilk.Model
     public class TextureBlock
     {
 
-        private readonly BlockJson blockJson;
+        public BlockJson blockJson { get; private set; }
         private readonly CubeVertex[][] cubeVertices;
 
         
@@ -27,7 +27,7 @@ namespace MinecraftCloneSilk.Model
             foreach(Face face in FaceFlagUtils.GetFaces(faceFlag)) {
                 foreach (CubeVertex vertex in cubeVertices[(int)face]) {
                     CubeVertex cubeVertex = vertex;
-                    cubeVertex.position += blockPosition + chunkPosition;
+                    cubeVertex.position += new Vector4D<float>( blockPosition + chunkPosition, 0.0f);
                     destinationList.Add(cubeVertex);
                 }
             }

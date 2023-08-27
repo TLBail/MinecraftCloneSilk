@@ -1,5 +1,6 @@
 ﻿using MinecraftCloneSilk.Core;
 using MinecraftCloneSilk.GameComponent;
+using MinecraftCloneSilk.Model.RegionDrawing;
 using MinecraftCloneSilk.Model.Storage;
 using MinecraftCloneSilk.Model.WorldGen;
 using Silk.NET.Maths;
@@ -30,12 +31,13 @@ public class Chunk : IDisposable
 
     internal ChunkStrategy chunkStrategy;
 
-    internal static Shader? cubeShader;
     internal static BlockFactory? blockFactory;
 
     private int requiredByChunkLoader = 0;
     private bool disposed = false;
     internal bool blockModified = false;
+    
+
 
     public Chunk(Vector3D<int> position, IChunkManager chunkManager, IWorldGenerator worldGenerator) {
         this.chunkState = DEFAULTSTARTINGCHUNKSTATE;
@@ -47,9 +49,10 @@ public class Chunk : IDisposable
         blocks = new BlockData[CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE];
     }
 
-    public static void InitStaticMembers(Shader? newCubeShader, BlockFactory? newBlockFactory) {
-        cubeShader = newCubeShader;
+    public static unsafe void InitStaticMembers(Shader? newCubeShader, BlockFactory? newBlockFactory, GL? gl = null) {
+        RegionBuffer.cubeShader = newCubeShader;
         blockFactory = newBlockFactory;
+        if(gl is not null)RegionBuffer.InitComputeShader(gl, newBlockFactory);
     }
 
     public void SetChunkState(ChunkState newChunkState) {

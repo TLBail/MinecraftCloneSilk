@@ -20,8 +20,8 @@ namespace MinecraftCloneSilk.Core
 
             handle = this.gl.GenVertexArray();
             Bind();
-            vbo.Bind();
-            ebo?.Bind();
+            vbo.Bind(BufferTargetARB.ArrayBuffer);
+            ebo?.Bind(BufferTargetARB.ElementArrayBuffer);
         }
 
         public unsafe void VertexAttributePointer(uint index, int count, VertexAttribPointerType type, string fieldName)
