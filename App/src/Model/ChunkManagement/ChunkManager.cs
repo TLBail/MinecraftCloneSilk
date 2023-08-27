@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Numerics;
 using ImGuiNET;
 using MinecraftCloneSilk.GameComponent;
+using MinecraftCloneSilk.Logger;
 using MinecraftCloneSilk.Model.NChunk;
 using MinecraftCloneSilk.Model.WorldGen;
 using Silk.NET.Maths;
@@ -76,6 +77,8 @@ public class ChunkManager : IChunkManager, IDisposable
         chunksToUpdate.Remove(chunk);
     }
 
+    
+    [Logger.Timer]
     public void UpdateRelevantChunks(List<Vector3D<int>> chunkRelevant) {
         List<Vector3D<int>> chunkNotContainInChunks = new List<Vector3D<int>>();
         foreach (Vector3D<int> position in chunkRelevant) {

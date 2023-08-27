@@ -43,8 +43,16 @@ Lightning Memory-Mapped Database est une base de données clé-valeur qui permet
 ## Commandes
 Pour accéder à la liste complète des commandes disponibles, tapez /help dans le chat du jeu.
 
+
+# Profiling
+En mode debug les méthode avec l'attribut [Timer] sont profilées et les résultats sont enregistrés dans le fichier "dossierCourant/trace.json"
+Pour visualiser les résultats, il suffit d'ouvrir le fichier trace.json dans chrome://tracing
+
 ## Crédits
 Un grand merci à LearnOpenGL
+
+
+
 
 
 [![Watch the video](https://img.youtube.com/vi/XlYM7xdmK9M/maxresdefault.jpg)](https://youtu.be/XlYM7xdmK9M)

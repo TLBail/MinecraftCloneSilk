@@ -67,8 +67,7 @@ public static class ChromeTrace
     public static void Dispose()
     {
         stopwatch?.Stop();
-        // TODO check for running TraceSessions
-        impl.Dispose();
+        impl?.Dispose();
     }
         
     internal static void AddEvent(IChromeEvent ev)
