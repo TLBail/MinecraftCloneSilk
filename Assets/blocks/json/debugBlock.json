@@ -1,0 +1,31 @@
+﻿{
+  "name": "debugBlock",
+  "transparent": false,
+  "id": 1,
+  "texture": {
+    "TOP": [
+      1,
+      0
+    ],
+    "BOTTOM": [
+      1,
+      0
+    ],
+    "LEFT": [
+      2,
+      0
+    ],
+    "RIGHT": [
+      3,
+      0
+    ],
+    "FRONT": [
+      3,
+      0
+    ],
+    "BACK": [
+      3,
+      0
+    ]
+  }
+}
