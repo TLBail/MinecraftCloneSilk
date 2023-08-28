@@ -15,13 +15,14 @@ public class RegionBuffer : IDisposable
     internal static BufferObject<bool> transparentBlocksBuffer; 
     internal static BufferObject<Vector4D<float>> textureCoordsBuffer;
     internal static ComputeShader computeShader;
-    
-    
-    
+    internal static BufferObject<Vector4D<float>> chunksPositionBuffer;
+    internal static BufferObject<BlockData> blockDataBuffer;
+    internal static BufferObject<CountCompute> countComputeBuffer;
+
+
+
     private BufferObject<CubeVertex>? vbo;
     private VertexArrayObject<CubeVertex, uint>? vao;
-    private BufferObject<BlockData> blockDataBuffer;
-    private BufferObject<CountCompute> countComputeBuffer;
     private Texture cubeTexture;
     private GL gl;
     internal static Shader? cubeShader;
@@ -42,6 +43,14 @@ public class RegionBuffer : IDisposable
         gl.ShaderStorageBlockBinding(computeShader.handle, inputBufferIndex, 2);
         uint ouputBufferIndex =  gl.GetProgramResourceIndex(computeShader.handle, ProgramInterface.ShaderStorageBlock, "outputBuffer");
         gl.ShaderStorageBlockBinding(computeShader.handle, ouputBufferIndex, 1);
+        
+        //init block data buffer
+        blockDataBuffer = new BufferObject<BlockData>(gl, CHUNKS_PER_REGION * Chunk.CHUNK_SIZE * Chunk.CHUNK_SIZE * Chunk.CHUNK_SIZE, BufferTargetARB.ShaderStorageBuffer,
+            BufferUsageARB.StreamDraw);
+        
+        //init countComputeBuffer
+        countComputeBuffer = new BufferObject<CountCompute>(gl, 1, BufferTargetARB.ShaderStorageBuffer,
+            BufferUsageARB.StaticRead);
 
 
         // init transparent blocks buffer
@@ -70,6 +79,11 @@ public class RegionBuffer : IDisposable
         }
         textureCoordsBuffer = new BufferObject<Vector4D<float>>(gl, textureCoords, BufferTargetARB.UniformBuffer, BufferUsageARB.StaticRead);
         gl.BindBufferBase(BufferTargetARB.UniformBuffer, 3, textureCoordsBuffer.handle); 
+        
+        
+        // init chunks position buffer
+        chunksPositionBuffer = new BufferObject<Vector4D<float>>(gl, CHUNKS_PER_REGION, BufferTargetARB.UniformBuffer, BufferUsageARB.StreamDraw);
+        gl.BindBufferBase(BufferTargetARB.UniformBuffer, 0, chunksPositionBuffer.handle);
     }
 
 
@@ -77,6 +91,15 @@ public class RegionBuffer : IDisposable
         this.cubeTexture = cubeTexture;
         this.gl = gl;
         chunks = new Chunk?[CHUNKS_PER_REGION];
+        
+        const int nbFacePerBlock = 6;
+        const int nbVertexPerFace = 6;
+        int nbVertexMax = (int)(nbVertexPerFace * nbFacePerBlock * Chunk.CHUNK_SIZE * Chunk.CHUNK_SIZE *
+                                Chunk.CHUNK_SIZE);
+        vbo = new BufferObject<CubeVertex>(gl, nbVertexMax, BufferTargetARB.ArrayBuffer);
+        vao = new VertexArrayObject<CubeVertex, uint>(gl, vbo);
+        
+
     }
 
     public void AddChunk(Chunk chunk) {
@@ -94,25 +117,6 @@ public class RegionBuffer : IDisposable
     }
 
     public unsafe void Update() {
-
-        nbVertex = 0;
-        for (int i = 0; i < chunkCount; i++) {
-            if(chunks[i]!.chunkState != ChunkState.DRAWABLE) continue;
-            nbVertex += chunks[i]!.GetVertices().Length;
-        }
-
-
-        vbo?.Dispose();
-        vao?.Dispose();
-        vbo = new BufferObject<CubeVertex>(gl, vertices, BufferTargetARB.ArrayBuffer);
-        vao = new VertexArrayObject<CubeVertex, uint>(gl, vbo);
-
-        vao.Bind();
-        vao.VertexAttributePointer(0, 3, VertexAttribPointerType.Float, "position");
-        vao.VertexAttributePointer(1, 2, VertexAttribPointerType.Float, "texCoords");
-        
-        //fin
-        
         computeShader.Use();
         //reset countComputeBuffer
         CountCompute[] resetCountCompute = new CountCompute[1];
@@ -121,6 +125,7 @@ public class RegionBuffer : IDisposable
         
         //Todo stackalloc ?
         BlockData[] blockDatas = new BlockData[chunkCount * Chunk.CHUNK_SIZE * Chunk.CHUNK_SIZE * Chunk.CHUNK_SIZE];
+        Span<BlockData> blockDatasSpan = blockDatas;
         
         // copy Blockdata
         int sizeOfChunksBlock = Chunk.CHUNK_SIZE * Chunk.CHUNK_SIZE * Chunk.CHUNK_SIZE * sizeof(BlockData);
@@ -128,10 +133,14 @@ public class RegionBuffer : IDisposable
         for (int i = 0; i < chunkCount; i++) {
             Chunk chunk = chunks[i]!;
             if(chunk.chunkState != ChunkState.DRAWABLE) continue;
-            Buffer.BlockCopy(chunk.blocks, 0, blockDatas, offset, sizeOfChunksBlock);
+            fixed(BlockData* blockDataPtr = chunk.blocks) {
+                Span<BlockData> blockDataSpan = new Span<BlockData>(blockDataPtr, Chunk.CHUNK_SIZE * Chunk.CHUNK_SIZE * Chunk.CHUNK_SIZE);
+                blockDataSpan.CopyTo(blockDatasSpan[offset..]);
+            }
             offset += sizeOfChunksBlock;
         }
         gl.BindBufferRange(GLEnum.ShaderStorageBuffer, 2, blockDataBuffer.handle, 0, (nuint)(sizeof(BlockData) * blockDatas.Length));
+        blockDataBuffer.SendData(blockDatas, 0);
         
         // update output buffer to vbo
         gl.BindBufferBase(BufferTargetARB.ShaderStorageBuffer, 1, vbo.handle);
@@ -143,21 +152,24 @@ public class RegionBuffer : IDisposable
         transparentBlocksBuffer.Bind(BufferTargetARB.UniformBuffer);
         textureCoordsBuffer.Bind(BufferTargetARB.UniformBuffer);
         
-        computeShader.SetUniform("chunkCoord" ,new Vector3(chunk.position.X, chunk.position.Y, chunk.position.Z) );
-        gl.DispatchCompute(4,4,4);
+        
+        // update chunks position buffer
+        Vector4D<float>[] chunksPosition = new Vector4D<float>[CHUNKS_PER_REGION];
+        for (int i = 0; i < chunkCount; i++) {
+            chunksPosition[i] = new Vector4D<float>(chunks[i]!.position.X, chunks[i]!.position.Y, chunks[i]!.position.Z, 0.0f);
+        }
+        chunksPositionBuffer.SendData(chunksPosition, 0);
+        
+        // compute
+        gl.DispatchCompute((uint)(4 * chunkCount),4,4);
         gl.MemoryBarrier(MemoryBarrierMask.AllBarrierBits);
-        CountCompute countCompute = countComputeBuffer.getData();
+        CountCompute countCompute = countComputeBuffer.GetData();
         nbVertex = countCompute.vertexCount;
-        
-        needToUpdateChunkVertices = false;
-        
     }
 
     public void Dispose() {
         vbo?.Dispose();
         vao?.Dispose();
-        blockDataBuffer?.Dispose();
-        countComputeBuffer?.Dispose();
     }
 
     public void AddVertices(Chunk chunk, ReadOnlySpan<CubeVertex> vertices, int nbVertex) {

@@ -37,7 +37,9 @@ layout(std430, binding = 5) buffer countBuffer{
 };
 
 
-layout(location = 0) uniform vec3 chunkCoord;
+layout(std140, binding = 0) uniform chunkCoord{
+    vec4 chunkCoords[16];
+};
 
 const uint EMPTY = 0;
 const uint TOP = 1;
@@ -125,6 +127,8 @@ void main(){
         nbFaces++;
     }
     
+    int chunkIndex = int(floor(gl_WorkGroupID.x / 4));
+    vec4 chunkCoord = chunkCoords[chunkIndex];
     vec4 position = vec4(chunkCoord.x + x, chunkCoord.y + y,+ z + chunkCoord.z, 1.0f);
     
     
