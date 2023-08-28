@@ -124,12 +124,10 @@ public class RegionBuffer : IDisposable
         resetCountCompute[0].vertexCount = 0;
         countComputeBuffer.SendData(resetCountCompute, 0);
         
-        //Todo stackalloc ?
-        BlockData[] blockDatas = new BlockData[chunkCount * Chunk.CHUNK_SIZE * Chunk.CHUNK_SIZE * Chunk.CHUNK_SIZE];
-        Span<BlockData> blockDatasSpan = blockDatas;
+        Span<BlockData> blockDatasSpan = stackalloc BlockData[chunkCount * Chunk.CHUNK_SIZE * Chunk.CHUNK_SIZE * Chunk.CHUNK_SIZE];
         
         // copy Blockdata
-        int sizeOfChunksBlock = Chunk.CHUNK_SIZE * Chunk.CHUNK_SIZE * Chunk.CHUNK_SIZE * sizeof(BlockData);
+        int sizeOfChunksBlock = Chunk.CHUNK_SIZE * Chunk.CHUNK_SIZE * Chunk.CHUNK_SIZE;
         int offset = 0;
         for (int i = 0; i < chunkCount; i++) {
             Chunk chunk = chunks[i]!;
@@ -140,8 +138,8 @@ public class RegionBuffer : IDisposable
             }
             offset += sizeOfChunksBlock;
         }
-        gl.BindBufferRange(GLEnum.ShaderStorageBuffer, 2, blockDataBuffer.handle, 0, (nuint)(sizeof(BlockData) * blockDatas.Length));
-        blockDataBuffer.SendData(blockDatas, 0);
+        gl.BindBufferRange(GLEnum.ShaderStorageBuffer, 2, blockDataBuffer.handle, 0, (nuint)(sizeof(BlockData) * blockDatasSpan.Length));
+        blockDataBuffer.SendData(blockDatasSpan, 0);
         
         // update output buffer to vbo
         gl.BindBufferBase(BufferTargetARB.ShaderStorageBuffer, 1, vbo.handle);

@@ -99,7 +99,10 @@ public class ChunkManager : IChunkManager, IDisposable
 
     [Logger.Timer]
     public void AddChunksToLoad(List<Vector3D<int>> positions) {
-        if(this.chunkLoader != null) return; 
+        if (this.chunkLoader != null) {
+            Console.WriteLine("warning try to load chunks while chunkLoader is not null");
+            return;
+        } 
         Stack<ChunkLoadingTask> chunksToLoad = new Stack<ChunkLoadingTask>(positions.Count);
         foreach (Vector3D<int> position in positions) {
             var chunk = GetChunk(position);

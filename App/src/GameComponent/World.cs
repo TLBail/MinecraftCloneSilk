@@ -19,7 +19,7 @@ public enum WorldMode
 public class World : GameObject
 {
     private Player player = null!;
-    public int radius { get; set; } = 1;
+    public int radius { get; set; } = 6;
     private readonly WorldUi worldUi;
     public WorldNaturalGeneration worldNaturalGeneration;
     public WorldMode worldMode { get; set; }
@@ -235,21 +235,19 @@ public class World : GameObject
         Vector3D<int>[] postions =
         {
             Vector3D<int>.Zero,
-
-            // new Vector3D<int>(-(int)Chunk.CHUNK_SIZE, 0, (int)Chunk.CHUNK_SIZE),
-            // new Vector3D<int>(-(int)Chunk.CHUNK_SIZE, 0, -(int)Chunk.CHUNK_SIZE),
-            // new Vector3D<int>(-(int)Chunk.CHUNK_SIZE, 0, 0),
-            // new Vector3D<int>(0, 0, -(int)Chunk.CHUNK_SIZE),
-            // new Vector3D<int>((int)Chunk.CHUNK_SIZE, 0, 0),
-            // new Vector3D<int>((int)Chunk.CHUNK_SIZE, 0, (int)Chunk.CHUNK_SIZE),
-            // new Vector3D<int>((int)Chunk.CHUNK_SIZE, 0, -(int)Chunk.CHUNK_SIZE),
-            // new Vector3D<int>(-(int)Chunk.CHUNK_SIZE, 0, 0),
-            // new Vector3D<int>(-(int)Chunk.CHUNK_SIZE, 0, (int)Chunk.CHUNK_SIZE),
-            // new Vector3D<int>(-(int)Chunk.CHUNK_SIZE, 0, -(int)Chunk.CHUNK_SIZE)
+            new Vector3D<int>((int)Chunk.CHUNK_SIZE, 0, 0),
+            
+            new Vector3D<int>(-(int)Chunk.CHUNK_SIZE, 0, (int)Chunk.CHUNK_SIZE),
+            new Vector3D<int>(-(int)Chunk.CHUNK_SIZE, 0, -(int)Chunk.CHUNK_SIZE),
+            new Vector3D<int>(-(int)Chunk.CHUNK_SIZE, 0, 0),
+            new Vector3D<int>(0, 0, -(int)Chunk.CHUNK_SIZE),
+            new Vector3D<int>((int)Chunk.CHUNK_SIZE, 0, (int)Chunk.CHUNK_SIZE),
+            new Vector3D<int>((int)Chunk.CHUNK_SIZE, 0, -(int)Chunk.CHUNK_SIZE),
+            new Vector3D<int>(-(int)Chunk.CHUNK_SIZE, 0, 0),
+            new Vector3D<int>(-(int)Chunk.CHUNK_SIZE, 0, (int)Chunk.CHUNK_SIZE),
+            new Vector3D<int>(-(int)Chunk.CHUNK_SIZE, 0, -(int)Chunk.CHUNK_SIZE)
         };
-        foreach (var position in postions) {
-            chunkManager.AddChunkToLoad(position);
-        }
+        chunkManager.AddChunksToLoad(postions.ToList());
     }
 
     public override void ToImGui() {

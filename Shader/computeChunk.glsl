@@ -66,9 +66,11 @@ vec4 topLeft(vec4 textureCoords) {
 }
 
 const int chunkSize = 16;
+const int nbBlockPerChunk = chunkSize * chunkSize * chunkSize;
 
-uint getIndex(uint x, uint y, uint z){
-    return (x * (chunkSize * chunkSize)) +
+uint getIndex(uint chunkIndex, uint x, uint y, uint z){
+    return (chunkIndex * nbBlockPerChunk) + 
+        (x * (chunkSize * chunkSize)) +
         (y * chunkSize) +
         (z);
 }
@@ -77,14 +79,16 @@ uint getIndex(uint x, uint y, uint z){
 void main(){
     //simple color gradient
     
-    //count.blockCount = texCoords[(idBlocks[index] * 6)  + 5].x;
-    //count.vertexIndex = texCoords[(idBlocks[index] * 6)  + 5].y;
+    
+    uint chunkIndex = uint(floor(gl_WorkGroupID.x / 4));
+    
+    uint chunkXWorkGroup = gl_WorkGroupID.x % 4;
 
 
-    uint x = (gl_WorkGroupID.x * 4) + gl_LocalInvocationID.x;
+    uint x = (chunkXWorkGroup * 4) + gl_LocalInvocationID.x;
     uint y = (gl_WorkGroupID.y * 4) + gl_LocalInvocationID.y;
     uint z = (gl_WorkGroupID.z * 4) + gl_LocalInvocationID.z;
-    uint index = getIndex(x, y, z);
+    uint index = getIndex(chunkIndex, x, y, z);
     
     if(transparent[idBlocks[index]]){
         return;
@@ -97,37 +101,36 @@ void main(){
     
     
     //top
-    if(y < (chunkSize - 1) &&  transparent[idBlocks[getIndex(x, y + 1, z)]]){
+    if(y < (chunkSize - 1) &&  transparent[idBlocks[getIndex(chunkIndex, x, y + 1, z)]]){
         facesFlag = facesFlag | TOP;
         nbFaces++;
     }
     //bottom
-    if(y > 0 && transparent[idBlocks[getIndex(x, y - 1, z)]]){
+    if(y > 0 && transparent[idBlocks[getIndex(chunkIndex, x, y - 1, z)]]){
         facesFlag = facesFlag | BOTTOM;
         nbFaces++;
     }
     //left
-    if(x < (chunkSize - 1) &&  transparent[idBlocks[getIndex(x + 1, y, z)]]){
+    if(x < (chunkSize - 1) &&  transparent[idBlocks[getIndex(chunkIndex,x + 1, y, z)]]){
         facesFlag = facesFlag | LEFT;
         nbFaces++;
     }
     //right
-    if(x > 0 &&  transparent[idBlocks[getIndex(x - 1, y, z)]]){
+    if(x > 0 &&  transparent[idBlocks[getIndex(chunkIndex,x - 1, y, z)]]){
         facesFlag = facesFlag | RIGHT;
         nbFaces++;
     }
     //front
-    if(z < (chunkSize - 1) &&  transparent[idBlocks[getIndex(x, y, z + 1)]]){
+    if(z < (chunkSize - 1) &&  transparent[idBlocks[getIndex(chunkIndex,x, y, z + 1)]]){
         facesFlag = facesFlag | FRONT;
         nbFaces++;
     }
     //back
-    if(z > 0 && transparent[idBlocks[getIndex(x, y, z - 1)]]){
+    if(z > 0 && transparent[idBlocks[getIndex(chunkIndex,x, y, z - 1)]]){
         facesFlag = facesFlag | BACK;
         nbFaces++;
     }
     
-    int chunkIndex = int(floor(gl_WorkGroupID.x / 4));
     vec4 chunkCoord = chunkCoords[chunkIndex];
     vec4 position = vec4(chunkCoord.x + x, chunkCoord.y + y,+ z + chunkCoord.z, 1.0f);
     
