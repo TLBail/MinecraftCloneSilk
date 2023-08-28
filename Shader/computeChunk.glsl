@@ -65,14 +65,14 @@ vec4 topLeft(vec4 textureCoords) {
     return vec4( (32.0f * textureCoords.x) / 256.0f + 0.01f, (32.0f * (textureCoords.y + 1)) / 256.0f - 0.01f , 0.0f, 0.0f);
 }
 
-const int chunkSize = 16;
+const int chunkSize = 18;
 const int nbBlockPerChunk = chunkSize * chunkSize * chunkSize;
 
 uint getIndex(uint chunkIndex, uint x, uint y, uint z){
     return (chunkIndex * nbBlockPerChunk) + 
-        (x * (chunkSize * chunkSize)) +
-        (y * chunkSize) +
-        (z);
+        ((x + 1) * (chunkSize * chunkSize)) +
+        ((y + 1) * chunkSize) +
+        (z + 1);
 }
 
 
@@ -101,32 +101,32 @@ void main(){
     
     
     //top
-    if(y < (chunkSize - 1) &&  transparent[idBlocks[getIndex(chunkIndex, x, y + 1, z)]]){
+    if(transparent[idBlocks[getIndex(chunkIndex, x, y + 1, z)]]){
         facesFlag = facesFlag | TOP;
         nbFaces++;
     }
     //bottom
-    if(y > 0 && transparent[idBlocks[getIndex(chunkIndex, x, y - 1, z)]]){
+    if(transparent[idBlocks[getIndex(chunkIndex, x, y - 1, z)]]){
         facesFlag = facesFlag | BOTTOM;
         nbFaces++;
     }
     //left
-    if(x < (chunkSize - 1) &&  transparent[idBlocks[getIndex(chunkIndex,x + 1, y, z)]]){
+    if(transparent[idBlocks[getIndex(chunkIndex,x + 1, y, z)]]){
         facesFlag = facesFlag | LEFT;
         nbFaces++;
     }
     //right
-    if(x > 0 &&  transparent[idBlocks[getIndex(chunkIndex,x - 1, y, z)]]){
+    if(transparent[idBlocks[getIndex(chunkIndex,x - 1, y, z)]]){
         facesFlag = facesFlag | RIGHT;
         nbFaces++;
     }
     //front
-    if(z < (chunkSize - 1) &&  transparent[idBlocks[getIndex(chunkIndex,x, y, z + 1)]]){
+    if(transparent[idBlocks[getIndex(chunkIndex,x, y, z + 1)]]){
         facesFlag = facesFlag | FRONT;
         nbFaces++;
     }
     //back
-    if(z > 0 && transparent[idBlocks[getIndex(chunkIndex,x, y, z - 1)]]){
+    if(transparent[idBlocks[getIndex(chunkIndex,x, y, z - 1)]]){
         facesFlag = facesFlag | BACK;
         nbFaces++;
     }
@@ -140,134 +140,140 @@ void main(){
    
     //back
     if((facesFlag & BACK) != 0){
+        int indexFace = (idBlocks[index] * 6)  + 5;
         vertices[vertexIndex].position =  vec4(-0.5f, -0.5f, -0.5f, 0.0f) + position;
-        vertices[vertexIndex].coords = bottomLeft(texCoords[(idBlocks[index] * 6)  + 5]);
+        vertices[vertexIndex].coords = bottomLeft(texCoords[indexFace]);
         vertexIndex++;
         vertices[vertexIndex].position = vec4(0.5f, 0.5f, -0.5f, 0.0f) + position;
-        vertices[vertexIndex].coords = topRight(texCoords[(idBlocks[index] * 6)  + 5]);
+        vertices[vertexIndex].coords = topRight(texCoords[indexFace]);
         vertexIndex++;
         vertices[vertexIndex].position = vec4(0.5f, -0.5f, -0.5f, 0.0f) + position;
-        vertices[vertexIndex].coords = bottomRight(texCoords[(idBlocks[index] * 6)  + 5]);
+        vertices[vertexIndex].coords = bottomRight(texCoords[indexFace]);
         vertexIndex++;
         vertices[vertexIndex].position = vec4(0.5f, 0.5f, -0.5f, 0.0f) + position; 
-        vertices[vertexIndex].coords = topRight(texCoords[(idBlocks[index] * 6)  + 5]);
+        vertices[vertexIndex].coords = topRight(texCoords[indexFace]);
         vertexIndex++;
         vertices[vertexIndex].position = vec4(-0.5f, -0.5f, -0.5f, 0.0f) + position; 
-        vertices[vertexIndex].coords = bottomLeft(texCoords[(idBlocks[index] * 6)  + 5]);
+        vertices[vertexIndex].coords = bottomLeft(texCoords[indexFace]);
         vertexIndex++;
         vertices[vertexIndex].position = vec4(-0.5f, 0.5f, -0.5f, 0.0f) + position; 
-        vertices[vertexIndex].coords = topLeft(texCoords[(idBlocks[index] * 6)  + 5]);
+        vertices[vertexIndex].coords = topLeft(texCoords[indexFace]);
         vertexIndex++;
     }
     
     // front
     if((facesFlag & FRONT) != 0){
+        int indexFace = (idBlocks[index] * 6)  + 4;
         vertices[vertexIndex].position =  vec4(-0.5f, -0.5f, 0.5f, 0.0f) + position;
-        vertices[vertexIndex].coords = bottomLeft(texCoords[(idBlocks[index] * 6)  + 4]);
+        vertices[vertexIndex].coords = bottomLeft(texCoords[indexFace]);
         vertexIndex++;
         vertices[vertexIndex].position = vec4(0.5f, -0.5f, 0.5f, 0.0f) + position; 
-        vertices[vertexIndex].coords = bottomRight(texCoords[(idBlocks[index] * 6)  + 4]);
+        vertices[vertexIndex].coords = bottomRight(texCoords[indexFace]);
         vertexIndex++;
         vertices[vertexIndex].position = vec4(0.5f, 0.5f, 0.5f, 0.0f) + position; 
-        vertices[vertexIndex].coords = topRight(texCoords[(idBlocks[index] * 6)  + 4]);
+        vertices[vertexIndex].coords = topRight(texCoords[indexFace]);
         vertexIndex++;
         vertices[vertexIndex].position = vec4(0.5f, 0.5f, 0.5f, 0.0f) + position; 
-        vertices[vertexIndex].coords = topRight(texCoords[(idBlocks[index] * 6)  + 4]);
+        vertices[vertexIndex].coords = topRight(texCoords[indexFace]);
         vertexIndex++;
         vertices[vertexIndex].position = vec4(-0.5f, 0.5f, 0.5f, 0.0f) + position; 
-        vertices[vertexIndex].coords = topLeft(texCoords[(idBlocks[index] * 6)  + 4]);
+        vertices[vertexIndex].coords = topLeft(texCoords[indexFace]);
         vertexIndex++;
         vertices[vertexIndex].position = vec4(-0.5f, -0.5f, 0.5f, 0.0f) + position; 
-        vertices[vertexIndex].coords = bottomLeft(texCoords[(idBlocks[index] * 6)  + 4]);
+        vertices[vertexIndex].coords = bottomLeft(texCoords[indexFace]);
         vertexIndex++;
     }
     
     //right
     
     if((facesFlag & RIGHT) != 0){
+        int indexFace = (idBlocks[index] * 6)  + 3;
         vertices[vertexIndex].position =  vec4(-0.5f, 0.5f, 0.5f, 0.0f) + position;
-        vertices[vertexIndex].coords = topRight(texCoords[(idBlocks[index] * 6)  + 3]);
+        vertices[vertexIndex].coords = topRight(texCoords[indexFace]);
         vertexIndex++;
         vertices[vertexIndex].position = vec4(-0.5f, 0.5f, -0.5f, 0.0f) + position; 
-        vertices[vertexIndex].coords = topLeft(texCoords[(idBlocks[index] * 6)  + 3]);
+        vertices[vertexIndex].coords = topLeft(texCoords[indexFace]);
         vertexIndex++;
         vertices[vertexIndex].position = vec4(-0.5f, -0.5f, -0.5f, 0.0f) + position; 
-        vertices[vertexIndex].coords = bottomLeft(texCoords[(idBlocks[index] * 6)  + 3]);
+        vertices[vertexIndex].coords = bottomLeft(texCoords[indexFace]);
         vertexIndex++;
         vertices[vertexIndex].position = vec4(-0.5f, -0.5f, -0.5f, 0.0f) + position; 
-        vertices[vertexIndex].coords = bottomLeft(texCoords[(idBlocks[index] * 6)  + 3]);
+        vertices[vertexIndex].coords = bottomLeft(texCoords[indexFace]);
         vertexIndex++;
         vertices[vertexIndex].position = vec4(-0.5f, -0.5f, 0.5f, 0.0f) + position; 
-        vertices[vertexIndex].coords = bottomRight(texCoords[(idBlocks[index] * 6)  + 3]);
+        vertices[vertexIndex].coords = bottomRight(texCoords[indexFace]);
         vertexIndex++;
         vertices[vertexIndex].position = vec4(-0.5f, 0.5f, 0.5f, 0.0f) + position; 
-        vertices[vertexIndex].coords = topRight(texCoords[(idBlocks[index] * 6)  + 3]);   
+        vertices[vertexIndex].coords = topRight(texCoords[indexFace]);   
         vertexIndex++;    
     }
    
     //left   
     if((facesFlag & LEFT) != 0){
+        int indexFace = (idBlocks[index] * 6)  + 2;
         vertices[vertexIndex].position =  vec4(0.5f, 0.5f, 0.5f, 0.0f) + position; 
-        vertices[vertexIndex].coords = topLeft(texCoords[(idBlocks[index] * 6)  + 2]);                   
+        vertices[vertexIndex].coords = topLeft(texCoords[indexFace]);                   
         vertexIndex++;
         vertices[vertexIndex].position = vec4(0.5f, -0.5f, -0.5f, 0.0f) + position; 
-        vertices[vertexIndex].coords = bottomRight(texCoords[(idBlocks[index] * 6)  + 2]);
+        vertices[vertexIndex].coords = bottomRight(texCoords[indexFace]);
         vertexIndex++;
         vertices[vertexIndex].position = vec4(0.5f, 0.5f, -0.5f, 0.0f) + position; 
-        vertices[vertexIndex].coords = topRight(texCoords[(idBlocks[index] * 6)  + 2]);
+        vertices[vertexIndex].coords = topRight(texCoords[indexFace]);
         vertexIndex++;
         vertices[vertexIndex].position = vec4(0.5f, -0.5f, -0.5f, 0.0f) + position; 
-        vertices[vertexIndex].coords = bottomRight(texCoords[(idBlocks[index] * 6)  + 2]);
+        vertices[vertexIndex].coords = bottomRight(texCoords[indexFace]);
         vertexIndex++;
         vertices[vertexIndex].position = vec4(0.5f, 0.5f, 0.5f, 0.0f) + position; 
-        vertices[vertexIndex].coords = topLeft(texCoords[(idBlocks[index] * 6)  + 2]);
+        vertices[vertexIndex].coords = topLeft(texCoords[indexFace]);
         vertexIndex++;
         vertices[vertexIndex].position = vec4(0.5f, -0.5f, 0.5f, 0.0f) + position; 
-        vertices[vertexIndex].coords = bottomLeft(texCoords[(idBlocks[index] * 6)  + 2]);    
+        vertices[vertexIndex].coords = bottomLeft(texCoords[indexFace]);    
         vertexIndex++;
     }          
                 
     //bottom
     if((facesFlag & BOTTOM) != 0){
+        int indexFace = (idBlocks[index] * 6)  + 1;
         vertices[vertexIndex].position =  vec4(-0.5f, -0.5f, -0.5f, 0.0f) + position;
-        vertices[vertexIndex].coords = topRight(texCoords[(idBlocks[index] * 6)  + 1]);        
+        vertices[vertexIndex].coords = topRight(texCoords[indexFace]);        
         vertexIndex++;
         vertices[vertexIndex].position = vec4(0.5f, -0.5f, -0.5f, 0.0f) + position; 
-        vertices[vertexIndex].coords = topLeft(texCoords[(idBlocks[index] * 6)  + 1]);
+        vertices[vertexIndex].coords = topLeft(texCoords[indexFace]);
         vertexIndex++;
         vertices[vertexIndex].position = vec4(0.5f, -0.5f, 0.5f, 0.0f) + position; 
-        vertices[vertexIndex].coords = bottomLeft(texCoords[(idBlocks[index] * 6)  + 1]);
+        vertices[vertexIndex].coords = bottomLeft(texCoords[indexFace]);
         vertexIndex++;
         vertices[vertexIndex].position = vec4(0.5f, -0.5f, 0.5f, 0.0f) + position; 
-        vertices[vertexIndex].coords = bottomLeft(texCoords[(idBlocks[index] * 6)  + 1]);
+        vertices[vertexIndex].coords = bottomLeft(texCoords[indexFace]);
         vertexIndex++;
         vertices[vertexIndex].position = vec4(-0.5f, -0.5f, 0.5f, 0.0f) + position; 
-        vertices[vertexIndex].coords = bottomRight(texCoords[(idBlocks[index] * 6)  + 1]);
+        vertices[vertexIndex].coords = bottomRight(texCoords[indexFace]);
         vertexIndex++;
         vertices[vertexIndex].position = vec4(-0.5f, -0.5f, -0.5f, 0.0f) + position; 
-        vertices[vertexIndex].coords = topRight(texCoords[(idBlocks[index] * 6)  + 1]);
+        vertices[vertexIndex].coords = topRight(texCoords[indexFace]);
         vertexIndex++;
     }
 
     //top
     if((facesFlag & TOP) != 0){
+        int indexFace = (idBlocks[index] * 6);
         vertices[vertexIndex].position =  vec4(-0.5f, 0.5f, -0.5f, 0.0f) + position; 
-        vertices[vertexIndex].coords = topLeft(texCoords[idBlocks[index] * 6]);
+        vertices[vertexIndex].coords = topLeft(texCoords[indexFace]);
         vertexIndex++;
         vertices[vertexIndex].position = vec4(0.5f, 0.5f, 0.5f, 0.0f) + position; 
-        vertices[vertexIndex].coords = bottomRight(texCoords[idBlocks[index] * 6]);
+        vertices[vertexIndex].coords = bottomRight(texCoords[indexFace]);
         vertexIndex++;
         vertices[vertexIndex].position = vec4(0.5f, 0.5f, -0.5f, 0.0f) + position; 
-        vertices[vertexIndex].coords = topRight(texCoords[idBlocks[index] * 6]);
+        vertices[vertexIndex].coords = topRight(texCoords[indexFace]);
         vertexIndex++;
         vertices[vertexIndex].position = vec4(0.5f, 0.5f, 0.5f, 0.0f) + position; 
-        vertices[vertexIndex].coords = bottomRight(texCoords[idBlocks[index] * 6]);
+        vertices[vertexIndex].coords = bottomRight(texCoords[indexFace]);
         vertexIndex++;
         vertices[vertexIndex].position = vec4(-0.5f, 0.5f, -0.5f, 0.0f) + position; 
-        vertices[vertexIndex].coords = topLeft(texCoords[idBlocks[index] * 6]);
+        vertices[vertexIndex].coords = topLeft(texCoords[indexFace]);
         vertexIndex++;
         vertices[vertexIndex].position = vec4(-0.5f, 0.5f, 0.5f, 0.0f) + position; 
-        vertices[vertexIndex].coords = bottomLeft(texCoords[idBlocks[index] * 6]);
+        vertices[vertexIndex].coords = bottomLeft(texCoords[indexFace]);
     }
     
 }

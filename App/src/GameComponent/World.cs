@@ -33,8 +33,7 @@ public class World : GameObject
         this.worldMode = worldMode;
         worldUi = new WorldUi(this);
         worldNaturalGeneration = new WorldNaturalGeneration();
-        regionStorage = new RegionStorage("./Worlds/newWorld");
-        chunkManager = new ChunkManager(radius, worldNaturalGeneration, regionStorage);
+        regionStorage = new RegionStorage("./Worlds/newWorld"); chunkManager = new ChunkManager(radius, worldNaturalGeneration, regionStorage);
     }
 
 
@@ -237,15 +236,15 @@ public class World : GameObject
             Vector3D<int>.Zero,
             new Vector3D<int>((int)Chunk.CHUNK_SIZE, 0, 0),
             
-            new Vector3D<int>(-(int)Chunk.CHUNK_SIZE, 0, (int)Chunk.CHUNK_SIZE),
-            new Vector3D<int>(-(int)Chunk.CHUNK_SIZE, 0, -(int)Chunk.CHUNK_SIZE),
-            new Vector3D<int>(-(int)Chunk.CHUNK_SIZE, 0, 0),
-            new Vector3D<int>(0, 0, -(int)Chunk.CHUNK_SIZE),
-            new Vector3D<int>((int)Chunk.CHUNK_SIZE, 0, (int)Chunk.CHUNK_SIZE),
-            new Vector3D<int>((int)Chunk.CHUNK_SIZE, 0, -(int)Chunk.CHUNK_SIZE),
-            new Vector3D<int>(-(int)Chunk.CHUNK_SIZE, 0, 0),
-            new Vector3D<int>(-(int)Chunk.CHUNK_SIZE, 0, (int)Chunk.CHUNK_SIZE),
-            new Vector3D<int>(-(int)Chunk.CHUNK_SIZE, 0, -(int)Chunk.CHUNK_SIZE)
+            //new Vector3D<int>(-(int)Chunk.CHUNK_SIZE, 0, (int)Chunk.CHUNK_SIZE),
+            //new Vector3D<int>(-(int)Chunk.CHUNK_SIZE, 0, -(int)Chunk.CHUNK_SIZE),
+            //new Vector3D<int>(-(int)Chunk.CHUNK_SIZE, 0, 0),
+            //new Vector3D<int>(0, 0, -(int)Chunk.CHUNK_SIZE),
+            //new Vector3D<int>((int)Chunk.CHUNK_SIZE, 0, (int)Chunk.CHUNK_SIZE),
+            //new Vector3D<int>((int)Chunk.CHUNK_SIZE, 0, -(int)Chunk.CHUNK_SIZE),
+            //new Vector3D<int>(-(int)Chunk.CHUNK_SIZE, 0, 0),
+            //new Vector3D<int>(-(int)Chunk.CHUNK_SIZE, 0, (int)Chunk.CHUNK_SIZE),
+            //new Vector3D<int>(-(int)Chunk.CHUNK_SIZE, 0, -(int)Chunk.CHUNK_SIZE)
         };
         chunkManager.AddChunksToLoad(postions.ToList());
     }

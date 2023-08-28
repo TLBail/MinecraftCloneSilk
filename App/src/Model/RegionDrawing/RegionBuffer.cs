@@ -11,6 +11,8 @@ namespace MinecraftCloneSilk.Model.RegionDrawing;
 
 public class RegionBuffer : IDisposable
 {
+    const int SUPER_CHUNK_SIZE = Chunk.CHUNK_SIZE + 2;
+    const int SUPER_CHUNK_NB_BLOCK = SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE;
     
     internal static BufferObject<bool> transparentBlocksBuffer; 
     internal static BufferObject<Vector4D<float>> textureCoordsBuffer;
@@ -18,6 +20,7 @@ public class RegionBuffer : IDisposable
     internal static BufferObject<Vector4D<float>> chunksPositionBuffer;
     internal static BufferObject<BlockData> blockDataBuffer;
     internal static BufferObject<CountCompute> countComputeBuffer;
+    internal static BufferObject<CubeVertex> outputBuffer;
 
 
 
@@ -45,7 +48,7 @@ public class RegionBuffer : IDisposable
         gl.ShaderStorageBlockBinding(computeShader.handle, ouputBufferIndex, 1);
         
         //init block data buffer
-        blockDataBuffer = new BufferObject<BlockData>(gl, CHUNKS_PER_REGION * Chunk.CHUNK_SIZE * Chunk.CHUNK_SIZE * Chunk.CHUNK_SIZE, BufferTargetARB.ShaderStorageBuffer,
+        blockDataBuffer = new BufferObject<BlockData>(gl, CHUNKS_PER_REGION * SUPER_CHUNK_NB_BLOCK, BufferTargetARB.ShaderStorageBuffer,
             BufferUsageARB.StreamDraw);
         
         //init countComputeBuffer
@@ -84,6 +87,16 @@ public class RegionBuffer : IDisposable
         // init chunks position buffer
         chunksPositionBuffer = new BufferObject<Vector4D<float>>(gl, CHUNKS_PER_REGION, BufferTargetARB.UniformBuffer, BufferUsageARB.StreamDraw);
         gl.BindBufferBase(BufferTargetARB.UniformBuffer, 6, chunksPositionBuffer.handle);
+        
+        
+        // init output buffer
+        
+        const int nbFacePerBlock = 6;
+        const int nbVertexPerFace = 6;
+        int nbVertexMax = (int)(nbVertexPerFace * nbFacePerBlock * Chunk.CHUNK_SIZE * Chunk.CHUNK_SIZE *
+                                Chunk.CHUNK_SIZE);
+        outputBuffer = new BufferObject<CubeVertex>(gl, CHUNKS_PER_REGION * nbVertexMax, BufferTargetARB.ShaderStorageBuffer,
+            BufferUsageARB.StaticCopy);
     }
 
 
@@ -92,15 +105,6 @@ public class RegionBuffer : IDisposable
         this.gl = gl;
         chunks = new Chunk?[CHUNKS_PER_REGION];
         
-        const int nbFacePerBlock = 6;
-        const int nbVertexPerFace = 6;
-        int nbVertexMax = (int)(nbVertexPerFace * nbFacePerBlock * Chunk.CHUNK_SIZE * Chunk.CHUNK_SIZE *
-                                Chunk.CHUNK_SIZE);
-        vbo = new BufferObject<CubeVertex>(gl, nbVertexMax, BufferTargetARB.ArrayBuffer);
-        vao = new VertexArrayObject<CubeVertex, uint>(gl, vbo);
-        vao.Bind();
-        vao.VertexAttributePointer(0, 4, VertexAttribPointerType.Float, "position");
-        vao.VertexAttributePointer(1, 4, VertexAttribPointerType.Float, "texCoords");
     }
 
     public void AddChunk(Chunk chunk) {
@@ -124,25 +128,17 @@ public class RegionBuffer : IDisposable
         resetCountCompute[0].vertexCount = 0;
         countComputeBuffer.SendData(resetCountCompute, 0);
         
-        Span<BlockData> blockDatasSpan = stackalloc BlockData[chunkCount * Chunk.CHUNK_SIZE * Chunk.CHUNK_SIZE * Chunk.CHUNK_SIZE];
+        //create super block data
         
-        // copy Blockdata
-        int sizeOfChunksBlock = Chunk.CHUNK_SIZE * Chunk.CHUNK_SIZE * Chunk.CHUNK_SIZE;
-        int offset = 0;
-        for (int i = 0; i < chunkCount; i++) {
-            Chunk chunk = chunks[i]!;
-            if(chunk.chunkState != ChunkState.DRAWABLE) continue;
-            fixed(BlockData* blockDataPtr = chunk.blocks) {
-                Span<BlockData> blockDataSpan = new Span<BlockData>(blockDataPtr, Chunk.CHUNK_SIZE * Chunk.CHUNK_SIZE * Chunk.CHUNK_SIZE);
-                blockDataSpan.CopyTo(blockDatasSpan[offset..]);
-            }
-            offset += sizeOfChunksBlock;
-        }
+        Span<BlockData> blockDatasSpan = stackalloc BlockData[chunkCount * SUPER_CHUNK_NB_BLOCK];
+        
+        CreateSuperChunk(blockDatasSpan);
+        
         gl.BindBufferRange(GLEnum.ShaderStorageBuffer, 2, blockDataBuffer.handle, 0, (nuint)(sizeof(BlockData) * blockDatasSpan.Length));
         blockDataBuffer.SendData(blockDatasSpan, 0);
         
         // update output buffer to vbo
-        gl.BindBufferBase(BufferTargetARB.ShaderStorageBuffer, 1, vbo.handle);
+        gl.BindBufferBase(BufferTargetARB.ShaderStorageBuffer, 1, outputBuffer.handle);
         
         // update countComputeBuffer
         gl.BindBufferBase(BufferTargetARB.ShaderStorageBuffer, 5, countComputeBuffer.handle);
@@ -164,6 +160,102 @@ public class RegionBuffer : IDisposable
         gl.MemoryBarrier(MemoryBarrierMask.AllBarrierBits);
         CountCompute countCompute = countComputeBuffer.GetData();
         nbVertex = countCompute.vertexCount;
+        
+        
+        
+        vbo?.Dispose();
+        vao?.Dispose();
+        
+        vbo = new BufferObject<CubeVertex>(gl, nbVertex, BufferTargetARB.ArrayBuffer);
+        // copy output buffer to vbo
+        outputBuffer.Bind(BufferTargetARB.CopyReadBuffer);
+        vbo.Bind(BufferTargetARB.CopyWriteBuffer);
+        gl.CopyBufferSubData(CopyBufferSubDataTarget.CopyReadBuffer, CopyBufferSubDataTarget.CopyWriteBuffer, 0, 0,(uint)( nbVertex * sizeof(CubeVertex)));
+        
+        vao = new VertexArrayObject<CubeVertex, uint>(gl, vbo);
+        vao.Bind();
+        vao.VertexAttributePointer(0, 4, VertexAttribPointerType.Float, "position");
+        vao.VertexAttributePointer(1, 4, VertexAttribPointerType.Float, "texCoords");
+    }
+    
+    
+    private unsafe void CreateSuperChunk(Span<BlockData> span) {
+        var size = span.Length;
+        fixed(BlockData* blockDataPtr = span) {
+            BlockData* evil = blockDataPtr;
+            Parallel.For(0, chunkCount, i =>
+            {
+                Span<BlockData> superChunk = new Span<BlockData>(evil, size);
+                int offset = i * SUPER_CHUNK_NB_BLOCK;
+                Chunk chunk = chunks[i]!;
+                if(chunk.chunkState != ChunkState.DRAWABLE) return;
+           
+                // inner chunk
+                fixed(BlockData* blockDataPtr = chunk.blocks) {
+                    Span<BlockData> blockDataSpan = new Span<BlockData>(blockDataPtr, Chunk.CHUNK_SIZE * Chunk.CHUNK_SIZE * Chunk.CHUNK_SIZE);
+                    for (int x = 0; x < 16; x++) {
+                        for (int y = 0; y < 16; y++) {
+                            int offsetSuperChunk = ((x + 1) * 18 * 18 + (y + 1) * 18 + 1) + offset;
+                            int offsetBlocks = x * 16 * 16 + y * 16;
+                            blockDataSpan.Slice(offsetBlocks, 16).CopyTo(superChunk[offsetSuperChunk..]);
+                        }
+                    }
+                }
+                // left chunk
+                Chunk leftNeighbor = chunk.chunksNeighbors![(int)Face.LEFT];
+                for(int y = 0; y < 16; y++) {
+                    for(int z = 0; z < 16; z++) {
+                        int superChunkIndex = 0 * 18 * 18 + (y + 1) * 18 + (z + 1);
+                        superChunk[offset + superChunkIndex] = leftNeighbor.blocks[15,y,z];
+                    }
+                }
+            
+                // right chunk
+                Chunk rightNeighbor = chunk.chunksNeighbors![(int)Face.RIGHT];
+                for(int y = 0; y < 16; y++) {
+                    for(int z = 0; z < 16; z++) {
+                        int superChunkIndex = 17 * 18 * 18 + (y + 1) * 18 + (z + 1);
+                        superChunk[offset + superChunkIndex] = rightNeighbor.blocks[0,y,z];
+                    }
+                }
+            
+                // top chunk
+                Chunk topNeighbor = chunk.chunksNeighbors![(int)Face.TOP];
+                for(int x = 0; x < 16; x++) {
+                    for(int z = 0; z < 16; z++) {
+                        int superChunkIndex = (x + 1) * 18 * 18 + 17 * 18 + (z + 1);
+                        superChunk[offset + superChunkIndex] = topNeighbor.blocks[x,0,z];
+                    }
+                }
+            
+                // bottom chunk
+                Chunk bottomNeighbor = chunk.chunksNeighbors![(int)Face.BOTTOM];
+                for(int x = 0; x < 16; x++) {
+                    for(int z = 0; z < 16; z++) {
+                        int superChunkIndex = (x + 1) * 18 * 18 + 0 * 18 + (z + 1);
+                        superChunk[offset + superChunkIndex] = bottomNeighbor.blocks[x,15,z];
+                    }
+                }
+            
+                // front chunk
+                Chunk frontNeighbor = chunk.chunksNeighbors![(int)Face.FRONT];
+                for(int x = 0; x < 16; x++) {
+                    for(int y = 0; y < 16; y++) {
+                        int superChunkIndex = (x + 1) * 18 * 18 + (y + 1) * 18 + 17;
+                        superChunk[offset + superChunkIndex] = frontNeighbor.blocks[x,y,0];
+                    }
+                }
+            
+                // back chunk
+                Chunk backNeighbor = chunk.chunksNeighbors![(int)Face.BACK];
+                for(int x = 0; x < 16; x++) {
+                    for(int y = 0; y < 16; y++) {
+                        int superChunkIndex = (x + 1) * 18 * 18 + (y + 1) * 18 + 0;
+                        superChunk[offset + superChunkIndex] = backNeighbor.blocks[x,y,15];
+                    }
+                }
+            });
+        }
     }
 
     public void Dispose() {

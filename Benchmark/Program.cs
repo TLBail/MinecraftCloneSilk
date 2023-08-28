@@ -7,7 +7,7 @@ using BenchmarkDotNet.Running;
 class Program
 {
     static void Main(string[] args) {
-        runChunkIOBenchmark();
+        BenchmarkRunner.Run<ChunkToSuperChunkBenchmark>();
         
     }
 
