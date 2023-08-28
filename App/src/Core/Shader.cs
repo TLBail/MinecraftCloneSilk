@@ -35,6 +35,9 @@ namespace MinecraftCloneSilk.Core
             this.gl.DetachShader(handle, fragment);
             this.gl.DeleteShader(vertex);
             this.gl.DeleteShader(fragment);
+            
+            uint uniformMatrices = GetUniformBlockIndex("Matrices");
+            this.gl.UniformBlockBinding(handle, uniformMatrices, 0);
         }
 
         public void Use()

@@ -98,8 +98,9 @@ public class RegionBuffer : IDisposable
                                 Chunk.CHUNK_SIZE);
         vbo = new BufferObject<CubeVertex>(gl, nbVertexMax, BufferTargetARB.ArrayBuffer);
         vao = new VertexArrayObject<CubeVertex, uint>(gl, vbo);
-        
-
+        vao.Bind();
+        vao.VertexAttributePointer(0, 4, VertexAttribPointerType.Float, "position");
+        vao.VertexAttributePointer(1, 4, VertexAttribPointerType.Float, "texCoords");
     }
 
     public void AddChunk(Chunk chunk) {
