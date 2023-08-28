@@ -83,7 +83,7 @@ public class RegionBuffer : IDisposable
         
         // init chunks position buffer
         chunksPositionBuffer = new BufferObject<Vector4D<float>>(gl, CHUNKS_PER_REGION, BufferTargetARB.UniformBuffer, BufferUsageARB.StreamDraw);
-        gl.BindBufferBase(BufferTargetARB.UniformBuffer, 0, chunksPositionBuffer.handle);
+        gl.BindBufferBase(BufferTargetARB.UniformBuffer, 6, chunksPositionBuffer.handle);
     }
 
 

@@ -26,9 +26,6 @@ public class ComputeShader :  IDisposable
         gl.DetachShader(handle, compute);
         gl.DeleteShader(compute);
         
-        
-        
-
     }
     
     public void Use() {
