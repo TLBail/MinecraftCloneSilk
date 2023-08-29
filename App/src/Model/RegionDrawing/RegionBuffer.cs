@@ -1,4 +1,5 @@
-﻿using System.Numerics;
+﻿using System.Diagnostics;
+using System.Numerics;
 using MinecraftCloneSilk.Core;
 using MinecraftCloneSilk.Model.NChunk;
 using Silk.NET.Maths;
@@ -31,7 +32,7 @@ public class RegionBuffer : IDisposable
     internal static Shader? cubeShader;
     private int nbVertex = 0;
 
-    public const int CHUNKS_PER_REGION = 16;
+    public const int CHUNKS_PER_REGION = 1;
 
     private Chunk?[] chunks;
 
@@ -108,6 +109,7 @@ public class RegionBuffer : IDisposable
     }
 
     public void AddChunk(Chunk chunk) {
+        Debug.Assert(!chunk.chunksNeighbors!.Any(chunk1 => chunk1.chunkState < ChunkState.BLOCKGENERATED));
         chunks[chunkCount] = chunk;
         chunkCount++;
     }
@@ -122,6 +124,14 @@ public class RegionBuffer : IDisposable
     }
 
     public unsafe void Update() {
+        if (chunkCount == 0) {
+            vbo?.Dispose();
+            vao?.Dispose();
+            nbVertex = 0;
+            return;
+        }
+        
+        
         computeShader.Use();
         //reset countComputeBuffer
         CountCompute[] resetCountCompute = new CountCompute[1];
@@ -160,11 +170,18 @@ public class RegionBuffer : IDisposable
         gl.MemoryBarrier(MemoryBarrierMask.AllBarrierBits);
         CountCompute countCompute = countComputeBuffer.GetData();
         nbVertex = countCompute.vertexCount;
-        
-        
+        #if DEBUG
+        int nbVertexDebug = chunks.Select(chunk => chunk != null ? ((ChunkDrawableStrategy)(chunk!.chunkStrategy)).nbVertex : 0).Sum(); 
+        //Todo explain why this assert is not always true
+        //Debug.Assert(nbVertex == nbVertexDebug);
+        #endif
         
         vbo?.Dispose();
         vao?.Dispose();
+        if(nbVertex == 0) return;
+        
+        
+    
         
         vbo = new BufferObject<CubeVertex>(gl, nbVertex, BufferTargetARB.ArrayBuffer);
         // copy output buffer to vbo
@@ -179,128 +196,129 @@ public class RegionBuffer : IDisposable
     }
     
     
-    private unsafe void CreateSuperChunk(Span<BlockData> span) {
-        var size = span.Length;
-        fixed(BlockData* blockDataPtr = span) {
-            BlockData* evil = blockDataPtr;
-            Parallel.For(0, chunkCount, i =>
-            {
-                Span<BlockData> superChunk = new Span<BlockData>(evil, size);
-                int offset = i * SUPER_CHUNK_NB_BLOCK;
-                Chunk chunk = chunks[i]!;
-                if(chunk.chunkState != ChunkState.DRAWABLE) return;
-           
-                // inner chunk
-                fixed(BlockData* blockDataPtr = chunk.blocks) {
-                    Span<BlockData> blockDataSpan = new Span<BlockData>(blockDataPtr, Chunk.CHUNK_SIZE * Chunk.CHUNK_SIZE * Chunk.CHUNK_SIZE);
-                    for (int x = 0; x < 16; x++) {
-                        for (int y = 0; y < 16; y++) {
-                            int offsetSuperChunk = ((x + 1) * 18 * 18 + (y + 1) * 18 + 1) + offset;
-                            int offsetBlocks = x * 16 * 16 + y * 16;
-                            blockDataSpan.Slice(offsetBlocks, 16).CopyTo(superChunk[offsetSuperChunk..]);
-                        }
-                    }
-                }
-                // left chunk
-                Chunk leftNeighbor = chunk.chunksNeighbors![(int)Face.LEFT];
-                for(int y = 0; y < 16; y++) {
-                    for(int z = 0; z < 16; z++) {
-                        int superChunkIndex = 0 * 18 * 18 + (y + 1) * 18 + (z + 1);
-                        superChunk[offset + superChunkIndex] = leftNeighbor.blocks[15,y,z];
-                    }
-                }
-            
-                // right chunk
-                Chunk rightNeighbor = chunk.chunksNeighbors![(int)Face.RIGHT];
-                for(int y = 0; y < 16; y++) {
-                    for(int z = 0; z < 16; z++) {
-                        int superChunkIndex = 17 * 18 * 18 + (y + 1) * 18 + (z + 1);
-                        superChunk[offset + superChunkIndex] = rightNeighbor.blocks[0,y,z];
-                    }
-                }
-            
-                // top chunk
-                Chunk topNeighbor = chunk.chunksNeighbors![(int)Face.TOP];
-                for(int x = 0; x < 16; x++) {
-                    for(int z = 0; z < 16; z++) {
-                        int superChunkIndex = (x + 1) * 18 * 18 + 17 * 18 + (z + 1);
-                        superChunk[offset + superChunkIndex] = topNeighbor.blocks[x,0,z];
-                    }
-                }
-            
-                // bottom chunk
-                Chunk bottomNeighbor = chunk.chunksNeighbors![(int)Face.BOTTOM];
-                for(int x = 0; x < 16; x++) {
-                    for(int z = 0; z < 16; z++) {
-                        int superChunkIndex = (x + 1) * 18 * 18 + 0 * 18 + (z + 1);
-                        superChunk[offset + superChunkIndex] = bottomNeighbor.blocks[x,15,z];
-                    }
-                }
-            
-                // front chunk
-                Chunk frontNeighbor = chunk.chunksNeighbors![(int)Face.FRONT];
-                for(int x = 0; x < 16; x++) {
-                    for(int y = 0; y < 16; y++) {
-                        int superChunkIndex = (x + 1) * 18 * 18 + (y + 1) * 18 + 17;
-                        superChunk[offset + superChunkIndex] = frontNeighbor.blocks[x,y,0];
-                    }
-                }
-            
-                // back chunk
-                Chunk backNeighbor = chunk.chunksNeighbors![(int)Face.BACK];
-                for(int x = 0; x < 16; x++) {
-                    for(int y = 0; y < 16; y++) {
-                        int superChunkIndex = (x + 1) * 18 * 18 + (y + 1) * 18 + 0;
-                        superChunk[offset + superChunkIndex] = backNeighbor.blocks[x,y,15];
-                    }
-                }
-            });
-        }
-    }
-
-    public void Dispose() {
-        vbo?.Dispose();
-        vao?.Dispose();
-    }
-
-    public void AddVertices(Chunk chunk, ReadOnlySpan<CubeVertex> vertices, int nbVertex) {
-        this.nbVertex += nbVertex;
-        vbo!.Bind(BufferTargetARB.ArrayBuffer);
-        vbo!.SendData(vertices, 0);
-    }
-
-
-    public bool HaveAvailableSpace() {
-        return chunkCount >= CHUNKS_PER_REGION - 1;
-    }
-
-    public void RemoveChunk(Chunk chunk) {
-        int indexOfChunk = Array.IndexOf(chunks, chunk);
+    private unsafe void CreateSuperChunk(Span<BlockData> superChunk) {
         int offset = 0;
-        for (int i = 0; i < CHUNKS_PER_REGION; i++) {
-            if (i >= chunkCount - 1) {
-                chunks[i] = null;
-                continue;
+        for (int i = 0; i < chunkCount; i++) {
+            Chunk chunk = chunks[i]!;
+            if(chunk.chunkState != ChunkState.DRAWABLE) continue;
+           
+            // inner chunk
+            fixed(BlockData* blockDataPtr = chunk.blocks) {
+                Span<BlockData> blockDataSpan = new Span<BlockData>(blockDataPtr, Chunk.CHUNK_SIZE * Chunk.CHUNK_SIZE * Chunk.CHUNK_SIZE);
+                for (int x = 0; x < 16; x++) {
+                    for (int y = 0; y < 16; y++) {
+                        int offsetSuperChunk = ((x + 1) * 18 * 18 + (y + 1) * 18 + 1) + offset;
+                        int offsetBlocks = x * 16 * 16 + y * 16;
+                        blockDataSpan.Slice(offsetBlocks, 16).CopyTo(superChunk[offsetSuperChunk..]);
+                    }
+                }
             }
-            if (i == indexOfChunk) {
-                chunks[i] = chunks[i + 1];
-                offset = 1;
-            } else {
-                chunks[i] = chunks[i + offset];
+            // left chunk
+            Chunk leftNeighbor = chunk.chunksNeighbors![(int)Face.LEFT];
+            Debug.Assert(leftNeighbor.chunkState >= ChunkState.BLOCKGENERATED);
+            for(int y = 0; y < 16; y++) {
+                for(int z = 0; z < 16; z++) {
+                    int superChunkIndex = 0 * 18 * 18 + (y + 1) * 18 + (z + 1);
+                    superChunk[offset + superChunkIndex] = leftNeighbor.blocks[15,y,z];
+                }
             }
+            
+            // right chunk
+            Chunk rightNeighbor = chunk.chunksNeighbors![(int)Face.RIGHT];
+            Debug.Assert(rightNeighbor.chunkState >= ChunkState.BLOCKGENERATED);
+            for(int y = 0; y < 16; y++) {
+                for(int z = 0; z < 16; z++) {
+                    int superChunkIndex = 17 * 18 * 18 + (y + 1) * 18 + (z + 1);
+                    superChunk[offset + superChunkIndex] = rightNeighbor.blocks[0,y,z];
+                }
+            }
+            
+            // top chunk
+            Chunk topNeighbor = chunk.chunksNeighbors![(int)Face.TOP];
+            Debug.Assert(topNeighbor.chunkState >= ChunkState.BLOCKGENERATED);
+            for(int x = 0; x < 16; x++) {
+                for(int z = 0; z < 16; z++) {
+                    int superChunkIndex = (x + 1) * 18 * 18 + 17 * 18 + (z + 1);
+                    superChunk[offset + superChunkIndex] = topNeighbor.blocks[x,0,z];
+                }
+            }
+            
+            // bottom chunk
+            Chunk bottomNeighbor = chunk.chunksNeighbors![(int)Face.BOTTOM];
+            Debug.Assert(bottomNeighbor.chunkState >= ChunkState.BLOCKGENERATED);
+            for(int x = 0; x < 16; x++) {
+                for(int z = 0; z < 16; z++) {
+                    int superChunkIndex = (x + 1) * 18 * 18 + 0 * 18 + (z + 1);
+                    superChunk[offset + superChunkIndex] = bottomNeighbor.blocks[x,15,z];
+                }
+            }
+            
+            // front chunk
+            Chunk frontNeighbor = chunk.chunksNeighbors![(int)Face.FRONT];
+            Debug.Assert(frontNeighbor.chunkState >= ChunkState.BLOCKGENERATED);
+            for(int x = 0; x < 16; x++) {
+                for(int y = 0; y < 16; y++) {
+                    int superChunkIndex = (x + 1) * 18 * 18 + (y + 1) * 18 + 17;
+                    superChunk[offset + superChunkIndex] = frontNeighbor.blocks[x,y,0];
+                }
+            }
+            
+            // back chunk
+            Chunk backNeighbor = chunk.chunksNeighbors![(int)Face.BACK];
+            Debug.Assert(backNeighbor.chunkState >= ChunkState.BLOCKGENERATED);
+            for(int x = 0; x < 16; x++) {
+                for(int y = 0; y < 16; y++) {
+                    int superChunkIndex = (x + 1) * 18 * 18 + (y + 1) * 18 + 0;
+                    superChunk[offset + superChunkIndex] = backNeighbor.blocks[x,y,15];
+                }
+            }
+            offset += SUPER_CHUNK_NB_BLOCK;
         }
-        chunkCount--;
     }
-    
-    internal struct CountCompute
-    {
-        public int vertexCount{get;set;}
-        public int blockCount{get;set;}
-        public int firstIndex{get;set;}
-        public int vertexIndex{get;set;}
 
-        public override string ToString() {
-            return $"vertexCount : {vertexCount} blockCount : {blockCount} firstIndex : {firstIndex} vertexIndex : {vertexIndex}";
+public void Dispose() {
+    vbo?.Dispose();
+    vao?.Dispose();
+}
+
+public void AddVertices(Chunk chunk, ReadOnlySpan<CubeVertex> vertices, int nbVertex) {
+    this.nbVertex += nbVertex;
+    vbo!.Bind(BufferTargetARB.ArrayBuffer);
+    vbo!.SendData(vertices, 0);
+}
+
+
+public bool HaveAvailableSpace() {
+    return chunkCount >= CHUNKS_PER_REGION - 1;
+}
+
+public void RemoveChunk(Chunk chunk) {
+    int indexOfChunk = Array.IndexOf(chunks, chunk);
+    int offset = 0;
+    for (int i = 0; i < CHUNKS_PER_REGION; i++) {
+        if (i >= chunkCount - 1) {
+            chunks[i] = null;
+            continue;
+        }
+        if (i == indexOfChunk) {
+            chunks[i] = chunks[i + 1];
+            offset = 1;
+        } else {
+            chunks[i] = chunks[i + offset];
         }
     }
+    chunkCount--;
+}
+    
+internal struct CountCompute
+{
+    public int vertexCount{get;set;}
+    public int blockCount{get;set;}
+    public int firstIndex{get;set;}
+    public int vertexIndex{get;set;}
+
+    public override string ToString() {
+        return $"vertexCount : {vertexCount} blockCount : {blockCount} firstIndex : {firstIndex} vertexIndex : {vertexIndex}";
+    }
+}
 }

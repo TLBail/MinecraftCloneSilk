@@ -106,7 +106,6 @@ public class ChunkManager : IChunkManager, IDisposable
         Stack<ChunkLoadingTask> chunksToLoad = new Stack<ChunkLoadingTask>(positions.Count);
         foreach (Vector3D<int> position in positions) {
             var chunk = GetChunk(position);
-            if (chunk.chunkState < ChunkState.DRAWABLE)
                 chunksToLoad.Push(new ChunkLoadingTask(chunk, ChunkState.DRAWABLE));
         }
         chunkLoader = new ChunkLoader(chunkStorage);
@@ -117,14 +116,24 @@ public class ChunkManager : IChunkManager, IDisposable
     public bool TryToUnloadChunk(Vector3D<int> position) {
         Chunk chunkToUnload = chunks[position];
         if(chunkToUnload.isRequiredByChunkLoader()) return false;
+        ChunkState minimumChunkStateOfChunk = GetMinimumChunkStateOfChunk(position); 
+        if(minimumChunkStateOfChunk == ChunkState.BLOCKGENERATED && chunkToUnload.chunkState == ChunkState.DRAWABLE) {
+            chunkToUnload.Dispose();
+            chunkToUnload.SetChunkState(ChunkState.BLOCKGENERATED);
+            chunkToUnload.wantedChunkState = ChunkState.BLOCKGENERATED;
+            return false;
+        }
+        if(minimumChunkStateOfChunk > ChunkState.EMPTY) return false;
+        
         if (chunks.TryRemove(new KeyValuePair<Vector3D<int>, Chunk>(position, chunkToUnload))) {
             chunkToUnload.Dispose();
+            chunkToUnload.addRequiredByChunkUnloader(); 
             chunksToUnload.Add(chunkToUnload);
+            return true;
         } else {
             Debug.Assert(false,"race condition while deleting chunk");
             return false;
         }
-        return true;
     }
 
     private void ForceUnloadChunk(Chunk chunkToUnload) {
@@ -134,6 +143,30 @@ public class ChunkManager : IChunkManager, IDisposable
         chunksToUnload.Add(chunkToUnload);
     }
     
+    private ChunkState GetMinimumChunkStateOfChunk(Vector3D<int> position) {
+        ChunkState chunkState = ChunkState.EMPTY;
+        Chunk chunk;
+        if (chunks.TryGetValue(position + new Vector3D<int>((int)Chunk.CHUNK_SIZE, 0, 0), out chunk) &&
+            chunk.GetMinimumChunkStateOfNeighbors() > chunkState)
+            chunkState = chunk.GetMinimumChunkStateOfNeighbors();
+        if (chunks.TryGetValue(position + new Vector3D<int>(-(int)Chunk.CHUNK_SIZE, 0, 0), out chunk) &&
+            chunk.GetMinimumChunkStateOfNeighbors() > chunkState)
+            chunkState = chunk.GetMinimumChunkStateOfNeighbors();
+        if (chunks.TryGetValue(position + new Vector3D<int>(0, (int)Chunk.CHUNK_SIZE, 0), out chunk) &&
+            chunk.GetMinimumChunkStateOfNeighbors() > chunkState)
+            chunkState = chunk.GetMinimumChunkStateOfNeighbors();
+        if (chunks.TryGetValue(position + new Vector3D<int>(0, -(int)Chunk.CHUNK_SIZE, 0), out chunk) &&
+            chunk.GetMinimumChunkStateOfNeighbors() > chunkState)
+            chunkState = chunk.GetMinimumChunkStateOfNeighbors();
+        if (chunks.TryGetValue(position + new Vector3D<int>(0, 0, (int)Chunk.CHUNK_SIZE), out chunk) &&
+            chunk.GetMinimumChunkStateOfNeighbors() > chunkState)
+            chunkState = chunk.GetMinimumChunkStateOfNeighbors();
+        if (chunks.TryGetValue(position + new Vector3D<int>(0, 0, -(int)Chunk.CHUNK_SIZE), out chunk) &&
+            chunk.GetMinimumChunkStateOfNeighbors() > chunkState)
+            chunkState = chunk.GetMinimumChunkStateOfNeighbors();
+
+        return chunkState;
+    }
 
     public void ToImGui() {
         ImGui.Text("number of chunks " + chunks.Count);

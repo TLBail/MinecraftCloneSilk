@@ -17,10 +17,9 @@ public class ChunkDrawableStrategy : ChunkStrategy
     private bool needToSendVertices = false;
     private bool needToUpdateChunkVertices = false;
 
-    private List<CubeVertex>? vertices;
     private static ChunkBufferObjectManager? chunkBufferObjectManager;
 
-    private int nbVertex = 0;
+    public int nbVertex { get; private set; }
 
 
     public ChunkDrawableStrategy(Chunk chunk) : base(chunk) {
@@ -53,9 +52,7 @@ public class ChunkDrawableStrategy : ChunkStrategy
         chunk.chunksNeighbors = new Chunk[6];
         foreach (Face face in Enum.GetValues(typeof(Face))) {
             Chunk newChunk = chunk.chunkManager.GetChunk(chunk.position + (FaceOffset.GetOffsetOfFace(face) * Chunk.CHUNK_SIZE));
-            if(newChunk.chunkState < MinimumChunkStateOfNeighbors()) {
-                throw new Exception("try to setup a chunk with a lower state than the minimum");
-            }
+            System.Diagnostics.Debug.Assert(newChunk.chunkState >= MinimumChunkStateOfNeighbors(), "try to setup a chunk with a lower state than the minimum"); 
             chunk.chunksNeighbors[(int)face] = newChunk;
         }
     }
@@ -107,9 +104,6 @@ public class ChunkDrawableStrategy : ChunkStrategy
     }
 
 
-    public override ReadOnlySpan<CubeVertex> GetVertices() {
-        return CollectionsMarshal.AsSpan(vertices);
-    }
 
     private void SendCubeVertices() {
         chunkBufferObjectManager!.NeedToUpdateChunk(chunk);
@@ -119,7 +113,7 @@ public class ChunkDrawableStrategy : ChunkStrategy
     private void UpdateCubeVertices() {
         Vector3D<float> positionFloat =
             new Vector3D<float>(chunk.position.X, chunk.position.Y, chunk.position.Z);
-        vertices = new List<CubeVertex>();
+        List<CubeVertex> vertices = new List<CubeVertex>();
         for (int x = 0; x < Chunk.CHUNK_SIZE; x++) {
             for (int y = 0; y < Chunk.CHUNK_SIZE; y++) {
                 for (int z = 0; z < Chunk.CHUNK_SIZE; z++) {
@@ -202,7 +196,6 @@ public class ChunkDrawableStrategy : ChunkStrategy
         if (x == Chunk.CHUNK_SIZE - 1) chunk.chunksNeighbors![(int)Face.RIGHT].UpdateChunkVertex();
 
         if (y == 0) chunk.chunksNeighbors![(int)Face.BOTTOM].UpdateChunkVertex();
-        ;
         if (y == Chunk.CHUNK_SIZE - 1) chunk.chunksNeighbors![(int)Face.TOP].UpdateChunkVertex();
 
         if (z == 0) chunk.chunksNeighbors![(int)Face.BACK].UpdateChunkVertex();

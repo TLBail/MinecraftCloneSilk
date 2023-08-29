@@ -39,6 +39,8 @@ public class ChunkPool : IDisposable
     public void ReturnChunk(Chunk chunk) {
         Debug.Assert(!chunk.isRequiredByChunkLoader(), " chunk is still required by chunk loader");
         Debug.Assert(!chunk.blockModified, " chunk still have block modified");
+        Debug.Assert(chunk.isRequiredByChunkUnloader());
+        chunk.removeRequiredByChunkUnloader();
         chunkPool.Add(chunk);  
     } 
     

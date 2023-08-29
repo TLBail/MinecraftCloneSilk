@@ -34,6 +34,7 @@ public class Chunk : IDisposable
     internal static BlockFactory? blockFactory;
 
     private int requiredByChunkLoader = 0;
+    private int requiredByChunkUnloader = 0;
     private bool disposed = false;
     internal bool blockModified = false;
     
@@ -93,12 +94,13 @@ public class Chunk : IDisposable
     public void Debug(bool? setDebug = null) => chunkStrategy.Debug(setDebug);
     public void Update(double deltaTime) => chunkStrategy.Update(deltaTime);
 
-    public ReadOnlySpan<CubeVertex> GetVertices() => chunkStrategy.GetVertices();
-
     public bool isRequiredByChunkLoader() => requiredByChunkLoader > 0;
     public void addRequiredByChunkLoader() => Interlocked.Increment(ref requiredByChunkLoader);
     public void removeRequiredByChunkLoader() => Interlocked.Decrement(ref requiredByChunkLoader);
     
+    public bool isRequiredByChunkUnloader() => requiredByChunkUnloader > 0;
+    public void addRequiredByChunkUnloader() => Interlocked.Increment(ref requiredByChunkUnloader);
+    public void removeRequiredByChunkUnloader() => Interlocked.Decrement(ref requiredByChunkUnloader);
     
     public void Reset(Vector3D<int> position, IChunkManager chunkManager, IWorldGenerator worldGenerator) {
         if(isRequiredByChunkLoader()) {

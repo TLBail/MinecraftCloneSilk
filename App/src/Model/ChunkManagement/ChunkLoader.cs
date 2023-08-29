@@ -39,11 +39,12 @@ public class ChunkLoader
     
     [Logger.Timer]
     public static List<Chunk> GetChunkDependent(IChunkManager chunkManager, Stack<ChunkLoadingTask> chunksToLoad) {
-        HashSet<Chunk> chunkLoadOrder = new HashSet<Chunk>(chunksToLoad.Count);
+        Dictionary<Vector3D<int>, Chunk> chunkLoadOrder = new Dictionary<Vector3D<int>, Chunk>(chunksToLoad.Count);
         while (chunksToLoad.TryPop(out ChunkLoadingTask chunkTask)) {
-            if (!chunkLoadOrder.Contains(chunkTask.chunk)) {
+            Debug.Assert(!chunkTask.chunk.isRequiredByChunkUnloader());
+            if (!chunkLoadOrder.ContainsKey(chunkTask.chunk.position)) {
                 chunkTask.chunk.addRequiredByChunkLoader();
-                chunkLoadOrder.Add(chunkTask.chunk);
+                chunkLoadOrder.Add(chunkTask.chunk.position, chunkTask.chunk);
             }
             
             if (chunkTask.chunk.wantedChunkState < chunkTask.wantedChunkState) {
@@ -60,7 +61,7 @@ public class ChunkLoader
                 chunksToLoad.Push(new ChunkLoadingTask(chunk, wantedDependantChunkState));
             }
         }
-        return chunkLoadOrder.ToList();
+        return chunkLoadOrder.Values.ToList();
     }
     
     
@@ -79,7 +80,7 @@ public class ChunkLoader
     }
 
     public bool Update() {
-        return MultiThreadLoading();
+        return SingleThreadLoading();
     }
 
     public void Reset() {
