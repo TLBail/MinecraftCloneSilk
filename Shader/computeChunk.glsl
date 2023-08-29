@@ -22,7 +22,7 @@ layout(std140, binding = 3)  uniform texBuffer {
 };
 
 layout(std140, binding = 4)  uniform transparentBlocks {
-    bool transparent[64];
+    vec4 transparent[64];
 };
 
 struct Count{
@@ -48,6 +48,10 @@ const uint LEFT = 4;
 const uint RIGHT = 8;
 const uint FRONT = 16;
 const uint BACK = 32;
+
+bool isTransparent(int id){
+    return transparent[id].x != 0;
+}
 
 vec4 bottomLeft(vec4 textureCoords) {
     return vec4( (32.0f * textureCoords.x) / 256.0f + 0.01f, (32.0f * textureCoords.y) / 256.0f  + 0.01f, 0.0f, 0.0f);
@@ -90,7 +94,7 @@ void main(){
     uint z = (gl_WorkGroupID.z * 4) + gl_LocalInvocationID.z;
     uint index = getIndex(chunkIndex, x, y, z);
     
-    if(transparent[idBlocks[index]]){
+    if(idBlocks[index] == 0){
         return;
     }
     
@@ -101,32 +105,37 @@ void main(){
     
     
     //top
-    if(transparent[idBlocks[getIndex(chunkIndex, x, y + 1, z)]]){
+    if(isTransparent(
+        idBlocks[
+            getIndex(chunkIndex, x, y + 1, z)
+            ]
+        )
+      ){
         facesFlag = facesFlag | TOP;
         nbFaces++;
     }
     //bottom
-    if(transparent[idBlocks[getIndex(chunkIndex, x, y - 1, z)]]){
+    if(isTransparent(idBlocks[getIndex(chunkIndex, x, y - 1, z)])){
         facesFlag = facesFlag | BOTTOM;
         nbFaces++;
     }
     //left
-    if(transparent[idBlocks[getIndex(chunkIndex,x + 1, y, z)]]){
+    if(isTransparent(idBlocks[getIndex(chunkIndex,x + 1, y, z)])){
         facesFlag = facesFlag | LEFT;
         nbFaces++;
     }
     //right
-    if(transparent[idBlocks[getIndex(chunkIndex,x - 1, y, z)]]){
+    if(isTransparent(idBlocks[getIndex(chunkIndex,x - 1, y, z)])){
         facesFlag = facesFlag | RIGHT;
         nbFaces++;
     }
     //front
-    if(transparent[idBlocks[getIndex(chunkIndex,x, y, z + 1)]]){
+    if(isTransparent(idBlocks[getIndex(chunkIndex,x, y, z + 1)])){
         facesFlag = facesFlag | FRONT;
         nbFaces++;
     }
     //back
-    if(transparent[idBlocks[getIndex(chunkIndex,x, y, z - 1)]]){
+    if(isTransparent(idBlocks[getIndex(chunkIndex,x, y, z - 1)])){
         facesFlag = facesFlag | BACK;
         nbFaces++;
     }

@@ -19,7 +19,7 @@ public enum WorldMode
 public class World : GameObject
 {
     private Player player = null!;
-    public int radius { get; set; } = 1;
+    public int radius { get; set; } = 6;
     private readonly WorldUi worldUi;
     public WorldNaturalGeneration worldNaturalGeneration;
     public WorldMode worldMode { get; set; }
@@ -46,6 +46,7 @@ public class World : GameObject
         AddCommand();
     }
 
+    private bool testRun = false;
 
     [Logger.Timer]
     protected override void Update(double deltaTime) {
@@ -53,6 +54,10 @@ public class World : GameObject
             CreateChunkAroundPlayer();
         }
         chunkManager.Update(deltaTime);
+        if (!testRun) {
+            chunkManager.AddChunksToLoad(new (){new Vector3D<int>(-16, 0,0)});
+            testRun = true;
+        }
     }
 
     protected override void Stop() {
@@ -234,7 +239,7 @@ public class World : GameObject
         Vector3D<int>[] postions =
         {
             Vector3D<int>.Zero,
-            //new Vector3D<int>((int)Chunk.CHUNK_SIZE, 0, 0),
+            new Vector3D<int>(Chunk.CHUNK_SIZE, 0, 0),
             
             //new Vector3D<int>(-(int)Chunk.CHUNK_SIZE, 0, (int)Chunk.CHUNK_SIZE),
             //new Vector3D<int>(-(int)Chunk.CHUNK_SIZE, 0, -(int)Chunk.CHUNK_SIZE),

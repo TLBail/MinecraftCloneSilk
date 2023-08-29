@@ -15,7 +15,7 @@ public class RegionBuffer : IDisposable
     const int SUPER_CHUNK_SIZE = Chunk.CHUNK_SIZE + 2;
     const int SUPER_CHUNK_NB_BLOCK = SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE;
     
-    internal static BufferObject<bool> transparentBlocksBuffer; 
+    internal static BufferObject<Vector4> transparentBlocksBuffer; 
     internal static BufferObject<Vector4D<float>> textureCoordsBuffer;
     internal static ComputeShader computeShader;
     internal static BufferObject<Vector4D<float>> chunksPositionBuffer;
@@ -32,7 +32,7 @@ public class RegionBuffer : IDisposable
     internal static Shader? cubeShader;
     private int nbVertex = 0;
 
-    public const int CHUNKS_PER_REGION = 1;
+    public const int CHUNKS_PER_REGION = 16;
 
     private Chunk?[] chunks;
 
@@ -66,9 +66,13 @@ public class RegionBuffer : IDisposable
         foreach (KeyValuePair<int,Block> keyValuePair in blockFactory.blocksReadOnly) {
             transparentBlocks[keyValuePair.Key] = keyValuePair.Value.transparent;
         }
+        Vector4[] transparentVector = new Vector4[transparentBlocks.Length];
+        for (int i = 0; i < transparentBlocks.Length; i++) {
+            transparentVector[i] = new Vector4(transparentBlocks[i] ? 1.0f : 0.0f, 0.0f, 0.0f, 0.0f);
+        }
 
-        transparentBlocksBuffer = new BufferObject<bool>(gl, transparentBlocks, BufferTargetARB.UniformBuffer,
-            BufferUsageARB.StaticRead);
+        transparentBlocksBuffer = new BufferObject<Vector4>(gl, transparentVector, BufferTargetARB.UniformBuffer,
+            BufferUsageARB.StaticDraw);
 
         gl.BindBufferBase(BufferTargetARB.UniformBuffer, 4, transparentBlocksBuffer.handle);
 
@@ -81,7 +85,7 @@ public class RegionBuffer : IDisposable
                 textureCoords[(keyValuePair.Key * 6) +  (int)face] = new Vector4D<float>(coords[0], coords[1], 0.0f, 0.0f);
             }
         }
-        textureCoordsBuffer = new BufferObject<Vector4D<float>>(gl, textureCoords, BufferTargetARB.UniformBuffer, BufferUsageARB.StaticRead);
+        textureCoordsBuffer = new BufferObject<Vector4D<float>>(gl, textureCoords, BufferTargetARB.UniformBuffer, BufferUsageARB.StaticDraw);
         gl.BindBufferBase(BufferTargetARB.UniformBuffer, 3, textureCoordsBuffer.handle); 
         
         
@@ -173,7 +177,7 @@ public class RegionBuffer : IDisposable
         #if DEBUG
         int nbVertexDebug = chunks.Select(chunk => chunk != null ? ((ChunkDrawableStrategy)(chunk!.chunkStrategy)).nbVertex : 0).Sum(); 
         //Todo explain why this assert is not always true
-        //Debug.Assert(nbVertex == nbVertexDebug);
+        Debug.Assert(nbVertex == nbVertexDebug);
         #endif
         
         vbo?.Dispose();
