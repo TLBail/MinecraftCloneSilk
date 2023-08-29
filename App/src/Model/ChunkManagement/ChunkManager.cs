@@ -10,7 +10,7 @@ using Silk.NET.Maths;
 
 namespace MinecraftCloneSilk.Model.ChunkManagement;
 
-public class ChunkManager : IChunkManager, IDisposable
+public class ChunkManager : IChunkManager
 {
     private readonly ConcurrentDictionary<Vector3D<int>, Chunk> chunks;
     public IWorldGenerator worldGenerator { get; set; }
@@ -116,17 +116,13 @@ public class ChunkManager : IChunkManager, IDisposable
     public bool TryToUnloadChunk(Vector3D<int> position) {
         Chunk chunkToUnload = chunks[position];
         if(chunkToUnload.isRequiredByChunkLoader()) return false;
-        ChunkState minimumChunkStateOfChunk = GetMinimumChunkStateOfChunk(position); 
-        if(minimumChunkStateOfChunk == ChunkState.BLOCKGENERATED && chunkToUnload.chunkState == ChunkState.DRAWABLE) {
-            chunkToUnload.Dispose();
+        ChunkState minimumChunkStateOfChunk = GetMinimumChunkStateOfChunk(position);
+        if (chunkToUnload.chunkState == ChunkState.DRAWABLE) {
             chunkToUnload.SetChunkState(ChunkState.BLOCKGENERATED);
-            chunkToUnload.wantedChunkState = ChunkState.BLOCKGENERATED;
-            return false;
         }
         if(minimumChunkStateOfChunk > ChunkState.EMPTY) return false;
         
         if (chunks.TryRemove(new KeyValuePair<Vector3D<int>, Chunk>(position, chunkToUnload))) {
-            chunkToUnload.Dispose();
             chunkToUnload.addRequiredByChunkUnloader(); 
             chunksToUnload.Add(chunkToUnload);
             return true;
@@ -139,7 +135,6 @@ public class ChunkManager : IChunkManager, IDisposable
     private void ForceUnloadChunk(Chunk chunkToUnload) {
         if(chunkToUnload.isRequiredByChunkLoader()) return;
         chunks.TryRemove(new KeyValuePair<Vector3D<int>, Chunk>(chunkToUnload.position, chunkToUnload));
-        chunkToUnload.Dispose();
         chunksToUnload.Add(chunkToUnload);
     }
     
@@ -187,10 +182,6 @@ public class ChunkManager : IChunkManager, IDisposable
 
             ImGui.EndChild();
         }
-    }
-
-    public void Dispose() {
-        chunkPool.Dispose();
     }
 
 

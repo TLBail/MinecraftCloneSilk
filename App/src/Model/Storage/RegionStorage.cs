@@ -44,7 +44,8 @@ public class RegionStorage : IChunkStorage, IDisposable
         using var tx = env.BeginTransaction();
         Span<byte> mykey = stackalloc byte[12];
         foreach (Chunk chunk in chunks) {
-            if(GetChunkStateInStorage(tx, chunk.position) > chunk.chunkState) continue;
+            chunk.blockModified = false;
+            if(GetChunkStateInStorage(tx, chunk.position) > chunk.chunkState){ continue;}
             MathHelper.EncodeVector3Int(mykey, chunk.position.X, chunk.position.Y, chunk.position.Z); 
             MemoryStream stream = new MemoryStream();
             ChunkStorage.SaveChunk(stream, chunk);
@@ -52,7 +53,6 @@ public class RegionStorage : IChunkStorage, IDisposable
             if(resultCode != MDBResultCode.Success) {
                 throw new Exception("Can't save chunk" + resultCode);
             }
-            chunk.blockModified = false;
         }
         tx.Commit();
     }

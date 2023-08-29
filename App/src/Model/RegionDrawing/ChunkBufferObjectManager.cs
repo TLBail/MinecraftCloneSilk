@@ -1,4 +1,5 @@
-﻿using MinecraftCloneSilk.Core;
+﻿using System.Diagnostics;
+using MinecraftCloneSilk.Core;
 using MinecraftCloneSilk.GameComponent;
 using MinecraftCloneSilk.Model.NChunk;
 using Silk.NET.OpenGL;
@@ -6,7 +7,7 @@ using Texture = MinecraftCloneSilk.Core.Texture;
 
 namespace MinecraftCloneSilk.Model.RegionDrawing;
 
-public class ChunkBufferObjectManager
+public class ChunkBufferObjectManager 
 {
     private GL gl;
 
@@ -17,19 +18,19 @@ public class ChunkBufferObjectManager
     
     private Stack<RegionBuffer> regionsWithAvailableSpace =  new Stack<RegionBuffer>();
     private Texture cubeTexture;
-    private Game game;
     
     public ChunkBufferObjectManager(Texture cubeTexture, Game game) {
         this.cubeTexture = cubeTexture;
-        this.game = game;
         game.drawables += Drawables;
         game.updatables += Update;
-        this.gl = game.GetGl();
+        game.stopable += Stop;
+        gl = game.GetGl();
     }
 
 
 
     public void AddChunkToRegion(Chunk chunk) {
+        Debug.Assert(chunk.chunkState >= ChunkState.DRAWABLE, "try to add a chunk with a lower state than the minimum");
         if (regionsWithAvailableSpace.Count == 0) {
             CreateNewRegionBuffer();
         }
@@ -47,11 +48,10 @@ public class ChunkBufferObjectManager
     }
 
     public void RemoveChunk(Chunk chunk) {
-        regionBufferByChunk[chunk]?.RemoveChunk(chunk);
+        regionBufferByChunk[chunk].RemoveChunk(chunk);
         NeedToUpdateChunk(chunk);
         if(!regionsWithAvailableSpace.Contains(regionBufferByChunk[chunk])) regionsWithAvailableSpace.Push(regionBufferByChunk[chunk]);
         regionBufferByChunk.Remove(chunk);
-
     }
 
     private void Drawables(GL gl, double deltatime) {
@@ -73,8 +73,12 @@ public class ChunkBufferObjectManager
         regionsWithAvailableSpace.Push(region);
         regions.Add(region);
     }
-    
-    
-    
-    
+
+
+    private void Stop() {
+        cubeTexture.Dispose();
+        foreach (RegionBuffer region in regions) {
+            region.Dispose();
+        }
+    }
 }

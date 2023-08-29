@@ -280,49 +280,49 @@ public class RegionBuffer : IDisposable
         }
     }
 
-public void Dispose() {
-    vbo?.Dispose();
-    vao?.Dispose();
-}
-
-public void AddVertices(Chunk chunk, ReadOnlySpan<CubeVertex> vertices, int nbVertex) {
-    this.nbVertex += nbVertex;
-    vbo!.Bind(BufferTargetARB.ArrayBuffer);
-    vbo!.SendData(vertices, 0);
-}
-
-
-public bool HaveAvailableSpace() {
-    return chunkCount >= CHUNKS_PER_REGION - 1;
-}
-
-public void RemoveChunk(Chunk chunk) {
-    int indexOfChunk = Array.IndexOf(chunks, chunk);
-    int offset = 0;
-    for (int i = 0; i < CHUNKS_PER_REGION; i++) {
-        if (i >= chunkCount - 1) {
-            chunks[i] = null;
-            continue;
-        }
-        if (i == indexOfChunk) {
-            chunks[i] = chunks[i + 1];
-            offset = 1;
-        } else {
-            chunks[i] = chunks[i + offset];
-        }
+    public void Dispose() {
+        vbo?.Dispose();
+        vao?.Dispose();
     }
-    chunkCount--;
-}
+
+    public void AddVertices(Chunk chunk, ReadOnlySpan<CubeVertex> vertices, int nbVertex) {
+        this.nbVertex += nbVertex;
+        vbo!.Bind(BufferTargetARB.ArrayBuffer);
+        vbo!.SendData(vertices, 0);
+    }
+
+
+    public bool HaveAvailableSpace() {
+        return chunkCount >= CHUNKS_PER_REGION - 1;
+    }
+
+    public void RemoveChunk(Chunk chunk) {
+        int indexOfChunk = Array.IndexOf(chunks, chunk);
+        int offset = 0;
+        for (int i = 0; i < CHUNKS_PER_REGION; i++) {
+            if (i >= chunkCount - 1) {
+                chunks[i] = null;
+                continue;
+            }
+            if (i == indexOfChunk) {
+                chunks[i] = chunks[i + 1];
+                offset = 1;
+            } else {
+                chunks[i] = chunks[i + offset];
+            }
+        }
+        chunkCount--;
+    }
     
-internal struct CountCompute
-{
-    public int vertexCount{get;set;}
-    public int blockCount{get;set;}
-    public int firstIndex{get;set;}
-    public int vertexIndex{get;set;}
+    internal struct CountCompute
+    {
+        public int vertexCount{get;set;}
+        public int blockCount{get;set;}
+        public int firstIndex{get;set;}
+        public int vertexIndex{get;set;}
 
-    public override string ToString() {
-        return $"vertexCount : {vertexCount} blockCount : {blockCount} firstIndex : {firstIndex} vertexIndex : {vertexIndex}";
+        public override string ToString() {
+            return $"vertexCount : {vertexCount} blockCount : {blockCount} firstIndex : {firstIndex} vertexIndex : {vertexIndex}";
+        }
     }
-}
 }

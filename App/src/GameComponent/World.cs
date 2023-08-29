@@ -19,7 +19,7 @@ public enum WorldMode
 public class World : GameObject
 {
     private Player player = null!;
-    public int radius { get; set; } = 6;
+    public int radius { get; set; } = 1;
     private readonly WorldUi worldUi;
     public WorldNaturalGeneration worldNaturalGeneration;
     public WorldMode worldMode { get; set; }
@@ -33,7 +33,8 @@ public class World : GameObject
         this.worldMode = worldMode;
         worldUi = new WorldUi(this);
         worldNaturalGeneration = new WorldNaturalGeneration();
-        regionStorage = new RegionStorage("./Worlds/newWorld"); chunkManager = new ChunkManager(radius, worldNaturalGeneration, regionStorage);
+        regionStorage = new RegionStorage("./Worlds/newWorld");
+        chunkManager = new ChunkManager(radius, worldNaturalGeneration, regionStorage);
     }
 
 
@@ -46,22 +47,16 @@ public class World : GameObject
         AddCommand();
     }
 
-    private bool testRun = false;
-
     [Logger.Timer]
     protected override void Update(double deltaTime) {
         if (worldMode == WorldMode.DYNAMIC) {
             CreateChunkAroundPlayer();
         }
         chunkManager.Update(deltaTime);
-        if (!testRun) {
-            chunkManager.AddChunksToLoad(new (){new Vector3D<int>(-16, 0,0)});
-            testRun = true;
-        }
     }
 
     protected override void Stop() {
-        chunkManager.Dispose();
+        regionStorage.Dispose();
     }
 
 

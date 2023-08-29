@@ -10,7 +10,7 @@ using Shader = MinecraftCloneSilk.Core.Shader;
 
 namespace MinecraftCloneSilk.Model.NChunk;
 
-public class Chunk : IDisposable
+public class Chunk
 {
     public Vector3D<int> position;
     internal BlockData[,,] blocks;
@@ -35,7 +35,6 @@ public class Chunk : IDisposable
 
     private int requiredByChunkLoader = 0;
     private int requiredByChunkUnloader = 0;
-    private bool disposed = false;
     internal bool blockModified = false;
     
 
@@ -57,6 +56,7 @@ public class Chunk : IDisposable
     }
 
     public void SetChunkState(ChunkState newChunkState) {
+        if(newChunkState < chunkState) wantedChunkState = newChunkState;
         switch (newChunkState) {
             case ChunkState.EMPTY:
                 chunkStrategy = new ChunkEmptyStrategy(this);
@@ -65,8 +65,8 @@ public class Chunk : IDisposable
                 chunkStrategy = new ChunkTerrainGeneratedStrategy(this);
                 break;
             case ChunkState.BLOCKGENERATED:
-                if (chunkState == ChunkState.DRAWABLE) {
-                    chunkStrategy.Dispose();
+                if (chunkStrategy is ChunkDrawableStrategy chkdw) {
+                    chkdw.Hide();
                 }
                 chunkStrategy = new ChunkBlockGeneratedStrategy(this);
                 break;
@@ -114,7 +114,6 @@ public class Chunk : IDisposable
         chunkState = DEFAULTSTARTINGCHUNKSTATE;
         wantedChunkState = DEFAULTSTARTINGCHUNKSTATE;
         this.chunkStrategy = new ChunkEmptyStrategy(this);
-        disposed = false;
         blockModified = false;
         Array.Clear(blocks);
     }
@@ -128,20 +127,4 @@ public class Chunk : IDisposable
         return position.GetHashCode();
     }
 
-    public void Dispose() {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    ~Chunk() => Dispose(false);
-
-    protected virtual void Dispose(bool disposing) {
-        if (!disposed) {
-            if (disposing) {
-                chunkStrategy.Dispose();
-            }
-
-            disposed = true;
-        }
-    }
 }

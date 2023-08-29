@@ -81,8 +81,6 @@ public abstract class ChunkStrategy
         return Chunk.blockFactory!.BuildFromBlockData(new Vector3D<int>(x, y, z), blockData);
     }
 
-    public virtual void Dispose() {
-    }
 
     public virtual void Update(double deltaTime) {
     }

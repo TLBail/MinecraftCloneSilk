@@ -8,7 +8,7 @@ using Silk.NET.Maths;
 
 namespace MinecraftCloneSilk.Model;
 
-public class ChunkPool : IDisposable
+public class ChunkPool
 {
 
     private readonly ConcurrentBag<Chunk> chunkPool = new ConcurrentBag<Chunk>();
@@ -49,11 +49,6 @@ public class ChunkPool : IDisposable
     }
 
 
-    public void Dispose() {
-        foreach (Chunk chunk in chunkPool) {
-            chunk.Dispose();
-        }
-    }
 
     public void ReturnChunks(List<Chunk> chunksToReturn) {
         foreach (Chunk chunk in chunksToReturn) {

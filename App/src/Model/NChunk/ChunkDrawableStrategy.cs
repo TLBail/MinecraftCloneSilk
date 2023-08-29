@@ -21,7 +21,6 @@ public class ChunkDrawableStrategy : ChunkStrategy
 
     public int nbVertex { get; private set; }
 
-
     public ChunkDrawableStrategy(Chunk chunk) : base(chunk) {
         if (chunk.chunkState != ChunkState.BLOCKGENERATED) {
             throw new Exception("failed to init chunkDrawableStrategy because the chunk is not BLOCKGENERATED");
@@ -29,9 +28,8 @@ public class ChunkDrawableStrategy : ChunkStrategy
     }
 
 
-    public static void InitStaticMembers(Texture cubeTexture, Game game) {
-        if (chunkBufferObjectManager == null)
-            chunkBufferObjectManager = new ChunkBufferObjectManager(cubeTexture, game);
+    public static void InitStaticMembers( ChunkBufferObjectManager chunkBufferObjectManager) {
+        ChunkDrawableStrategy.chunkBufferObjectManager = chunkBufferObjectManager;
     }
 
     public override void Init() {
@@ -206,19 +204,10 @@ public class ChunkDrawableStrategy : ChunkStrategy
         if (!visible) return;
         visible = false;
         chunkBufferObjectManager!.RemoveChunk(chunk);
-    }
-
-    protected override Vector3D<float> ChunkStrategyColor() => new Vector3D<float>(1, 1, 0);
-
-
-    public override void Dispose() {
-        if (visible) {
-            Hide();
-        }
-
         chunk.chunkManager.RemoveChunkToUpdate(chunk);
     }
 
+    protected override Vector3D<float> ChunkStrategyColor() => new Vector3D<float>(1, 1, 0);
 
     static ChunkDrawableStrategy() {
         Face[] faces = (Face[])Enum.GetValues(typeof(Face));

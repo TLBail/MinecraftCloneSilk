@@ -11,6 +11,7 @@ using MinecraftCloneSilk.Core;
 using MinecraftCloneSilk.Logger;
 using MinecraftCloneSilk.Model;
 using MinecraftCloneSilk.Model.NChunk;
+using MinecraftCloneSilk.Model.RegionDrawing;
 using MinecraftCloneSilk.UI;
 using Silk.NET.Maths;
 using Console = MinecraftCloneSilk.UI.Console;
@@ -51,6 +52,8 @@ public sealed class Game
     private TaskCompletionSource frameCountTaskSource = new TaskCompletionSource();
     private int frameCount;
         
+    //ChunkRenderer
+    public ChunkBufferObjectManager? chunkBufferObjectManager;
         
         
     private Game(Scene scene, bool start = true) {
@@ -95,7 +98,9 @@ public sealed class Game
         //load textures
         textureManager = TextureManager.GetInstance();
         textureManager.Load(gl);
-        ChunkDrawableStrategy.InitStaticMembers(TextureManager.GetInstance().textures["spriteSheet.png"], this);
+        
+        chunkBufferObjectManager = new ChunkBufferObjectManager(TextureManager.GetInstance().textures["spriteSheet.png"], this);
+        ChunkDrawableStrategy.InitStaticMembers(chunkBufferObjectManager);
 
         // init shaders 
         InitShaders(gl);
