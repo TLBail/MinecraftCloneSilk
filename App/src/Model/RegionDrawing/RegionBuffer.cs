@@ -175,7 +175,7 @@ public class RegionBuffer : IDisposable
         CountCompute countCompute = countComputeBuffer.GetData();
         nbVertex = countCompute.vertexCount;
         #if DEBUG
-        int nbVertexDebug = chunks.Select(chunk => chunk != null ? ((ChunkDrawableStrategy)(chunk!.chunkStrategy)).nbVertex : 0).Sum(); 
+        int nbVertexDebug = chunks.Select(chunk => chunk != null ? ChunkMesheur.GetVerticesCount(chunk) : 0).Sum(); 
         //Todo explain why this assert is not always true
         Debug.Assert(nbVertex == nbVertexDebug);
         #endif

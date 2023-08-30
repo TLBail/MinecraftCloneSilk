@@ -1,4 +1,5 @@
-﻿using MinecraftCloneSilk.Core;
+﻿using System.Diagnostics;
+using MinecraftCloneSilk.Core;
 using MinecraftCloneSilk.GameComponent;
 using Silk.NET.Maths;
 
@@ -19,7 +20,8 @@ namespace MinecraftCloneSilk.Model
 
         public Block(Vector3D<int> position, string name = BlockFactory.AIR_BLOCK, bool transparent = true,int id = 0, TextureBlock? textureBlock = null)
         {
-            airBlock = BlockFactory.AIR_BLOCK.Equals(name) || id == 0; 
+            Debug.Assert((id == 0 && BlockFactory.AIR_BLOCK.Equals(name)) || (id != 0 && !BlockFactory.AIR_BLOCK.Equals(name)));
+            airBlock = id == 0; 
             this.position = position;
             this.name = name;
             this.transparent = transparent;
