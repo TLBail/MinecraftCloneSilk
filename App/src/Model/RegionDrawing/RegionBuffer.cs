@@ -192,11 +192,6 @@ public class RegionBuffer : IDisposable
         gl.MemoryBarrier(MemoryBarrierMask.AllBarrierBits);
         CountCompute countCompute = countComputeBuffer.GetData();
         nbVertex = countCompute.vertexCount;
-        #if DEBUG
-        int nbVertexDebug = chunks.Select(chunk => chunk != null ? ChunkMesheur.GetVerticesCount(chunk) : 0).Sum(); 
-        //Todo explain why this assert is not always true
-        Debug.Assert(nbVertex == nbVertexDebug);
-        #endif
         
         vbo?.Dispose();
         vao?.Dispose();

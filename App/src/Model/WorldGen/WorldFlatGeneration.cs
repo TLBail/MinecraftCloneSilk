@@ -1,5 +1,4 @@
-﻿using DotnetNoise;
-using MinecraftCloneSilk.Model.NChunk;
+﻿using MinecraftCloneSilk.Model.NChunk;
 using Silk.NET.Maths;
 
 namespace MinecraftCloneSilk.Model.WorldGen;
