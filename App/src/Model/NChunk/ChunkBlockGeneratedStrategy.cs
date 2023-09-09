@@ -39,7 +39,7 @@ public class ChunkBlockGeneratedStrategy : ChunkStrategy
 
     private void SetupNeighbors() {
         chunk.chunksNeighbors = new Chunk[26];
-        foreach (FaceExtended face in Enum.GetValues(typeof(FaceExtended))) {
+        foreach (FaceExtended face in FaceExtendedConst.FACES) {
             Vector3D<int> position = chunk.position + (FaceExtendedOffset.GetOffsetOfFace(face) * Chunk.CHUNK_SIZE);
             System.Diagnostics.Debug.Assert(chunk.chunkManager.ContainChunk(position),
                 "chunk must be already generated");

@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Numerics;
+using MinecraftCloneSilk.Collision;
 using MinecraftCloneSilk.Core;
 using MinecraftCloneSilk.Model.NChunk;
 using Silk.NET.Maths;
@@ -30,13 +31,16 @@ public class RegionBuffer : IDisposable
     private Texture cubeTexture;
     private GL gl;
     internal static Shader? cubeShader;
-    private int nbVertex = 0;
+    public int nbVertex { get; private set; }
 
     public const int CHUNKS_PER_REGION = 16;
 
     private Chunk?[] chunks;
 
-    private int chunkCount = 0;
+    public int chunkCount { get; private set; }
+    
+    public bool haveDrawLastFrame { get; private set; }
+    
     public static void InitComputeShader(GL gl, BlockFactory blockFactory) {
         // compute shadere 
         computeShader = new ComputeShader(gl, "Shader/computeChunk.glsl");
@@ -118,13 +122,27 @@ public class RegionBuffer : IDisposable
         chunkCount++;
     }
 
-    public void Draw() {
+    public void Draw(Camera cam) {
+        haveDrawLastFrame = false;
         if (nbVertex == 0) return;
+        if (!RegionInCameraView(cam)) return;
+        
         vao!.Bind();
         cubeShader!.Use();
         cubeTexture.Bind();
 
         gl.DrawArrays(PrimitiveType.Triangles, 0, (uint)nbVertex);
+        haveDrawLastFrame = true;
+    }
+
+    private bool RegionInCameraView(Camera cam) {
+        Frustrum frustrum = cam.GetFrustrum();
+        for (int i = 0; i < chunkCount; i++) {
+            Chunk chunk = chunks[i]!;
+            AABBCube aabbCube = chunk.GetAABBCube();
+            if (aabbCube.IsInFrustrum(frustrum)) return true;
+        }
+        return false;
     }
 
     public unsafe void Update() {
@@ -184,7 +202,7 @@ public class RegionBuffer : IDisposable
         vao?.Dispose();
         if(nbVertex == 0) return;
         
-        
+       
     
         
         vbo = new BufferObject<CubeVertex>(gl, nbVertex, BufferTargetARB.ArrayBuffer);

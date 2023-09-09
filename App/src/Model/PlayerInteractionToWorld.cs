@@ -1,4 +1,5 @@
-﻿using MinecraftCloneSilk.Collision;
+﻿using System.Numerics;
+using MinecraftCloneSilk.Collision;
 using MinecraftCloneSilk.GameComponent;
 using MinecraftCloneSilk.Model.NChunk;
 using Silk.NET.Maths;
@@ -37,28 +38,27 @@ public class PlayerInteractionToWorld
         chunk = null;
         block = null;
         face = null;
-        var playerPositionf = new Vector3D<float>(player.position.X, player.position.Y, player.position.Z);
-        var ray = new Ray(playerPositionf, player.GetDirection3D());
+        var ray = new Ray(player.position, player.GetDirection3D());
 
         var bestHitDistance = float.MaxValue;
 
 
         const int maxDistance = 16;
-        AABBCube aabbCube = new AABBCube(Vector3D<float>.Zero, Vector3D<float>.Zero);
+        AABBCube aabbCube = new AABBCube(Vector3.Zero, Vector3.Zero);
         for (var x = -maxDistance; x < maxDistance; x++)
         for (var y = -maxDistance; y < maxDistance; y++)
         for (var z = -maxDistance; z < maxDistance; z++) {
             var blockPosition = new Vector3D<int>(
-                (int)(x + Math.Round(playerPositionf.X)),
-                (int)(y + Math.Round(playerPositionf.Y)),
-                (int)(z + Math.Round(playerPositionf.Z))
+                (int)(x + Math.Round(player.position.X)),
+                (int)(y + Math.Round(player.position.Y)),
+                (int)(z + Math.Round(player.position.Z))
             );
-            aabbCube.bounds[0] = new Vector3D<float>(
+            aabbCube.bounds[0] = new Vector3(
                 -0.5f + blockPosition.X,
                 -0.5f + blockPosition.Y,
                 -0.5f + blockPosition.Z
             );
-            aabbCube.bounds[1] = new Vector3D<float>(
+            aabbCube.bounds[1] = new Vector3(
                 0.5f + blockPosition.X,
                 0.5f + blockPosition.Y,
                 0.5f + blockPosition.Z
@@ -91,11 +91,11 @@ public class PlayerInteractionToWorld
         var rblock = block!;
         var position = rblock.position.As<float>() + chunk.position.As<float>();
         var collidingPlaneBackFace = new Square(
-            new Vector3D<float>(position.X - 0.5f, position.Y - 0.5f, position.Z - 0.5f),
-            new Vector3D<float>(position.X + 0.5f, position.Y - 0.5f, position.Z - 0.5f),
-            new Vector3D<float>(position.X + 0.5f, position.Y + 0.5f, position.Z - 0.5f),
-            new Vector3D<float>(position.X - 0.5f, position.Y + 0.5f, position.Z - 0.5f),
-            new Vector3D<float>(position.X, position.Y, position.Z - 0.5f)
+            new Vector3(position.X - 0.5f, position.Y - 0.5f, position.Z - 0.5f),
+            new Vector3(position.X + 0.5f, position.Y - 0.5f, position.Z - 0.5f),
+            new Vector3(position.X + 0.5f, position.Y + 0.5f, position.Z - 0.5f),
+            new Vector3(position.X - 0.5f, position.Y + 0.5f, position.Z - 0.5f),
+            new Vector3(position.X, position.Y, position.Z - 0.5f)
         );
         if (collidingPlaneBackFace.Intersect(ray)) {
             face = Face.BACK;
@@ -104,11 +104,11 @@ public class PlayerInteractionToWorld
 
         //z+
         var collidingPlaneFrontFace = new Square(
-            new Vector3D<float>(position.X - 0.5f, position.Y + 0.5f, position.Z + 0.5f),
-            new Vector3D<float>(position.X + 0.5f, position.Y + 0.5f, position.Z + 0.5f),
-            new Vector3D<float>(position.X + 0.5f, position.Y - 0.5f, position.Z + 0.5f),
-            new Vector3D<float>(position.X - 0.5f, position.Y - 0.5f, position.Z + 0.5f),
-            new Vector3D<float>(position.X, position.Y, position.Z + 0.5f)
+            new Vector3(position.X - 0.5f, position.Y + 0.5f, position.Z + 0.5f),
+            new Vector3(position.X + 0.5f, position.Y + 0.5f, position.Z + 0.5f),
+            new Vector3(position.X + 0.5f, position.Y - 0.5f, position.Z + 0.5f),
+            new Vector3(position.X - 0.5f, position.Y - 0.5f, position.Z + 0.5f),
+            new Vector3(position.X, position.Y, position.Z + 0.5f)
         );
         if (collidingPlaneFrontFace.Intersect(ray)) {
             face = Face.FRONT;
@@ -117,11 +117,11 @@ public class PlayerInteractionToWorld
 
         //x-
         var collidingPlaneLeftFace = new Square(
-            new Vector3D<float>(position.X - 0.5f, position.Y - 0.5f, position.Z - 0.5f),
-            new Vector3D<float>(position.X - 0.5f, position.Y + 0.5f, position.Z - 0.5f),
-            new Vector3D<float>(position.X - 0.5f, position.Y + 0.5f, position.Z + 0.5f),
-            new Vector3D<float>(position.X - 0.5f, position.Y - 0.5f, position.Z + 0.5f),
-            new Vector3D<float>(position.X - 0.5f, position.Y, position.Z)
+            new Vector3(position.X - 0.5f, position.Y - 0.5f, position.Z - 0.5f),
+            new Vector3(position.X - 0.5f, position.Y + 0.5f, position.Z - 0.5f),
+            new Vector3(position.X - 0.5f, position.Y + 0.5f, position.Z + 0.5f),
+            new Vector3(position.X - 0.5f, position.Y - 0.5f, position.Z + 0.5f),
+            new Vector3(position.X - 0.5f, position.Y, position.Z)
         );
         if (collidingPlaneLeftFace.Intersect(ray)) {
             face = Face.LEFT;
@@ -130,11 +130,11 @@ public class PlayerInteractionToWorld
 
         //x+
         var collidingPlaneRightFace = new Square(
-            new Vector3D<float>(position.X + 0.5f, position.Y - 0.5f, position.Z + 0.5f),
-            new Vector3D<float>(position.X + 0.5f, position.Y + 0.5f, position.Z + 0.5f),
-            new Vector3D<float>(position.X + 0.5f, position.Y + 0.5f, position.Z - 0.5f),
-            new Vector3D<float>(position.X + 0.5f, position.Y - 0.5f, position.Z - 0.5f),
-            new Vector3D<float>(position.X + 0.5f, position.Y, position.Z)
+            new Vector3(position.X + 0.5f, position.Y - 0.5f, position.Z + 0.5f),
+            new Vector3(position.X + 0.5f, position.Y + 0.5f, position.Z + 0.5f),
+            new Vector3(position.X + 0.5f, position.Y + 0.5f, position.Z - 0.5f),
+            new Vector3(position.X + 0.5f, position.Y - 0.5f, position.Z - 0.5f),
+            new Vector3(position.X + 0.5f, position.Y, position.Z)
         );
         if (collidingPlaneRightFace.Intersect(ray)) {
             face = Face.RIGHT;
@@ -143,11 +143,11 @@ public class PlayerInteractionToWorld
 
         //y-
         var collidingPlaneBottomFace = new Square(
-            new Vector3D<float>(position.X - 0.5f, position.Y - 0.5f, position.Z + 0.5f),
-            new Vector3D<float>(position.X + 0.5f, position.Y - 0.5f, position.Z + 0.5f),
-            new Vector3D<float>(position.X + 0.5f, position.Y - 0.5f, position.Z - 0.5f),
-            new Vector3D<float>(position.X - 0.5f, position.Y - 0.5f, position.Z - 0.5f),
-            new Vector3D<float>(position.X, position.Y - 0.5f, position.Z)
+            new Vector3(position.X - 0.5f, position.Y - 0.5f, position.Z + 0.5f),
+            new Vector3(position.X + 0.5f, position.Y - 0.5f, position.Z + 0.5f),
+            new Vector3(position.X + 0.5f, position.Y - 0.5f, position.Z - 0.5f),
+            new Vector3(position.X - 0.5f, position.Y - 0.5f, position.Z - 0.5f),
+            new Vector3(position.X, position.Y - 0.5f, position.Z)
         );
         if (collidingPlaneBottomFace.Intersect(ray)) {
             face = Face.BOTTOM;
@@ -156,11 +156,11 @@ public class PlayerInteractionToWorld
 
         //y+
         var collidingPlaneTopFace = new Square(
-            new Vector3D<float>(position.X - 0.5f, position.Y + 0.5f, position.Z - 0.5f),
-            new Vector3D<float>(position.X + 0.5f, position.Y + 0.5f, position.Z - 0.5f),
-            new Vector3D<float>(position.X + 0.5f, position.Y + 0.5f, position.Z + 0.5f),
-            new Vector3D<float>(position.X - 0.5f, position.Y + 0.5f, position.Z + 0.5f),
-            new Vector3D<float>(position.X, position.Y + 0.5f, position.Z)
+            new Vector3(position.X - 0.5f, position.Y + 0.5f, position.Z - 0.5f),
+            new Vector3(position.X + 0.5f, position.Y + 0.5f, position.Z - 0.5f),
+            new Vector3(position.X + 0.5f, position.Y + 0.5f, position.Z + 0.5f),
+            new Vector3(position.X - 0.5f, position.Y + 0.5f, position.Z + 0.5f),
+            new Vector3(position.X, position.Y + 0.5f, position.Z)
         );
         if (collidingPlaneTopFace.Intersect(ray)) {
             face = Face.TOP;

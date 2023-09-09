@@ -1,6 +1,7 @@
 ﻿using Silk.NET.Input;
 using System;
 using System.Numerics;
+using MinecraftCloneSilk.Collision;
 using Silk.NET.Windowing;
 using Silk.NET.Maths;
 using MinecraftCloneSilk.GameComponent;
@@ -9,51 +10,67 @@ namespace MinecraftCloneSilk.Core
 {
     public class Camera
     {
-        public Vector3 Position { get; set; }
+        
+        public Vector3 position { get; set; }
         public Vector3 Front { get; set; }
 
-        public Vector3 Up { get; private set; }
-        public float AspectRatio { get; set; }
+        public Vector3 up { get; private set; }
+        public Vector3 Right => Vector3.Normalize(Vector3.Cross(Front, up));
+        public float aspectRatio { get; set; }
 
-        public float Yaw { get; set; } = -90f;
-        public float Pitch { get; set; }
+        public float yaw { get; set; } = -90f;
+        public float pitch { get; set; }
+        
+        public float nearPlane { get; set; } = 0.1f;
+        public float farPlane { get; set; } = 1000f;
 
-        private float zoom = 45f;
+        public float zoom { get; private set; } = 45f;
         private Vector2 lastMousePosition;
         private bool isZoomActive = false;
-        private IMouse mouse;
+        private IMouse? mouse;
         
-        public Camera() 
+        private Frustrum frustrum;
+        
+        public Camera(IWindow? window = null, IMouse? mouse = null) 
         {
-            Setup(Vector3.UnitZ * 6, Vector3.UnitZ * -1, Vector3.UnitY, 800f / 600f);
-            Game game = Game.GetInstance();
-            IWindow window = game.GetWindow();
+            Setup(Vector3.Zero, Vector3.UnitZ * 1, Vector3.UnitY, 800f / 600f);
+            this.frustrum = new Frustrum(this);
+            
+            if(window is null) return;
             Vector2D<int> size = window.GetFullSize();
-            AspectRatio = (float)size.X / (float)size.Y;
+            aspectRatio = (float)size.X / (float)size.Y;
             window.FramebufferResize += FrameBufferResize;
-            game.mainCamera = this;
-            mouse = game.GetMouse();
             mouse.Cursor.CursorMode = CursorMode.Normal;
             mouse.MouseMove += OnMouseMove;
+            
         }
-
         public void SetZoomActive(bool active) {
             if(isZoomActive == active) return;
             if (active) {
-                mouse.Scroll += OnMouseWheel;
+                mouse!.Scroll += OnMouseWheel;
             } else {
-                mouse.Scroll -= OnMouseWheel;
+                mouse!.Scroll -= OnMouseWheel;
             }
         }
 
         private void Setup(Vector3 position, Vector3 front, Vector3 up, float aspectRatio)
         {
-            Position = position;
-            AspectRatio = aspectRatio;
+            this.position = position;
+            this.aspectRatio = aspectRatio;
             Front = front;
-            Up = up;
+            this.up = up;
         }
 
+        public Frustrum GetFrustrum() {
+            UpdateFrustrum();
+            return frustrum;
+        }
+        
+        public void UpdateFrustrum() {
+            frustrum.Update(this);
+        }
+        
+        
         public void ModifyZoom(float zoomAmount)
         {
             //We don't want to be able to zoom in too close or too far away so clamp to these values
@@ -62,31 +79,31 @@ namespace MinecraftCloneSilk.Core
 
         public void ModifyDirection(float xOffset, float yOffset)
         {
-            Yaw += xOffset;
-            Pitch -= yOffset;
+            yaw += xOffset;
+            pitch -= yOffset;
 
             //We don't want to be able to look behind us by going over our head or under our feet so make sure it stays within these bounds
-            Pitch = Math.Clamp(Pitch, -89f, 89f);
+            pitch = Math.Clamp(pitch, -89f, 89f);
 
             var cameraDirection = Vector3.Zero;
-            cameraDirection.X = MathF.Cos(MathHelper.DegreesToRadians(Yaw)) * MathF.Cos(MathHelper.DegreesToRadians(Pitch));
-            cameraDirection.Y = MathF.Sin(MathHelper.DegreesToRadians(Pitch));
-            cameraDirection.Z = MathF.Sin(MathHelper.DegreesToRadians(Yaw)) * MathF.Cos(MathHelper.DegreesToRadians(Pitch));
+            cameraDirection.X = MathF.Cos(MathHelper.DegreesToRadians(yaw)) * MathF.Cos(MathHelper.DegreesToRadians(pitch));
+            cameraDirection.Y = MathF.Sin(MathHelper.DegreesToRadians(pitch));
+            cameraDirection.Z = MathF.Sin(MathHelper.DegreesToRadians(yaw)) * MathF.Cos(MathHelper.DegreesToRadians(pitch));
 
             Front = Vector3.Normalize(cameraDirection);
         }
 
         public Matrix4x4 GetViewMatrix()
         {
-            return Matrix4x4.CreateLookAt(Position, Position + Front, Up);
+            return Matrix4x4.CreateLookAt(position, position + Front, up);
         }
 
         public Matrix4x4 GetProjectionMatrix()
         {
-            return Matrix4x4.CreatePerspectiveFieldOfView(MathHelper.DegreesToRadians(zoom), AspectRatio, 0.1f, 1000.0f);
+            return Matrix4x4.CreatePerspectiveFieldOfView(MathHelper.DegreesToRadians(zoom), aspectRatio, nearPlane, farPlane);
         }
 
-        private unsafe void OnMouseMove(IMouse mouse, Vector2 position)
+        private void OnMouseMove(IMouse mouse, Vector2 position)
         {
             var lookSensitivity = 0.1f;
             if (lastMousePosition == default) { lastMousePosition = position; }
@@ -100,14 +117,14 @@ namespace MinecraftCloneSilk.Core
             }
         }
 
-        private unsafe void OnMouseWheel(IMouse mouse, ScrollWheel scrollWheel)
+        private void OnMouseWheel(IMouse mouse, ScrollWheel scrollWheel)
         {
             ModifyZoom(scrollWheel.Y);
         }
 
         private void FrameBufferResize(Vector2D<int> size)
         {
-            AspectRatio = (float)size.X / (float)size.Y;
+            aspectRatio = (float)size.X / (float)size.Y;
         }
 
     }

@@ -28,10 +28,10 @@ namespace MinecraftCloneSilk.GameComponent
         
         public Vector3 position
         {
-            get => camera.Position;
+            get => camera.position;
             set
             {
-                camera.Position = value;
+                camera.position = value;
                 console.Log(
                     "player position has been set at (" + position.X + "," + position.Y + "," + position.Z + ")");
             }
@@ -40,7 +40,8 @@ namespace MinecraftCloneSilk.GameComponent
         public Player(Game game) : base(game)
         {
             //Start a camera at position 3 on the Z axis, looking at position -1 on the Z axis
-            camera = new Camera();
+            camera = new Camera(game.GetWindow(), game.GetMouse());
+            game.mainCamera = camera;
             primaryKeyboard = game.GetKeyboard();
             this.mouse = game.GetMouse();
             this.playerUi = new PlayerUi(this);
@@ -48,9 +49,8 @@ namespace MinecraftCloneSilk.GameComponent
             inventaire = new Inventaire(this);
         }
 
-        public Vector3D<float> GetDirection3D()
-        {
-            return new Vector3D<float>(camera.Front.X, camera.Front.Y, camera.Front.Z);
+        public Vector3 GetDirection3D() {
+            return camera.Front;
         }
 
         public void OnMouseClick(IMouse mouse, MouseButton mouseButton)
@@ -120,33 +120,33 @@ namespace MinecraftCloneSilk.GameComponent
             if (primaryKeyboard.IsKeyPressed(Key.W))
             {
                 //Move forwards
-                camera.Position += speed * camera.Front;
+                camera.position += speed * camera.Front;
             }
             if (primaryKeyboard.IsKeyPressed(Key.S))
             {
                 //Move backwards
-                camera.Position -= speed * camera.Front;
+                camera.position -= speed * camera.Front;
             }
             if (primaryKeyboard.IsKeyPressed(Key.A))
             {
                 //Move left
-                camera.Position -= Vector3.Normalize(Vector3.Cross(camera.Front, camera.Up)) * speed;
+                camera.position -= Vector3.Normalize(Vector3.Cross(camera.Front, camera.up)) * speed;
             }
             if (primaryKeyboard.IsKeyPressed(Key.D))
             {
                 //Move right
-                camera.Position += Vector3.Normalize(Vector3.Cross(camera.Front, camera.Up)) * speed;
+                camera.position += Vector3.Normalize(Vector3.Cross(camera.Front, camera.up)) * speed;
             }
 
             if (primaryKeyboard.IsKeyPressed(Key.Space))
             {
                 //move up
-                camera.Position += camera.Up * speed;
+                camera.position += camera.up * speed;
             }
             if (primaryKeyboard.IsKeyPressed(Key.Q))
             {
                 //move up
-                camera.Position += -camera.Up * speed;
+                camera.position += -camera.up * speed;
             }
         }
 

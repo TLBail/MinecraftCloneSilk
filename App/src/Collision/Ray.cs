@@ -5,19 +5,19 @@ namespace MinecraftCloneSilk.Collision;
 
 public class Ray
 {
-    public Vector3D<float> orig;
-    public Vector3D<float> dir;
-    public Vector3D<float> invdir;
+    public Vector3 orig;
+    public Vector3 dir;
+    public Vector3 invdir;
     
     public int[] sign = new int[3];
 
 
-    public Ray(Vector3D<float> orig, Vector3D<float> dir)
+    public Ray(Vector3 orig, Vector3 dir)
     {
         this.orig = orig;
         this.dir = dir;
 
-        invdir = new Vector3D<float>(
+        invdir = new Vector3(
             1.0f / dir.X,
             1.0f / dir.Y,
             1.0f  / dir.Z
@@ -29,66 +29,66 @@ public class Ray
     }
 
     
-    public List<Vector3D<int>> ProjetedCoords(float size)
+    public List<Vector3> ProjetedCoords(float size)
     {
-        List<Vector3D<int>> hitedPosition = new List<Vector3D<int>>();
+        List<Vector3> hitedPosition = new List<Vector3>();
         for (float i = 0; i < size; i += 0.1f) {
-            Vector3D<float> projetion = orig + Vector3D.Multiply(dir, i);
-            hitedPosition.Add( new Vector3D<int>(
+            Vector3 projetion = orig + Vector3.Multiply(dir, i);
+            hitedPosition.Add( new Vector3(
                 (int)Math.Round(projetion.X, 0), 
                 (int)Math.Round(projetion.Y, 0),
                 (int)Math.Round(projetion.Z, 0)
             ));
             
             
-            projetion = orig + Vector3D.Multiply(dir, i) + new Vector3D<float>(0.1f, 0, 0);
-            hitedPosition.Add( new Vector3D<int>(
+            projetion = orig + Vector3.Multiply(dir, i) + new Vector3(0.1f, 0, 0);
+            hitedPosition.Add( new Vector3(
                 (int)Math.Round(projetion.X, 0), 
                 (int)Math.Round(projetion.Y, 0),
                 (int)Math.Round(projetion.Z, 0)
             ));
             
-            projetion = orig + Vector3D.Multiply(dir, i) + new Vector3D<float>(0, 0.1f, 0);
-            hitedPosition.Add( new Vector3D<int>(
+            projetion = orig + Vector3.Multiply(dir, i) + new Vector3(0, 0.1f, 0);
+            hitedPosition.Add( new Vector3(
                 (int)Math.Round(projetion.X, 0), 
                 (int)Math.Round(projetion.Y, 0),
                 (int)Math.Round(projetion.Z, 0)
             ));
             
-            projetion = orig + Vector3D.Multiply(dir, i) + new Vector3D<float>(0.1f, 0.1f, 0);
-            hitedPosition.Add( new Vector3D<int>(
-                (int)Math.Round(projetion.X, 0), 
-                (int)Math.Round(projetion.Y, 0),
-                (int)Math.Round(projetion.Z, 0)
-            ));
-            
-            
-            
-            projetion = orig + Vector3D.Multiply(dir, i) + new Vector3D<float>(0, 0, 0.1f);
-            hitedPosition.Add( new Vector3D<int>(
+            projetion = orig + Vector3.Multiply(dir, i) + new Vector3(0.1f, 0.1f, 0);
+            hitedPosition.Add( new Vector3(
                 (int)Math.Round(projetion.X, 0), 
                 (int)Math.Round(projetion.Y, 0),
                 (int)Math.Round(projetion.Z, 0)
             ));
             
             
-            projetion = orig + Vector3D.Multiply(dir, i) + new Vector3D<float>(0.1f, 0, 0.1f);
-            hitedPosition.Add( new Vector3D<int>(
+            
+            projetion = orig + Vector3.Multiply(dir, i) + new Vector3(0, 0, 0.1f);
+            hitedPosition.Add( new Vector3(
                 (int)Math.Round(projetion.X, 0), 
                 (int)Math.Round(projetion.Y, 0),
                 (int)Math.Round(projetion.Z, 0)
             ));
             
             
-            projetion = orig + Vector3D.Multiply(dir, i) + new Vector3D<float>(0, 0.1f, 0.1f);
-            hitedPosition.Add( new Vector3D<int>(
+            projetion = orig + Vector3.Multiply(dir, i) + new Vector3(0.1f, 0, 0.1f);
+            hitedPosition.Add( new Vector3(
+                (int)Math.Round(projetion.X, 0), 
+                (int)Math.Round(projetion.Y, 0),
+                (int)Math.Round(projetion.Z, 0)
+            ));
+            
+            
+            projetion = orig + Vector3.Multiply(dir, i) + new Vector3(0, 0.1f, 0.1f);
+            hitedPosition.Add( new Vector3(
                 (int)Math.Round(projetion.X, 0), 
                 (int)Math.Round(projetion.Y, 0),
                 (int)Math.Round(projetion.Z, 0)
             ));
 
-            projetion = orig + Vector3D.Multiply(dir, i) + new Vector3D<float>(0.1f, 0.1f, 0.1f);
-            hitedPosition.Add( new Vector3D<int>(
+            projetion = orig + Vector3.Multiply(dir, i) + new Vector3(0.1f, 0.1f, 0.1f);
+            hitedPosition.Add( new Vector3(
                 (int)Math.Round(projetion.X, 0), 
                 (int)Math.Round(projetion.Y, 0),
                 (int)Math.Round(projetion.Z, 0)
@@ -99,10 +99,10 @@ public class Ray
         return hitedPosition;
     }
     
-    public Vector3D<int> ProjectToBlock(float offset)
+    public Vector3 ProjectToBlock(float offset)
     {
-        Vector3D<float> projetion = orig + Vector3D.Multiply(dir, offset);
-        return new Vector3D<int>(
+        Vector3 projetion = orig + Vector3.Multiply(dir, offset);
+        return new Vector3(
             (int)Math.Round(projetion.X, 0), 
             (int)Math.Round(projetion.Y, 0),
             (int)Math.Round(projetion.Z, 0)

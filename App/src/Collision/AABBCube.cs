@@ -1,17 +1,45 @@
-﻿using MinecraftCloneSilk.Collision;
+﻿using System.Numerics;
+using MinecraftCloneSilk.Collision;
 using Silk.NET.Maths;
 
 namespace MinecraftCloneSilk.Collision;
 
-public class AABBCube
+public class AABBCube : Volume
 {
-    public Vector3D<float>[] bounds = new Vector3D<float>[2];
+    public Vector3[] bounds = new Vector3[2];
+    public Vector3 center;
+    public Vector3 extents;
 
-    public AABBCube(Vector3D<float> min, Vector3D<float> max)
+    public AABBCube(Vector3 min, Vector3 max)
     {
         bounds[0] = min;
         bounds[1] = max;
+        center = (min + max) / 2;
+        extents = max - center;
     }
+    
+    
+    
+    public bool IsInFrustrum(Frustrum frustrum) {
+        return (IsOnOrForwardPlane(frustrum.leftFace) &&
+                IsOnOrForwardPlane(frustrum.rightFace) &&
+                IsOnOrForwardPlane(frustrum.topFace) &&
+                IsOnOrForwardPlane(frustrum.bottomFace) &&
+                IsOnOrForwardPlane(frustrum.nearFace) &&
+                IsOnOrForwardPlane(frustrum.farFace));
+    }
+
+    private bool IsOnOrForwardPlane(Plane plane)
+    {
+        // Compute the projection interval radius of b onto L(t) = b.c + t * p.n
+        float r = extents.X * MathF.Abs(plane.planeNormal.X) + extents.Y * MathF.Abs(plane.planeNormal.Y) +
+                        extents.Z * MathF.Abs(plane.planeNormal.Z);
+
+        return -r <= plane.GetSignedDistanceToPlane(center);
+    }
+
+
+    
     
     
     public bool Intersect(Ray r, float t)

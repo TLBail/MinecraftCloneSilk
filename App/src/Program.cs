@@ -20,7 +20,8 @@ namespace MinecraftCloneSilk
                 new (typeof(GeneralInfo).FullName!),
                 new (typeof(ItemBarUi).FullName!),
                 new (typeof(DemoWindow).FullName!),
-                new (typeof(InventaireUi).FullName!)
+                new (typeof(InventaireUi).FullName!),
+                new (typeof(ChunkRendererUi).FullName!)
                 
             };
             Scene scene = new Scene(gameObjectNames);

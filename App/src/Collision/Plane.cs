@@ -1,30 +1,51 @@
-﻿using Silk.NET.Maths;
+﻿using System.Numerics;
+using Silk.NET.Maths;
 
 namespace MinecraftCloneSilk.Collision;
 
 public class Plane
 {
-    public Vector3D<float> planeNormal;
-    public Vector3D<float> planeCenter;
+    public Vector3 planeNormal { get; private set; }
+    public Vector3 planeCenter { get; private set; }
+    private float distance = 0;
 
     public Plane(
-        Vector3D<float> a,
-        Vector3D<float> b,
-        Vector3D<float> d,
-        Vector3D<float> center)
+        Vector3 a,
+        Vector3 b,
+        Vector3 d,
+        Vector3 center)
     {
-        planeNormal = Vector3D.Cross(Vector3D.Subtract(b, a),
-            Vector3D.Subtract(d, a));
-        planeNormal = Vector3D.Normalize(planeNormal);
+        planeNormal = Vector3.Cross(Vector3.Subtract(b, a),
+            Vector3.Subtract(d, a));
+        planeNormal = Vector3.Normalize(planeNormal);
         this.planeCenter = center;
+        distance = CalculateDistanceToOrigin(planeNormal, planeCenter);
     }
+    
+    public Plane(Vector3 planeNormal, Vector3 planeCenter)
+    {
+        this.planeNormal = planeNormal;
+        this.planeCenter = planeCenter;
+        distance = CalculateDistanceToOrigin(planeNormal, planeCenter);
+    }
+    public float CalculateDistanceToOrigin(Vector3 normal, Vector3 pointOnPlane)
+    {
+        return Vector3.Dot(normal, pointOnPlane);
+    }
+
+    
+    public float GetSignedDistanceToPlane(Vector3 point)
+    {
+        return Vector3.Dot(planeNormal, point) - distance;
+    }
+    
 
     public bool Intersect(Ray ray, ref float t)
     {
-        float denom = Vector3D.Dot(planeNormal, ray.dir);
+        float denom = Vector3.Dot(planeNormal, ray.dir);
         if (denom > 1.0e-6) {
-            Vector3D<float> p010 = Vector3D.Subtract(planeCenter, ray.orig );
-            t = Vector3D.Dot(p010, planeNormal) / denom;
+            Vector3 p010 = Vector3.Subtract(planeCenter, ray.orig );
+            t = Vector3.Dot(p010, planeNormal) / denom;
             return (t >= 0);
         }
 
@@ -33,10 +54,10 @@ public class Plane
 
     public HitInfo Intersect(Ray ray)
     {
-        float denom = Vector3D.Dot(planeNormal, ray.dir);
+        float denom = Vector3.Dot(planeNormal, ray.dir);
         if (denom > 1.0e-6) {
-            Vector3D<float> p010 = Vector3D.Subtract(planeCenter, ray.orig );
-            float t = Vector3D.Dot(p010, planeNormal) / denom;
+            Vector3 p010 = Vector3.Subtract(planeCenter, ray.orig );
+            float t = Vector3.Dot(p010, planeNormal) / denom;
             return new HitInfo(t >= 0, t) ;
         }
 

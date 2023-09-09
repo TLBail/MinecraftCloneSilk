@@ -9,20 +9,20 @@ public class CollisionSquareTEst
 {
     
     [Test]
-    public void testCollision()
+    public void TestCollision()
     {
-        Vector3D<float> A = new Vector3D<float>(0.0f, 0.5f, -0.5f);
-        Vector3D<float> B = new Vector3D<float>(0.0f, 0.5f, 0.5f);
-        Vector3D<float> C = new Vector3D<float>(0.0f, -0.5f, 0.5f);
-        Vector3D<float> D = new Vector3D<float>(0.0f, -0.5f, -0.5f);
-        Square square = new Square(A,  B, C, D, Vector3D<float>.Zero);
+        Vector3 A = new Vector3(0.0f, 0.5f, -0.5f);
+        Vector3 B = new Vector3(0.0f, 0.5f, 0.5f);
+        Vector3 C = new Vector3(0.0f, -0.5f, 0.5f);
+        Vector3 D = new Vector3(0.0f, -0.5f, -0.5f);
+        Square square = new Square(A,  B, C, D, Vector3.Zero);
 
 
         Ray ray = new Ray(
-            new Vector3D<float>(-5f, 0, 0), 
-            new Vector3D<float>(1, 0, 0));
+            new Vector3(-5f, 0, 0), 
+            new Vector3(1, 0, 0));
 
-        Plane plane = new Plane(A, B , D, Vector3D<float>.Zero);
+        Plane plane = new Plane(A, B , D, Vector3.Zero);
 
         Assert.IsTrue(plane.Intersect(ray).haveHited);
         Assert.IsTrue(square.Intersect(ray));
@@ -30,20 +30,20 @@ public class CollisionSquareTEst
     }
 
     [Test]
-    public void testNotCollingRay()
+    public void TestNotCollingRay()
     {
-        Vector3D<float> A = new Vector3D<float>(0.0f, 0.5f, -0.5f);
-        Vector3D<float> B = new Vector3D<float>(0.0f, 0.5f, 0.5f);
-        Vector3D<float> C = new Vector3D<float>(0.0f, -0.5f, 0.5f);
-        Vector3D<float> D = new Vector3D<float>(0.0f, -0.5f, -0.5f);
-        Square square = new Square(A,  B, C, D, Vector3D<float>.Zero);
+        Vector3 A = new Vector3(0.0f, 0.5f, -0.5f);
+        Vector3 B = new Vector3(0.0f, 0.5f, 0.5f);
+        Vector3 C = new Vector3(0.0f, -0.5f, 0.5f);
+        Vector3 D = new Vector3(0.0f, -0.5f, -0.5f);
+        Square square = new Square(A,  B, C, D, Vector3.Zero);
 
 
         Ray ray = new Ray(
-            new Vector3D<float>(-5f, 0f, 0), 
-            new Vector3D<float>(-1, 0, 0));
+            new Vector3(-5f, 0f, 0), 
+            new Vector3(-1, 0, 0));
 
-        Plane plane = new Plane(A, B , D, Vector3D<float>.Zero);
+        Plane plane = new Plane(A, B , D, Vector3.Zero);
 
         Assert.IsFalse(plane.Intersect(ray).haveHited);
         Assert.IsFalse(square.Intersect(ray));
@@ -51,47 +51,47 @@ public class CollisionSquareTEst
     }
     
     [Test]
-    public void testNotCollingRayInPlaneButNotInSquare()
+    public void TestNotCollingRayInPlaneButNotInSquare()
     {
-        Vector3D<float> A = new Vector3D<float>(0.0f, 0.5f, -0.5f);
-        Vector3D<float> B = new Vector3D<float>(0.0f, 0.5f, 0.5f);
-        Vector3D<float> C = new Vector3D<float>(0.0f, -0.5f, 0.5f);
-        Vector3D<float> D = new Vector3D<float>(0.0f, -0.5f, -0.5f);
-        Square square = new Square(A,  B, C, D, Vector3D<float>.Zero);
+        Vector3 A = new Vector3(0.0f, 0.5f, -0.5f);
+        Vector3 B = new Vector3(0.0f, 0.5f, 0.5f);
+        Vector3 C = new Vector3(0.0f, -0.5f, 0.5f);
+        Vector3 D = new Vector3(0.0f, -0.5f, -0.5f);
+        Square square = new Square(A,  B, C, D, Vector3.Zero);
 
 
         Ray ray = new Ray(
-            new Vector3D<float>(-5f, 2f, 0), 
-            new Vector3D<float>(1, 0, 0));
+            new Vector3(-5f, 2f, 0), 
+            new Vector3(1, 0, 0));
 
-        Plane plane = new Plane(A, B , D, Vector3D<float>.Zero);
+        Plane plane = new Plane(A, B , D, Vector3.Zero);
 
         Assert.IsTrue(plane.Intersect(ray).haveHited);
         Assert.IsFalse(square.Intersect(ray));
 
     }
     [Test]
-    public void testLeftFace()
+    public void TestLeftFace()
     {
-        Vector3D<float> position = Vector3D<float>.Zero;
+        Vector3 position = Vector3.Zero;
 
-        Vector3D<float> A = new Vector3D<float>(position.X - 0.5f, position.Y - 0.5f, position.Z + 0.5f);
-        Vector3D<float> B = new Vector3D<float>(position.X - 0.5f, position.Y + 0.5f, position.Z + 0.5f);
-        Vector3D<float> C = new Vector3D<float>(position.X - 0.5f, position.Y + 0.5f, position.Z - 0.5f);
-        Vector3D<float> D = new Vector3D<float>(position.X - 0.5f, position.Y - 0.5f, position.Z - 0.5f);
+        Vector3 A = new Vector3(position.X - 0.5f, position.Y - 0.5f, position.Z + 0.5f);
+        Vector3 B = new Vector3(position.X - 0.5f, position.Y + 0.5f, position.Z + 0.5f);
+        Vector3 C = new Vector3(position.X - 0.5f, position.Y + 0.5f, position.Z - 0.5f);
+        Vector3 D = new Vector3(position.X - 0.5f, position.Y - 0.5f, position.Z - 0.5f);
         Square square = new Square(
             D,C,B,A,
-            new Vector3D<float>(position.X - 0.5f, position.Y, position.Z)
+            new Vector3(position.X - 0.5f, position.Y, position.Z)
         );
 
         
         
 
         Ray ray = new Ray(
-            new Vector3D<float>(-5f, 0f, 0), 
-            new Vector3D<float>(1, 0, 0));
+            new Vector3(-5f, 0f, 0), 
+            new Vector3(1, 0, 0));
 
-        Plane plane = new Plane(D,C,A, new Vector3D<float>(position.X - 0.5f, position.Y, position.Z));
+        Plane plane = new Plane(D,C,A, new Vector3(position.X - 0.5f, position.Y, position.Z));
 
         Assert.IsTrue(plane.Intersect(ray).haveHited);
         Assert.IsTrue(square.Intersect(ray));
@@ -100,19 +100,19 @@ public class CollisionSquareTEst
     
     
     [Test]
-    public void testLeftFaceOld()
+    public void TestLeftFaceOld()
     {
         
-        Vector3D<float> position = Vector3D<float>.Zero;
+        Vector3 position = Vector3.Zero;
 
         Ray ray = new Ray(
-            new Vector3D<float>(-5f, 0f, 0), 
-            new Vector3D<float>(1, 0, 0));
+            new Vector3(-5f, 0f, 0), 
+            new Vector3(1, 0, 0));
 
-        Plane plane = new Plane(new Vector3D<float>(position.X - 0.5f, position.Y - 0.5f, position.Z - 0.5f),
-            new Vector3D<float>(position.X - 0.5f, position.Y + 0.5f, position.Z - 0.5f),
-            new Vector3D<float>(position.X - 0.5f, position.Y - 0.5f, position.Z + 0.5f)
-            , new Vector3D<float>(position.X - 0.5f, position.Y, position.Z));
+        Plane plane = new Plane(new Vector3(position.X - 0.5f, position.Y - 0.5f, position.Z - 0.5f),
+            new Vector3(position.X - 0.5f, position.Y + 0.5f, position.Z - 0.5f),
+            new Vector3(position.X - 0.5f, position.Y - 0.5f, position.Z + 0.5f)
+            , new Vector3(position.X - 0.5f, position.Y, position.Z));
 
         Assert.IsTrue(plane.Intersect(ray).haveHited);
     }

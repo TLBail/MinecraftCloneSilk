@@ -7,15 +7,15 @@ public class Square
 {
     private Plane plane;
 
-    private Vector3D<float> point1;
-    private Vector3D<float> point2;
-    private Vector3D<float> point3;
-    private Vector3D<float> point4;
-    public Square(Vector3D<float> point1,
-        Vector3D<float> point2,
-        Vector3D<float> point3,
-        Vector3D<float> point4,
-        Vector3D<float> center)
+    private Vector3 point1;
+    private Vector3 point2;
+    private Vector3 point3;
+    private Vector3 point4;
+    public Square(Vector3 point1,
+        Vector3 point2,
+        Vector3 point3,
+        Vector3 point4,
+        Vector3 center)
     {
         plane = new Plane(point1, point2, point4, center);
         this.point1 = point1;
@@ -31,7 +31,7 @@ public class Square
         float t = hitInfo.fNorm;
         
         
-        Vector3D<float> intersectPoint = ray.orig + (t * ray.dir);
+        Vector3 intersectPoint = ray.orig + (t * ray.dir);
         float o1 = Orient(intersectPoint, point1, point2, plane.planeNormal);
         float o2 = Orient(intersectPoint, point2, point3, plane.planeNormal);
         float o3 = Orient(intersectPoint, point3, point4, plane.planeNormal);
@@ -47,7 +47,7 @@ public class Square
         float t = hitInfo.fNorm;
         
         
-        Vector3D<float> intersectPoint = ray.orig + (t * ray.dir);
+        Vector3 intersectPoint = ray.orig + (t * ray.dir);
         float o1 = Orient(intersectPoint, point1, point2, plane.planeNormal);
         float o2 = Orient(intersectPoint, point2, point3, plane.planeNormal);
         float o3 = Orient(intersectPoint, point3, point4, plane.planeNormal);
@@ -56,9 +56,9 @@ public class Square
                (o1 <= 0 && o2 <= 0 && o3 <= 0 && o4 <= 0), hitInfo.fNorm);
     }
 
-    private float Orient(Vector3D<float> a, Vector3D<float> b, Vector3D<float> c, Vector3D<float> n)
+    private float Orient(Vector3 a, Vector3 b, Vector3 c, Vector3 n)
     {
-        return Vector3D.Dot(Vector3D.Cross((b - a), (c - a)), n);
+        return Vector3.Dot(Vector3.Cross((b - a), (c - a)), n);
     }
 
 }

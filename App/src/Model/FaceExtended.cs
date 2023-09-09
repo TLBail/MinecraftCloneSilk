@@ -1,4 +1,5 @@
-﻿using Silk.NET.Maths;
+﻿using System.Collections.ObjectModel;
+using Silk.NET.Maths;
 
 namespace MinecraftCloneSilk.Model;
 
@@ -36,6 +37,11 @@ public enum FaceExtended
     LEFTBACK = 24,
     RIGHTBACK = 25
 };
+
+public static class FaceExtendedConst
+{
+	public static readonly ReadOnlyCollection<FaceExtended> FACES = new ReadOnlyCollection<FaceExtended>(Enum.GetValues<FaceExtended>());
+}
 
 public static class FaceExtendedOffset
 {

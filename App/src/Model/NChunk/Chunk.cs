@@ -1,4 +1,6 @@
-﻿using MinecraftCloneSilk.Core;
+﻿using System.Numerics;
+using MinecraftCloneSilk.Collision;
+using MinecraftCloneSilk.Core;
 using MinecraftCloneSilk.GameComponent;
 using MinecraftCloneSilk.Model.RegionDrawing;
 using MinecraftCloneSilk.Model.Storage;
@@ -36,7 +38,7 @@ public class Chunk
     private int requiredByChunkLoader = 0;
     private int requiredByChunkUnloader = 0;
     internal bool blockModified = false;
-    
+    private AABBCube aabbCube;
 
 
     public Chunk(Vector3D<int> position, IChunkManager chunkManager, IWorldGenerator worldGenerator) {
@@ -46,6 +48,7 @@ public class Chunk
         this.chunkManager = chunkManager;
         this.worldGenerator = worldGenerator;
         this.position = position;
+        this.aabbCube = new AABBCube(new Vector3(position.X, position.Y, position.Z), new Vector3(position.X + Chunk.CHUNK_SIZE, position.Y + Chunk.CHUNK_SIZE, position.Z + Chunk.CHUNK_SIZE));
         blocks = new BlockData[CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE];
     }
 
@@ -102,6 +105,8 @@ public class Chunk
     public void addRequiredByChunkUnloader() => Interlocked.Increment(ref requiredByChunkUnloader);
     public void removeRequiredByChunkUnloader() => Interlocked.Decrement(ref requiredByChunkUnloader);
     
+    public AABBCube GetAABBCube() => aabbCube;
+    
     public void Reset(Vector3D<int> position, IChunkManager chunkManager, IWorldGenerator worldGenerator) {
         if(isRequiredByChunkLoader()) {
             throw new Exception("Chunk is still required by chunk loader");
@@ -109,6 +114,7 @@ public class Chunk
         this.position = position;
         this.chunkManager = chunkManager;
         this.worldGenerator = worldGenerator;
+        this.aabbCube = new AABBCube(new Vector3(position.X, position.Y, position.Z), new Vector3(position.X + Chunk.CHUNK_SIZE, position.Y + Chunk.CHUNK_SIZE, position.Z + Chunk.CHUNK_SIZE));
         Debug(false);
         chunksNeighbors = new Chunk[6];
         chunkState = DEFAULTSTARTINGCHUNKSTATE;
