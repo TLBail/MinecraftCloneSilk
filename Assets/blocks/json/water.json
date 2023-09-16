@@ -1,0 +1,31 @@
+{
+    "name": "water",
+    "transparent": false,
+    "id": 10,
+    "texture": {
+        "TOP": [
+            2,
+            5
+        ],
+        "BOTTOM": [
+            2,
+            5
+        ],
+        "LEFT": [
+            2,
+            5
+        ],
+        "RIGHT": [
+            2,
+            5
+        ],
+        "FRONT": [
+            2,
+            5
+        ],
+        "BACK": [
+            2,
+            5
+        ]
+    }
+}
