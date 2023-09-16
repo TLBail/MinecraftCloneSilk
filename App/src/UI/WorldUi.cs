@@ -10,9 +10,11 @@ public class WorldUi
 {
     private readonly World world;
     private readonly string[] blockNames;
-    public WorldUi(World world)
+    private Lighting lighting;
+    public WorldUi(World world, Lighting lighting)
     {
         this.world = world;
+        this.lighting = lighting;
         chunkRenderDistance = this.world.radius;
         worldMode = world.worldMode.ToString();
         blockNames = new string[BlockFactory.GetInstance().blocksReadOnly.Count];
@@ -41,8 +43,11 @@ public class WorldUi
         WorldGenerationUi();
         ImGui.Separator();
         ChunkManager();
-        
+        ImGui.Separator();
+        LightUi();
+
     }
+
 
     private void ChunkManager() {
         world.chunkManager.ToImGui();
@@ -105,5 +110,10 @@ public class WorldUi
                 WorldNaturalGeneration.generationParameters[i] = parameter;
             }
         }
+    }
+    
+    private void LightUi() {
+        ImGui.Text("Light");
+        ImGui.DragFloat("light intensity", ref lighting.lightLevel, 0.01f, 0, 1);
     }
 }

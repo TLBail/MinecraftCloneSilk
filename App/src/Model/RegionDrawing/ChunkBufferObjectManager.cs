@@ -19,14 +19,23 @@ public class ChunkBufferObjectManager
     public Stack<RegionBuffer> regionsWithAvailableSpace =  new Stack<RegionBuffer>();
     private Texture cubeTexture;
     private Camera? cam;
+    private Game game;
+    private Lighting lighting;
     
     public ChunkBufferObjectManager(Texture cubeTexture, Game game) {
         this.cubeTexture = cubeTexture;
+        this.game = game;
         game.drawables += Drawables;
-        game.startables += () => cam = game.mainCamera;
+        game.startables += Start;
         game.updatables += Update;
         game.stopable += Stop;
         gl = game.GetGl();
+    }
+
+
+    private void Start() {
+        cam = game.mainCamera;
+        lighting = (game.gameObjects[typeof(World).FullName!] as World)!.lighting;
     }
 
 
@@ -58,7 +67,7 @@ public class ChunkBufferObjectManager
 
     private void Drawables(GL gl, double deltatime) {
         foreach (RegionBuffer region in regions) {
-            region.Draw(cam!);
+            region.Draw(cam!, lighting);
         }
     }
 

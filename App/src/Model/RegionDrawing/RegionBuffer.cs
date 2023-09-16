@@ -122,13 +122,14 @@ public class RegionBuffer : IDisposable
         chunkCount++;
     }
 
-    public void Draw(Camera cam) {
+    public void Draw(Camera cam, Lighting lighting) {
         haveDrawLastFrame = false;
         if (nbVertex == 0) return;
         if (!RegionInCameraView(cam)) return;
         
         vao!.Bind();
         cubeShader!.Use();
+        cubeShader.SetUniform("ambientStrength", lighting.lightLevel);
         cubeTexture.Bind();
 
         gl.DrawArrays(PrimitiveType.Triangles, 0, (uint)nbVertex);
@@ -209,7 +210,9 @@ public class RegionBuffer : IDisposable
         vao = new VertexArrayObject<CubeVertex, uint>(gl, vbo);
         vao.Bind();
         vao.VertexAttributePointer(0, 4, VertexAttribPointerType.Float, "position");
-        vao.VertexAttributePointer(1, 4, VertexAttribPointerType.Float, "texCoords");
+        vao.VertexAttributePointer(1, 2, VertexAttribPointerType.Float, "texCoords");
+        vao.VertexAttributePointer(2, 1, VertexAttribPointerType.Float, "ambientOcclusion");
+        vao.VertexAttributePointer(3, 1, VertexAttribPointerType.Float, "lightLevel");
     }
     
     

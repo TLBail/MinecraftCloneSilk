@@ -28,10 +28,13 @@ public class World : GameObject
     private Vector3D<int> lastPlayerChunkPosition = new Vector3D<int>(-1);
 
     private RegionStorage regionStorage;
+    
+    public Lighting lighting { get; private set; }
 
     public World(Game game, WorldMode worldMode = WorldMode.EMPTY) : base(game) {
         this.worldMode = worldMode;
-        worldUi = new WorldUi(this);
+        this.lighting = new Lighting();
+        worldUi = new WorldUi(this, lighting);
         worldNaturalGeneration = new WorldNaturalGeneration();
         regionStorage = new RegionStorage("./Worlds/newWorld");
         chunkManager = new ChunkManager(radius, worldNaturalGeneration, regionStorage);
