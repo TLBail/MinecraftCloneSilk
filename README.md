@@ -51,9 +51,10 @@ Pour visualiser les résultats, il suffit d'ouvrir le fichier trace.json dans ch
 ## Crédits
 Un grand merci à LearnOpenGL
 
+# Photo
+![capture](https://raw.githubusercontent.com/TLBail/MinecraftCloneSilk/master/capture.png)
 
-
-
+# Vidéo
 
 [![Watch the video](https://img.youtube.com/vi/XlYM7xdmK9M/maxresdefault.jpg)](https://youtu.be/XlYM7xdmK9M)
 
