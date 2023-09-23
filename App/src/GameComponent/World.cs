@@ -21,7 +21,7 @@ public class World : GameObject
     private Player player = null!;
     public int radius { get; set; } = 6;
     private readonly WorldUi worldUi;
-    public WorldNaturalGeneration worldNaturalGeneration;
+    public IWorldGenerator worldGeneration;
     public WorldMode worldMode { get; set; }
     public ChunkManager chunkManager;
 
@@ -35,9 +35,9 @@ public class World : GameObject
         this.worldMode = worldMode;
         this.lighting = new Lighting();
         worldUi = new WorldUi(this, lighting);
-        worldNaturalGeneration = new WorldNaturalGeneration();
+        worldGeneration = new WorldNaturalGeneration();
         regionStorage = new RegionStorage("./Worlds/newWorld");
-        chunkManager = new ChunkManager(radius, worldNaturalGeneration, regionStorage);
+        chunkManager = new ChunkManager(radius, worldGeneration, regionStorage);
     }
 
 

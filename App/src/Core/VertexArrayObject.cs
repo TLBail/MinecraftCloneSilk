@@ -29,6 +29,12 @@ namespace MinecraftCloneSilk.Core
             gl.VertexAttribPointer(index, count, type, false,(uint) sizeof(TVertexType), (void*) (Marshal.OffsetOf(typeof(TVertexType), fieldName)));
             gl.EnableVertexAttribArray(index);
         }
+        public unsafe void VertexAttributeIPointer(uint index, int count,  VertexAttribIType type, string fieldName)
+        {
+            gl.VertexAttribIPointer(index, count, type,(uint) sizeof(TVertexType), (void*) (Marshal.OffsetOf(typeof(TVertexType), fieldName)));
+            gl.EnableVertexAttribArray(index);
+        }
+ 
 
         public void Bind()
         {

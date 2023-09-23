@@ -73,6 +73,9 @@ public class Chunk
                 }
                 chunkStrategy = new ChunkBlockGeneratedStrategy(this);
                 break;
+            case ChunkState.LIGHTING:
+                chunkStrategy = new ChunkLightingStrategy(this);
+                break;
             case ChunkState.DRAWABLE:
                 chunkStrategy = new ChunkDrawableStrategy(this);
                 break;

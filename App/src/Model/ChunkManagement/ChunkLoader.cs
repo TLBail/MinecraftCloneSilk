@@ -18,6 +18,9 @@ public class ChunkLoader
         SETUPBLOCK,
         LOADBLOCK,
         FINISHBLOCK,
+        SETUPLIGHT,
+        LOADLIGHT,
+        FINISHLIGHT,
         SETUPDRAW,
         LOADDRAW,
         FINISHDRAW,
@@ -25,6 +28,7 @@ public class ChunkLoader
 
     private List<Chunk> chunksList = new() ;
     private List<Chunk> chunkToLoadTerrain = new();
+    private List<Chunk> chunkToLoadLight = new();
     private List<Chunk> chunkToLoadBlock = new ();
     private List<Chunk> chunkToDraw = new();
     private List<ChunkLoadingTask> chunkInMemory = new();
@@ -75,18 +79,21 @@ public class ChunkLoader
         if (chunkStateInMemory < ChunkState.BLOCKGENERATED && chunk.chunkState < ChunkState.BLOCKGENERATED &&
             chunk.wantedChunkState >= ChunkState.BLOCKGENERATED)
             chunkToLoadBlock.Add(chunk);
+        if (chunk.chunkState < ChunkState.LIGHTING && chunk.wantedChunkState >= ChunkState.LIGHTING)
+            chunkToLoadLight.Add(chunk);
         if (chunk.chunkState < ChunkState.DRAWABLE && chunk.wantedChunkState >= ChunkState.DRAWABLE)
             chunkToDraw.Add(chunk);
     }
 
     public bool Update() {
-        return MultiThreadLoading();
+        return SingleThreadLoading();
     }
 
     public void Reset() {
         chunkToDraw = new List<Chunk>();
         chunkToLoadBlock = new List<Chunk>();
         chunkToLoadTerrain = new List<Chunk>();
+        chunkToLoadLight = new List<Chunk>();
         chunkInMemory = new List<ChunkLoadingTask>();
         chunkLoaderState = ChunkLoaderState.SETUPCHUNKINMEMORY;
     }
@@ -127,6 +134,22 @@ public class ChunkLoader
 
         // case ChunkLoaderState.FINISHBLOCK:
         foreach (Chunk chunk in chunkToLoadBlock) {
+            chunk.FinishChunkState();
+        }
+        
+        // case ChunkLoaderState.SETUPLIGHT:
+        foreach (Chunk chunk in chunkToLoadLight) {
+            chunk.SetChunkState(ChunkState.LIGHTING);
+            chunk.InitChunkState();
+        }
+        
+        // case ChunkLoaderState.LOADLIGHT:
+        foreach (Chunk chunk in chunkToLoadLight) {
+            chunk.LoadChunkState();
+        }
+        
+        // case ChunkLoaderState.FINISHLIGHT:
+        foreach (Chunk chunk in chunkToLoadLight) {
             chunk.FinishChunkState();
         }
 
@@ -234,6 +257,33 @@ public class ChunkLoader
                     chunk.FinishChunkState();
                 }
 
+                chunkLoaderState = ChunkLoaderState.SETUPLIGHT;
+                return false;
+            case ChunkLoaderState.SETUPLIGHT:
+                foreach (Chunk chunk in chunkToLoadLight) {
+                    chunk.SetChunkState(ChunkState.LIGHTING);
+                    chunk.InitChunkState();
+                }
+                chunkLoaderState = ChunkLoaderState.LOADLIGHT;
+                task = Parallel.ForEachAsync(chunkToLoadLight,  (chunk, token) =>
+                    {
+                        chunk.LoadChunkState();
+                        return default;
+                    })
+                    .ContinueWith((task =>
+                    {
+                        if (task.IsFaulted) throw task.Exception!;
+                        chunkLoaderState = ChunkLoaderState.FINISHLIGHT;
+                    }));
+                return false;
+            
+            case ChunkLoaderState.LOADLIGHT:
+                if (task.IsFaulted) throw task.Exception!;
+                return false;
+            case ChunkLoaderState.FINISHLIGHT:
+                foreach (Chunk chunk in chunkToLoadLight) {
+                    chunk.FinishChunkState();
+                }
                 chunkLoaderState = ChunkLoaderState.SETUPDRAW;
                 return false;
             case ChunkLoaderState.SETUPDRAW:

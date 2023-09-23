@@ -21,17 +21,16 @@ public class ChunkDrawableStrategy : ChunkStrategy
 
     private ChunkFace? chunkFace; 
     
-    public ChunkDrawableStrategy(Chunk chunk) : base(chunk) {
-        if (chunk.chunkState != ChunkState.BLOCKGENERATED) {
-            throw new Exception("failed to init chunkDrawableStrategy because the chunk is not BLOCKGENERATED");
-        }
-    }
-
-
     public static void InitStaticMembers( ChunkBufferObjectManager chunkBufferObjectManager) {
         ChunkDrawableStrategy.chunkBufferObjectManager = chunkBufferObjectManager;
     }
+    public ChunkDrawableStrategy(Chunk chunk) : base(chunk) {
+        if (chunk.chunkState != ChunkState.LIGHTING) {
+            throw new Exception("failed to init chunkDrawableStrategy because the chunk is not LIGHTING");
+        }
+    }
 
+    public override ChunkState GetChunkStateOfStrategy() => ChunkState.DRAWABLE;
     public override void Init() {
         setupNeighbors();
     }
@@ -56,7 +55,6 @@ public class ChunkDrawableStrategy : ChunkStrategy
         }
     }
 
-    public override ChunkState GetChunkStateOfStrategy() => ChunkState.DRAWABLE;
 
 
     public override void UpdateChunkVertex() {

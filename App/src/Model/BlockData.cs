@@ -3,6 +3,7 @@
 public struct BlockData
 {
     public int id; //block id
+    public int data1; // lightLevel [0..4]
 
     public BlockData(ReadOnlySpan<byte> buffer) {
         this.id = BitConverter.ToInt16(buffer);

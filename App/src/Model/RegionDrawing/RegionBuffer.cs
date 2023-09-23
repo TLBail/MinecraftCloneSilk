@@ -211,12 +211,13 @@ public class RegionBuffer : IDisposable
         vao.Bind();
         vao.VertexAttributePointer(0, 4, VertexAttribPointerType.Float, "position");
         vao.VertexAttributePointer(1, 2, VertexAttribPointerType.Float, "texCoords");
-        vao.VertexAttributePointer(2, 1, VertexAttribPointerType.Float, "ambientOcclusion");
-        vao.VertexAttributePointer(3, 1, VertexAttribPointerType.Float, "lightLevel");
+        vao.VertexAttributeIPointer(2, 1, VertexAttribIType.Int, "ambientOcclusion");
+        vao.VertexAttributeIPointer(3, 1, VertexAttribIType.Int, "lightLevel");
     }
     
     
     private unsafe void CreateSuperChunk(Span<BlockData> superChunk) {
+        //Todo rajouter les chunks dans toutes les diagonales donc 9 * 3 = 27 chunks au total comme sa les ambiant occlusion seront correct
         int offset = 0;
         for (int i = 0; i < chunkCount; i++) {
             Chunk chunk = chunks[i]!;

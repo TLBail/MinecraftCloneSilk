@@ -29,6 +29,16 @@ public class InventaireUi : UiWindow
     }
 
     protected override void DrawUi() {
+        const float sizeX = 800.0f;
+        const float sizeY = 660.0f;
+        var viewport = ImGui.GetMainViewport();
+        var workPos = viewport.WorkPos; // Use work area to avoid menu-bar/task-bar, if any!
+        var workSize = viewport.WorkSize;
+        Vector2 windowPos, windowPosPivot;
+        windowPos.X = workPos.X + (workSize.X / 2) - (sizeX / 2);
+        windowPos.Y = workPos.Y + (workSize.Y / 2) - (sizeY / 2);
+        ImGui.SetNextWindowPos(windowPos, ImGuiCond.Always);
+        ImGui.SetNextWindowSize(new Vector2(sizeX,sizeY));
         ImGui.Begin("Inventaire", FLAGS);
         ImGui.Text("inventaire");
         var footerHeigthToReserve = ImGui.GetStyle().ItemSpacing.Y + ImGui.GetFrameHeightWithSpacing();
