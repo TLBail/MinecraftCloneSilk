@@ -29,7 +29,7 @@ void main()
         factor = 0.4f;
     }
     
-    factor *= float(lightLevel) / 15f;
+    factor *= float(lightLevel) / 15.0f;
     lightColor = vec4(lightColor.r * factor, lightColor.g * factor, lightColor.b * factor, 1.0f);
     
 } 
