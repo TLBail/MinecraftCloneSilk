@@ -33,7 +33,9 @@ public class PlayerTest
 
     [OneTimeTearDown]
     public void endGame() {
-        game.Stop();
+        game.updatables += (deltaTime) => {
+            game.Stop();
+        };
         gameThread.Join();
     }
     

@@ -23,7 +23,7 @@ public class ChunkStorageTest
         Chunk.InitStaticMembers(null, BlockFactory.GetInstance());
         chunkStorage = new ChunkStorage("./Worlds/newWorld");
         chunkManagerEmpty = new ChunkManagerEmpty(new WorldFlatGeneration(), chunkStorage);
-        chunkLoader = new ChunkLoader(chunkStorage);
+        chunkLoader = new ChunkLoader();
     }
 
     [SetUp]
@@ -42,13 +42,7 @@ public class ChunkStorageTest
 
     private Chunk getBlockGeneratedChunk() => getBlockGeneratedChunk(Vector3D<int>.Zero);
     private Chunk getBlockGeneratedChunk(Vector3D<int> position) {
-        Chunk chunk = chunkManagerEmpty.GetChunk(position);
-        Assert.IsNotNull(chunk);
-        Stack<ChunkLoadingTask> chunkLoadingTasks = new Stack<ChunkLoadingTask>();
-        chunkLoadingTasks.Push(new ChunkLoadingTask(chunk, ChunkState.BLOCKGENERATED));
-        chunkLoader.AddChunks(ChunkLoader.GetChunkDependent(chunkManagerEmpty, chunkLoadingTasks));
-        chunkLoader.SingleThreadLoading();
-        return chunk;
+        return ChunkManagerTools.GetBlockGeneratedChunk(chunkManagerEmpty, chunkLoader, position);
     }
     
     [Test]
@@ -121,7 +115,7 @@ public class ChunkStorageTest
 
         chunkStorage.SaveChunk(chunk);
         
-        chunkManagerEmpty.removeChunk(Vector3D<int>.Zero);
+        chunkManagerEmpty.RemoveChunk(Vector3D<int>.Zero);
         
         Chunk chunk2 = getBlockGeneratedChunk();
 
@@ -136,7 +130,7 @@ public class ChunkStorageTest
         Chunk chunk = getBlockGeneratedChunk(chunkPosition);
         chunkStorage.SaveChunk(chunk);
         
-        chunkManagerEmpty.removeChunk(chunkPosition);
+        chunkManagerEmpty.RemoveChunk(chunkPosition);
         Chunk chunk2 = getBlockGeneratedChunk(chunkPosition);
 
         for (int x = 0; x < Chunk.CHUNK_SIZE; x++) {
@@ -193,7 +187,7 @@ public class ChunkStorageTest
         
         chunkStorage.SaveChunk(chunk);
         
-        chunkManagerEmpty.removeChunk(new Vector3D<int>(0, -32, 0));
+        chunkManagerEmpty.RemoveChunk(new Vector3D<int>(0, -32, 0));
         
         Chunk chunk2 = getBlockGeneratedChunk(new Vector3D<int>(0, -32, 0));
         for (int x = 0; x < Chunk.CHUNK_SIZE; x++) {

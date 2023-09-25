@@ -2,4 +2,4 @@
 
 namespace MinecraftCloneSilk.Model.ChunkManagement;
 
-public record struct ChunkLoadingTask(Chunk chunk, ChunkState wantedChunkState);
+public record ChunkLoadingTask(Chunk chunk, ChunkState wantedChunkState, ChunkWaitingTask? parent);

@@ -23,7 +23,7 @@ public class ChunkManagerEmpty : IChunkManager
         if (chunks.ContainsKey(position)) {
             return chunks[position];
         }    
-        chunks.Add(position, new Chunk(position, this, worldGenerator));
+        chunks.Add(position, new Chunk(position, this, worldGenerator, chunkStorage));
         return chunks[position];
     }
     
@@ -32,7 +32,7 @@ public class ChunkManagerEmpty : IChunkManager
     }
     
 
-    public void removeChunk(Vector3D<int> position) {
+    public void RemoveChunk(Vector3D<int> position) {
         chunks.Remove(position);
     }
 

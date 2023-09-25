@@ -2,6 +2,7 @@
 using Silk.NET.Input;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -54,6 +55,7 @@ public sealed class Game
         
     //ChunkRenderer
     public ChunkBufferObjectManager? chunkBufferObjectManager;
+    
         
         
     private Game(Scene scene, bool start = true) {
@@ -81,7 +83,6 @@ public sealed class Game
     [Logger.Timer]
     public void Awake()
     {
-
         foreach (InitGameData data in scene.gameObjects) {
             Object[] param = new []{this}.Concat(data.pars).ToArray();
             GameObject gameObject = (GameObject)Activator.CreateInstance(

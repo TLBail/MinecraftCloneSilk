@@ -28,7 +28,7 @@ public class ChunkPool
         Chunk chunk;
         if (chunkPool.TryTake(out Chunk? result)) {
             chunk = result;
-            chunk.Reset(position, chunkManager, worldGenerator);
+            chunk.Reset(position, chunkManager, worldGenerator, chunkStorage);
         } else {
             chunk = BuildChunk(position);
         }
@@ -37,15 +37,12 @@ public class ChunkPool
     }
 
     public void ReturnChunk(Chunk chunk) {
-        Debug.Assert(!chunk.isRequiredByChunkLoader(), " chunk is still required by chunk loader");
         Debug.Assert(!chunk.blockModified, " chunk still have block modified");
-        Debug.Assert(chunk.isRequiredByChunkUnloader());
-        chunk.removeRequiredByChunkUnloader();
         chunkPool.Add(chunk);  
     } 
     
     private Chunk BuildChunk(Vector3D<int> position) {
-        return new Chunk(position, chunkManager, worldGenerator);
+        return new Chunk(position, chunkManager, worldGenerator, chunkStorage);
     }
 
 

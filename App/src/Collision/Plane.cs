@@ -3,7 +3,7 @@ using Silk.NET.Maths;
 
 namespace MinecraftCloneSilk.Collision;
 
-public class Plane
+public struct Plane
 {
     public Vector3 planeNormal { get; private set; }
     public Vector3 planeCenter { get; private set; }

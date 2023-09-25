@@ -2,9 +2,11 @@
 
 public enum ChunkState
 {
+    UNKNOW = -1,
     EMPTY = 0,
-    GENERATEDTERRAIN = 4,
-    BLOCKGENERATED = 8,
-    LIGHTING = 16,
-    DRAWABLE = 32,
+    STORAGELOADED = 1,
+    GENERATEDTERRAIN = 2,
+    BLOCKGENERATED = 3,
+    LIGHTING = 4,
+    DRAWABLE = 5,
 }

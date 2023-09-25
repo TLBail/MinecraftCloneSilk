@@ -1,5 +1,6 @@
 ﻿using System.IO.Compression;
 using MinecraftCloneSilk.Core;
+using MinecraftCloneSilk.Model.ChunkManagement;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL;
 
@@ -7,26 +8,6 @@ namespace MinecraftCloneSilk.Model.NChunk;
 
 public abstract class ChunkStrategy
 {
-    public static Vector3D<int>[] GetDependanteChunksOffsetOfAChunkState(ChunkState chunkState) {
-        switch (chunkState) {
-            case ChunkState.DRAWABLE:
-                return ChunkDrawableStrategy.DependatesChunkOffset;
-            case ChunkState.BLOCKGENERATED:
-                return ChunkBlockGeneratedStrategy.DependatesChunkOffset;
-            default:
-                return Array.Empty<Vector3D<int>>();
-        }
-    }
-    public static ChunkState GetMinimumChunkStateOfNeighbors(ChunkState chunkState) {
-        switch (chunkState) {
-            case ChunkState.DRAWABLE:
-                return ChunkState.BLOCKGENERATED;
-            case ChunkState.BLOCKGENERATED:
-                return ChunkState.GENERATEDTERRAIN;
-            default:
-                return ChunkState.EMPTY;
-        }
-    }
     
     protected readonly Chunk chunk;
 

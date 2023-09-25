@@ -4,7 +4,7 @@ public class ChunkTerrainGeneratedStrategy : ChunkStrategy
 {
 
     public ChunkTerrainGeneratedStrategy(Chunk chunk) : base(chunk) {
-        if (chunk.chunkState != ChunkState.EMPTY) {
+        if (chunk.chunkState != ChunkState.EMPTY && chunk.chunkState != ChunkState.GENERATEDTERRAIN) {
             throw new Exception("try to create a ChunkTerrainGeneratedStrategy with a chunk that is not empty");
         }
     }
@@ -18,7 +18,6 @@ public class ChunkTerrainGeneratedStrategy : ChunkStrategy
     }
 
     public override void Finish() {
-        chunk.chunkState = ChunkState.GENERATEDTERRAIN;
     }
     
     

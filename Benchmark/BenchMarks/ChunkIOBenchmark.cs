@@ -23,12 +23,13 @@ public class ChunkIOBenchmark
         Chunk.InitStaticMembers(null, BlockFactory.GetInstance());
         regionStorage = new RegionStorage("./Worlds/newWorld");
         chunkManagerEmpty = new ChunkManagerEmpty(new WorldFlatGeneration(), regionStorage);
-        chunkLoader = new ChunkLoader(regionStorage);
+        chunkLoader = new ChunkLoader();
     }
 
      
     public void loadChunk() {
-        getBlockGeneratedChunk(Vector3D<int>.Zero);
+        Chunk chunk = ChunkManagerTools.GetBlockGeneratedChunk(chunkManagerEmpty, chunkLoader,
+                        new Vector3D<int>(0 * Chunk.CHUNK_SIZE, 0 * Chunk.CHUNK_SIZE, 0 * Chunk.CHUNK_SIZE));
     }
 
     private List<Chunk> chunks;
@@ -40,7 +41,9 @@ public class ChunkIOBenchmark
         for (int i = 0; i < 16; i++) {
             for (int j = 0; j < 16; j++) {
                 for (int k = 0; k < 16; k++) {
-                    chunks.Add(getBlockGeneratedChunk(new Vector3D<int>(i * Chunk.CHUNK_SIZE, j * Chunk.CHUNK_SIZE, k * Chunk.CHUNK_SIZE)));
+                    Chunk chunk = ChunkManagerTools.GetBlockGeneratedChunk(chunkManagerEmpty, chunkLoader,
+                        new Vector3D<int>(i * Chunk.CHUNK_SIZE, j * Chunk.CHUNK_SIZE, k * Chunk.CHUNK_SIZE));
+                    chunks.Add(chunk);
                 }
             }
         }
@@ -55,14 +58,6 @@ public class ChunkIOBenchmark
 
     
     
-    private Chunk getBlockGeneratedChunk(Vector3D<int> position) {
-        Chunk chunk = chunkManagerEmpty.GetChunk(position);
-        Stack<ChunkLoadingTask> chunkLoadingTasks = new Stack<ChunkLoadingTask>();
-        chunkLoadingTasks.Push(new ChunkLoadingTask(chunk, ChunkState.BLOCKGENERATED));
-        chunkLoader.AddChunks(ChunkLoader.GetChunkDependent(chunkManagerEmpty, chunkLoadingTasks));
-        chunkLoader.SingleThreadLoading();
-        return chunk;
-    }
 
 
 }
