@@ -22,6 +22,7 @@ public class ChunkBlockGeneratedStrategy : ChunkStrategy
     }
 
     public override void Init() {
+        chunk.chunkState = ChunkState.BLOCKLOADING;
         minimumChunkStateOfNeighborsValue = ChunkState.GENERATEDTERRAIN;
         SetupNeighbors();
     }

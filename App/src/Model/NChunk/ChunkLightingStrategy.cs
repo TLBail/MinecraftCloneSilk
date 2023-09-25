@@ -13,6 +13,10 @@ public class ChunkLightingStrategy : ChunkStrategy
         chunk.blocks[x, y, z].id = Chunk.blockFactory!.GetBlockIdByName(name);
     }
 
+    public override void Init() {
+        chunk.chunkState = ChunkState.LIGHTLOADING;
+    }
+
     public override void Load() {
         for (int x = 0; x < Chunk.CHUNK_SIZE; x++) {
             for (int y = 0; y < Chunk.CHUNK_SIZE; y++) {

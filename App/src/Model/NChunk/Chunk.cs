@@ -29,7 +29,7 @@ public class Chunk
     public Chunk[]? chunksNeighbors;
 
     public ChunkState chunkState { get; internal set; }
-    public ChunkState chunkStateInStorage = ChunkState.EMPTY;
+    public ChunkState chunkStateInStorage { get; internal set; } = ChunkState.EMPTY;
     public const ChunkState DEFAULTSTARTINGCHUNKSTATE = ChunkState.EMPTY;
 
     internal ChunkStrategy chunkStrategy;
@@ -138,7 +138,7 @@ public class Chunk
             case ChunkState.BLOCKGENERATED:
                 if (chunkStrategy is ChunkDrawableStrategy chkdw) {
                     chkdw.Hide();
-                }
+                } 
                 chunkStrategy = new ChunkBlockGeneratedStrategy(this);
                 break;
             case ChunkState.LIGHTING:

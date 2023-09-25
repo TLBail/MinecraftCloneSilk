@@ -32,6 +32,7 @@ public class ChunkDrawableStrategy : ChunkStrategy
 
     public override ChunkState GetChunkStateOfStrategy() => ChunkState.DRAWABLE;
     public override void Init() {
+        chunk.chunkState = ChunkState.DRAWLOADING;
         setupNeighbors();
     }
 
@@ -120,10 +121,10 @@ public class ChunkDrawableStrategy : ChunkStrategy
     }
 
     public void Hide() {
+        chunk.chunkManager.RemoveChunkToUpdate(chunk);
         if (!visible) return;
         visible = false;
         chunkBufferObjectManager!.RemoveChunk(chunk);
-        chunk.chunkManager.RemoveChunkToUpdate(chunk);
     }
 
     protected override Vector3D<float> ChunkStrategyColor() => new Vector3D<float>(1, 1, 0);

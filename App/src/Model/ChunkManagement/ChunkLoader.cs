@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.Concurrent;
+using System.Diagnostics;
 using MinecraftCloneSilk.Model.NChunk;
 using MinecraftCloneSilk.Model.Storage;
 using Silk.NET.Maths;
@@ -18,8 +19,16 @@ public class ChunkWaitingTask
 
 public class ChunkLoader
 {
-    public LinkedList<ChunkLoadingTask> chunkTasks = new();
+    public void ThreadChunkLoading(Object chunk) {
+        ((ChunkLoadingTask)chunk).chunk.LoadChunkState();
+        chunksToFinish.Add((ChunkLoadingTask)chunk);
+    }
     
+    
+    
+    public LinkedList<ChunkLoadingTask> chunkTasks = new();
+    public ConcurrentBag<ChunkLoadingTask> chunksToFinish = new();
+
     public ChunkLoader() {
     }
     
@@ -29,6 +38,10 @@ public class ChunkLoader
         stopwatch.Start();
         while(chunkTasks.Count > 0 && stopwatch.ElapsedMilliseconds < 10) {
             UpdateJob();
+        }
+        stopwatch.Restart();
+        while(chunksToFinish.Count > 0 && stopwatch.ElapsedMilliseconds < 10) {
+            FinishJob();
         }
     }
     
@@ -41,6 +54,16 @@ public class ChunkLoader
     private void UpdateJob() {
             ChunkLoadingTask chunkTask = chunkTasks.First!.Value;
             chunkTasks.RemoveFirst();
+
+
+            if (chunkTask.chunk.chunkState == ChunkState.STORAGELOADING || 
+                chunkTask.chunk.chunkState == ChunkState.TERRAINLOADING || 
+                chunkTask.chunk.chunkState == ChunkState.BLOCKLOADING ||
+                chunkTask.chunk.chunkState == ChunkState.LIGHTLOADING ||
+                chunkTask.chunk.chunkState == ChunkState.DRAWLOADING) {
+                chunkTasks.AddLast(chunkTask);
+                return;
+            }
             
             if(chunkTask.chunk.chunkState >= chunkTask.wantedChunkState) {
                 chunkTask.chunk.removeRequiredByChunkLoader();
@@ -63,20 +86,25 @@ public class ChunkLoader
                 
             chunkTask.chunk.SetChunkState(chunkTask.wantedChunkState);
             chunkTask.chunk.InitChunkState();
-                
-            chunkTask.chunk.LoadChunkState();
-                
-            chunkTask.chunk.FinishChunkState();
-            chunkTask.chunk.removeRequiredByChunkLoader();
+
+
+            ThreadPool.QueueUserWorkItem(ThreadChunkLoading, chunkTask);
+    }
+
+
+    private void FinishJob() {
+        if(!chunksToFinish.TryTake(out ChunkLoadingTask? chunkTask)) return;
+        chunkTask.chunk.FinishChunkState();
+        chunkTask.chunk.removeRequiredByChunkLoader();
             
-            if (chunkTask.parent is not null) {
-                ChunkWaitingTask parent = chunkTask.parent;
-                Interlocked.Decrement(ref parent.counter);
+        if (chunkTask.parent is not null) {
+            ChunkWaitingTask parent = chunkTask.parent;
+            Interlocked.Decrement(ref parent.counter);
                 
-                if(parent.counter == 0) {
-                    chunkTasks.AddFirst(parent.chunkLoadingTask);
-                }
+            if(parent.counter == 0) {
+                chunkTasks.AddFirst(parent.chunkLoadingTask);
             }
+        }
     }
     
     public bool NewJob(ChunkLoadingTask chunkLoadingTask) {

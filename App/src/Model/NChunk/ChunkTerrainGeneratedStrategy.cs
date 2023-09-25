@@ -11,6 +11,7 @@ public class ChunkTerrainGeneratedStrategy : ChunkStrategy
 
     
     public override void Init() {
+        chunk.chunkState = ChunkState.TERRAINLOADING;
     }
 
     public override void Load() {

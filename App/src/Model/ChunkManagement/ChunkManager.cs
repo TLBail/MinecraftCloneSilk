@@ -40,6 +40,7 @@ public class ChunkManager : IChunkManager
         }
         chunkLoader.Update(); 
         foreach (Chunk chunk in chunksToUpdate) {
+            Debug.Assert(chunk.chunkState >= ChunkState.DRAWABLE, $"try to update a chunk:{chunk} with a lower state than the minimum");
             chunk.Update(deltatime);
         }
     }

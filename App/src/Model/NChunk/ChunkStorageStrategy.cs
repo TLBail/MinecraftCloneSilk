@@ -10,6 +10,11 @@ public class ChunkStorageStrategy : ChunkStrategy
 
     public override ChunkState GetChunkStateOfStrategy() => ChunkState.EMPTY;
 
+
+    public override void Init() {
+        chunk.chunkState = ChunkState.STORAGELOADING;
+    }
+
     public override void Load() {
         chunk.chunkStateInStorage = chunk.chunkStorage.GetChunkStateInStorage(chunk.position);
         if(chunk.chunkStateInStorage > ChunkState.EMPTY)
