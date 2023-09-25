@@ -57,7 +57,6 @@ public class RegionStorage : IChunkStorage, IDisposable
         tx.Commit();
     }
 
-    [Logger.Timer] 
     public void LoadChunk(Chunk chunk) {
         Span<byte> mykey = stackalloc byte[12];
         MathHelper.EncodeVector3Int(mykey, chunk.position.X, chunk.position.Y, chunk.position.Z);

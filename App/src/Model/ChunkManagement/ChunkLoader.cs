@@ -43,6 +43,7 @@ public class ChunkLoader
             chunkTasks.RemoveFirst();
             
             if(chunkTask.chunk.chunkState >= chunkTask.wantedChunkState) {
+                chunkTask.chunk.removeRequiredByChunkLoader();
                 if (chunkTask.parent is not null) {
                     ChunkWaitingTask parent = chunkTask.parent;
                     Interlocked.Decrement(ref parent.counter);
@@ -66,6 +67,7 @@ public class ChunkLoader
             chunkTask.chunk.LoadChunkState();
                 
             chunkTask.chunk.FinishChunkState();
+            chunkTask.chunk.removeRequiredByChunkLoader();
             
             if (chunkTask.parent is not null) {
                 ChunkWaitingTask parent = chunkTask.parent;
@@ -82,10 +84,12 @@ public class ChunkLoader
             return false;
         }
         chunkTasks.AddFirst(chunkLoadingTask);
+        chunkLoadingTask.chunk.addRequiredByChunkLoader();
         return true;
     }
 
     public void AddChunkToQueue(Chunk chunk, ChunkState chunkState = ChunkState.DRAWABLE) {
+        chunk.addRequiredByChunkLoader();
         chunkTasks.AddLast(new ChunkLoadingTask(chunk, chunkState, null));
     }
 }

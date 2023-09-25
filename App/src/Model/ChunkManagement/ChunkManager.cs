@@ -97,21 +97,33 @@ public class ChunkManager : IChunkManager
 
     [Logger.Timer]
     public void AddChunksToLoad(List<Vector3D<int>> positions) {
-        foreach (Vector3D<int> position in positions) {
-            chunkLoader.AddChunkToQueue(GetChunk(position));
+        Chunk[] chunksToLoad = new Chunk[positions.Count];
+        Parallel.For(0, positions.Count, i => {
+            chunksToLoad[i] = GetChunk(positions[i]);
+        });
+        AddChunksToQueue(chunksToLoad);
+    }
+
+    [Logger.Timer]
+    private void AddChunksToQueue(Chunk[] chunksToLoad){
+        foreach (Chunk chunk in chunksToLoad) {
+            chunkLoader.AddChunkToQueue(chunk);
         }
     }
 
 
     public bool TryToUnloadChunk(Vector3D<int> position) {
         Chunk chunkToUnload = chunks[position];
+        if(chunkToUnload.isRequiredByChunkLoader()) return false;
         ChunkState minimumChunkStateOfChunk = GetMinimumChunkStateOfChunk(position);
         if (chunkToUnload.chunkState == ChunkState.DRAWABLE) {
             chunkToUnload.SetChunkState(ChunkState.BLOCKGENERATED);
+            chunkToUnload.FinishChunkState();
         }
         if(minimumChunkStateOfChunk > ChunkState.EMPTY) return false;
         
         if (chunks.TryRemove(new KeyValuePair<Vector3D<int>, Chunk>(position, chunkToUnload))) {
+            chunkToUnload.addRequiredByChunkUnloader(); 
             chunksToUnload.Add(chunkToUnload);
             return true;
         } else {
@@ -121,6 +133,7 @@ public class ChunkManager : IChunkManager
     }
 
     private void ForceUnloadChunk(Chunk chunkToUnload) {
+        if(chunkToUnload.isRequiredByChunkLoader()) return;
         chunks.TryRemove(new KeyValuePair<Vector3D<int>, Chunk>(chunkToUnload.position, chunkToUnload));
         chunksToUnload.Add(chunkToUnload);
     }

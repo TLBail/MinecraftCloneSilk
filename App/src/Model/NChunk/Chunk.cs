@@ -29,7 +29,6 @@ public class Chunk
     public Chunk[]? chunksNeighbors;
 
     public ChunkState chunkState { get; internal set; }
-    public ChunkState wantedChunkState;
     public ChunkState chunkStateInStorage = ChunkState.EMPTY;
     public const ChunkState DEFAULTSTARTINGCHUNKSTATE = ChunkState.EMPTY;
 
@@ -37,13 +36,14 @@ public class Chunk
 
     internal static BlockFactory? blockFactory;
 
+    private int requiredByChunkLoader = 0;
+    private int requiredByChunkUnloader = 0;
     internal bool blockModified = false;
     private AABBCube aabbCube;
 
 
     public Chunk(Vector3D<int> position, IChunkManager chunkManager, IWorldGenerator worldGenerator, IChunkStorage chunkStorage) {
         this.chunkState = DEFAULTSTARTINGCHUNKSTATE;
-        this.wantedChunkState = DEFAULTSTARTINGCHUNKSTATE;
         this.chunkStrategy = new ChunkEmptyStrategy(this);
         this.chunkManager = chunkManager;
         this.worldGenerator = worldGenerator;
@@ -125,7 +125,6 @@ public class Chunk
     }
 
     public void SetChunkState(ChunkState newChunkState) {
-        if(newChunkState < chunkState) wantedChunkState = newChunkState;
         switch (newChunkState) {
             case ChunkState.EMPTY:
                 chunkStrategy = new ChunkEmptyStrategy(this);
@@ -149,7 +148,6 @@ public class Chunk
                 chunkStrategy = new ChunkDrawableStrategy(this);
                 break;
         }
-        this.chunkState = newChunkState;
     }
     
     public void InitChunkState() => chunkStrategy.Init();
@@ -169,10 +167,20 @@ public class Chunk
     public void Debug(bool? setDebug = null) => chunkStrategy.Debug(setDebug);
     public void Update(double deltaTime) => chunkStrategy.Update(deltaTime);
 
+    public bool isRequiredByChunkLoader() => requiredByChunkLoader > 0;
+    public void addRequiredByChunkLoader() => Interlocked.Increment(ref requiredByChunkLoader);
+    public void removeRequiredByChunkLoader() => Interlocked.Decrement(ref requiredByChunkLoader);
+    
+    public bool isRequiredByChunkUnloader() => requiredByChunkUnloader > 0;
+    public void addRequiredByChunkUnloader() => Interlocked.Increment(ref requiredByChunkUnloader);
+    public void removeRequiredByChunkUnloader() => Interlocked.Decrement(ref requiredByChunkUnloader);
     
     public AABBCube GetAABBCube() => aabbCube;
     
     public void Reset(Vector3D<int> position, IChunkManager chunkManager, IWorldGenerator worldGenerator, IChunkStorage chunkStorage) {
+        if(isRequiredByChunkLoader()) {
+            throw new Exception("Chunk is still required by chunk loader");
+        }
         this.position = position;
         this.chunkManager = chunkManager;
         this.worldGenerator = worldGenerator;
@@ -182,7 +190,6 @@ public class Chunk
         Debug(false);
         chunksNeighbors = new Chunk[6];
         chunkState = DEFAULTSTARTINGCHUNKSTATE;
-        wantedChunkState = DEFAULTSTARTINGCHUNKSTATE;
         this.chunkStrategy = new ChunkEmptyStrategy(this);
         blockModified = false;
         Array.Clear(blocks);

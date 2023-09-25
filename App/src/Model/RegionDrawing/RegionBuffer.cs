@@ -302,13 +302,6 @@ public class RegionBuffer : IDisposable
         vao?.Dispose();
     }
 
-    public void AddVertices(Chunk chunk, ReadOnlySpan<CubeVertex> vertices, int nbVertex) {
-        this.nbVertex += nbVertex;
-        vbo!.Bind(BufferTargetARB.ArrayBuffer);
-        vbo!.SendData(vertices, 0);
-    }
-
-
     public bool HaveAvailableSpace() {
         return chunkCount >= CHUNKS_PER_REGION - 1;
     }

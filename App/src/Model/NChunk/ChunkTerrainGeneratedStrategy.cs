@@ -18,6 +18,7 @@ public class ChunkTerrainGeneratedStrategy : ChunkStrategy
     }
 
     public override void Finish() {
+        chunk.chunkState = ChunkState.GENERATEDTERRAIN;
     }
     
     

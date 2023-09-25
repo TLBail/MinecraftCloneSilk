@@ -13,7 +13,7 @@ namespace MinecraftCloneSilk
             List<InitGameData> gameObjectNames = new List<InitGameData>()
             {
                 new (typeof(Player).FullName!),
-                new (typeof(World).FullName!, new object[]{ WorldMode.SIMPLE}),
+                new (typeof(World).FullName!, new object[]{ WorldMode.DYNAMIC}),
                 new (typeof(Console).FullName!),
                 new (typeof(DebugRayManager).FullName!),
                 new (typeof(GameUi).FullName!),
