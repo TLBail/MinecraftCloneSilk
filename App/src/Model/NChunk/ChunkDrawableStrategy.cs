@@ -33,7 +33,7 @@ public class ChunkDrawableStrategy : ChunkStrategy
     public override ChunkState GetChunkStateOfStrategy() => ChunkState.DRAWABLE;
     public override void Init() {
         chunk.chunkState = ChunkState.DRAWLOADING;
-        setupNeighbors();
+        SetupNeighbors();
     }
 
     public override void Load() {
@@ -45,12 +45,15 @@ public class ChunkDrawableStrategy : ChunkStrategy
         chunk.chunkManager.AddChunkToUpdate(chunk);
     }
 
-    private bool isChunkEmpty() => (chunkFace! & ChunkFace.EMPTYCHUNK) == ChunkFace.EMPTYCHUNK;
+    private bool IsChunkEmpty() => (chunkFace! & ChunkFace.EMPTYCHUNK) == ChunkFace.EMPTYCHUNK;
 
-    protected virtual void setupNeighbors() {
-        chunk.chunksNeighbors = new Chunk[6];
-        foreach (Face face in Enum.GetValues(typeof(Face))) {
-            Chunk newChunk = chunk.chunkManager.GetChunk(chunk.position + (FaceOffset.GetOffsetOfFace(face) * Chunk.CHUNK_SIZE));
+    protected virtual void SetupNeighbors() {
+        chunk.chunksNeighbors = new Chunk[26];
+        foreach (FaceExtended face in FaceExtendedConst.FACES) {
+            Vector3D<int> positionNeibor = chunk.position + (FaceExtendedOffset.GetOffsetOfFace(face) * Chunk.CHUNK_SIZE);
+            System.Diagnostics.Debug.Assert(chunk.chunkManager.ContainChunk(positionNeibor),
+                "chunk must be already generated");
+            Chunk newChunk = chunk.chunkManager.GetChunk(positionNeibor);
             System.Diagnostics.Debug.Assert(newChunk.chunkState >= MinimumChunkStateOfNeighbors(), "try to setup a chunk with a lower state than the minimum"); 
             chunk.chunksNeighbors[(int)face] = newChunk;
         }
@@ -60,7 +63,7 @@ public class ChunkDrawableStrategy : ChunkStrategy
 
     public override void UpdateChunkVertex() {
         chunkFace = ChunkFaceUtils.GetChunkFaceFlags(Chunk.blockFactory!, chunk.blocks);
-        if (!openGlSetup && isChunkEmpty()) {
+        if (!openGlSetup && IsChunkEmpty()) {
             needToUpdateChunkVertices = false;
             return;
         }
@@ -69,7 +72,7 @@ public class ChunkDrawableStrategy : ChunkStrategy
     }
 
     public override void Update(double deltaTime) {
-        if (!isChunkEmpty() && !openGlSetup) SetOpenGl();
+        if (!IsChunkEmpty() && !openGlSetup) SetOpenGl();
         if (openGlSetup && needToSendVertices) SendCubeVertices();
         if (needToUpdateChunkVertices) UpdateChunkVertex();
     }
@@ -86,7 +89,7 @@ public class ChunkDrawableStrategy : ChunkStrategy
 
     private void InitChunkFaces() {
         chunkFace = ChunkFaceUtils.GetChunkFaceFlags(Chunk.blockFactory!, chunk.blocks);
-        if (isChunkEmpty()) {
+        if (IsChunkEmpty()) {
             return;
         }
         needToSendVertices = true;
@@ -110,14 +113,41 @@ public class ChunkDrawableStrategy : ChunkStrategy
 
 
     internal void UpdateBlocksAround(int x, int y, int z) {
-        if (x == 0) chunk.chunksNeighbors![(int)Face.LEFT].UpdateChunkVertex();
-        if (x == Chunk.CHUNK_SIZE - 1) chunk.chunksNeighbors![(int)Face.RIGHT].UpdateChunkVertex();
+        const int maxIndex = Chunk.CHUNK_SIZE - 1;
+        if (x == 0) chunk.chunksNeighbors![(int)FaceExtended.LEFT].UpdateChunkVertex();
+        if (x == maxIndex) chunk.chunksNeighbors![(int)Face.RIGHT].UpdateChunkVertex();
 
-        if (y == 0) chunk.chunksNeighbors![(int)Face.BOTTOM].UpdateChunkVertex();
-        if (y == Chunk.CHUNK_SIZE - 1) chunk.chunksNeighbors![(int)Face.TOP].UpdateChunkVertex();
+        if (y == 0) chunk.chunksNeighbors![(int)FaceExtended.BOTTOM].UpdateChunkVertex();
+        if (y == maxIndex) chunk.chunksNeighbors![(int)Face.TOP].UpdateChunkVertex();
 
-        if (z == 0) chunk.chunksNeighbors![(int)Face.BACK].UpdateChunkVertex();
-        if (z == Chunk.CHUNK_SIZE - 1) chunk.chunksNeighbors![(int)Face.FRONT].UpdateChunkVertex();
+        if (z == 0) chunk.chunksNeighbors![(int)FaceExtended.BACK].UpdateChunkVertex();
+        if (z == maxIndex) chunk.chunksNeighbors![(int)FaceExtended.FRONT].UpdateChunkVertex();
+        
+        
+        if (x == 0 && y == 0) chunk.chunksNeighbors![(int)FaceExtended.BOTTOMLEFT].UpdateChunkVertex();
+        if (x == maxIndex && y == 0) chunk.chunksNeighbors![(int)FaceExtended.BOTTOMRIGHT].UpdateChunkVertex();
+        if (x == 0 && y == maxIndex) chunk.chunksNeighbors![(int)FaceExtended.TOPLEFT].UpdateChunkVertex();
+        if (x == maxIndex && y == maxIndex) chunk.chunksNeighbors![(int)FaceExtended.TOPRIGHT].UpdateChunkVertex();
+        
+        
+        if (x == 0 && z == 0) chunk.chunksNeighbors![(int)FaceExtended.LEFTFRONT].UpdateChunkVertex();
+        if (x == maxIndex && z == 0) chunk.chunksNeighbors![(int)FaceExtended.RIGHTFRONT].UpdateChunkVertex();
+        if (x == 0 && z == maxIndex) chunk.chunksNeighbors![(int)FaceExtended.LEFTBACK].UpdateChunkVertex();
+        if (x == maxIndex && z == maxIndex) chunk.chunksNeighbors![(int)FaceExtended.RIGHTBACK].UpdateChunkVertex();
+        
+        if (y == 0 && z == 0) chunk.chunksNeighbors![(int)FaceExtended.BOTTOMBACK].UpdateChunkVertex();
+        if (y == maxIndex && z == 0) chunk.chunksNeighbors![(int)FaceExtended.TOPBACK].UpdateChunkVertex();
+        if (y == 0 && z == maxIndex) chunk.chunksNeighbors![(int)FaceExtended.BOTTOMFRONT].UpdateChunkVertex();
+        if (y == maxIndex && z == maxIndex) chunk.chunksNeighbors![(int)FaceExtended.TOPFRONT].UpdateChunkVertex();
+
+        if (x == 0 && y == 0 && z == 0 ) chunk.chunksNeighbors![(int)FaceExtended.BOTTOMLEFTFRONT].UpdateChunkVertex();
+        if (x == maxIndex && y == 0 && z == 0) chunk.chunksNeighbors![(int)FaceExtended.BOTTOMRIGHTFRONT].UpdateChunkVertex();
+        if (x == 0 && y == maxIndex && z == 0) chunk.chunksNeighbors![(int)FaceExtended.TOPLEFTFRONT].UpdateChunkVertex();
+        if (x == 0 && y == 0 && z == maxIndex) chunk.chunksNeighbors![(int)FaceExtended.BOTTOMLEFTBACK].UpdateChunkVertex();
+        if (x == maxIndex && y == maxIndex && z == 0) chunk.chunksNeighbors![(int)FaceExtended.TOPRIGHTFRONT].UpdateChunkVertex();
+        if (x == maxIndex && y == 0 && z == maxIndex) chunk.chunksNeighbors![(int)FaceExtended.BOTTOMRIGHTBACK].UpdateChunkVertex();
+        if (x == 0 && y == maxIndex && z == maxIndex) chunk.chunksNeighbors![(int)FaceExtended.TOPLEFTBACK].UpdateChunkVertex();
+        if (x == maxIndex && y == maxIndex && z == maxIndex) chunk.chunksNeighbors![(int)FaceExtended.TOPRIGHTBACK].UpdateChunkVertex();
     }
 
     public void Hide() {

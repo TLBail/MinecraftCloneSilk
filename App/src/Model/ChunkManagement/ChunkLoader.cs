@@ -28,14 +28,14 @@ public class ChunkLoader
     
     public LinkedList<ChunkLoadingTask> chunkTasks = new();
     public ConcurrentBag<ChunkLoadingTask> chunksToFinish = new();
+    private Stopwatch stopwatch = new Stopwatch();
 
     public ChunkLoader() {
     }
     
 
     public void Update() {
-        Stopwatch stopwatch = new Stopwatch();
-        stopwatch.Start();
+        stopwatch.Restart();
         while(chunkTasks.Count > 0 && stopwatch.ElapsedMilliseconds < 10) {
             UpdateJob();
         }
@@ -43,12 +43,14 @@ public class ChunkLoader
         while(chunksToFinish.Count > 0 && stopwatch.ElapsedMilliseconds < 10) {
             FinishJob();
         }
+        stopwatch.Stop();
     }
     
     public void LoadAllChunks() {
         while(chunkTasks.Count > 0) {
             UpdateJob();
         }
+        
     }
 
     private void UpdateJob() {
@@ -77,18 +79,16 @@ public class ChunkLoader
                 }
                 return;
             }
-            
-            ChunkWaitingTask? chunkWaitingTask =
-                chunkTask.chunk.TryToSetChunkState(this, chunkTask);
-            if(chunkWaitingTask is not null) {
-                return ;
-            }
+
+            bool canLoad = chunkTask.chunk.TryToSetChunkState(this, chunkTask); 
+            if(!canLoad)return;
                 
             chunkTask.chunk.SetChunkState(chunkTask.wantedChunkState);
             chunkTask.chunk.InitChunkState();
 
 
-            ThreadPool.QueueUserWorkItem(ThreadChunkLoading, chunkTask);
+            bool added = ThreadPool.QueueUserWorkItem(ThreadChunkLoading, chunkTask);
+            if (!added) throw new Exception("failed to add chunk to threadpool");
     }
 
 

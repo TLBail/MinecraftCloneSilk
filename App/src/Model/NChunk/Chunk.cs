@@ -61,27 +61,25 @@ public class Chunk
     }
 
 
-    public ChunkWaitingTask? TryToSetChunkState(ChunkLoader chunkLoader, ChunkLoadingTask chunkLoadingTask) {
-        if (chunkState >= chunkLoadingTask.wantedChunkState) {
-            return null;
-        }
+    public bool TryToSetChunkState(ChunkLoader chunkLoader, ChunkLoadingTask chunkLoadingTask) {
+        System.Diagnostics.Debug.Assert(chunkState < chunkLoadingTask.wantedChunkState);
 
         if (chunkStateInStorage == ChunkState.UNKNOW) {
             if(chunkLoadingTask.wantedChunkState == ChunkState.STORAGELOADED) {
-                return null;
+                return true;
             }
            System.Diagnostics.Debug.Assert(chunkState == ChunkState.EMPTY, "chunkState == ChunkState.EMPTY");
            ChunkWaitingTask chunkWaitingTaskStorage = new ChunkWaitingTask(chunkLoadingTask, 1);
            bool added = chunkLoader.NewJob(new ChunkLoadingTask(this, ChunkState.STORAGELOADED, chunkWaitingTaskStorage));
            if(!added) throw new Exception("chunkLoadingTaskStorage not added");
-           return chunkWaitingTaskStorage;
+           return false;
         }
         
         switch (chunkLoadingTask.wantedChunkState) {
             case ChunkState.EMPTY:
-                return null;
+                return true;
             case ChunkState.GENERATEDTERRAIN:
-                return null;
+                return true;
             case ChunkState.BLOCKGENERATED:
                 ChunkWaitingTask chunkWaitingTaskBlockGenerated = new ChunkWaitingTask(chunkLoadingTask, FaceExtendedConst.FACES.Count);
                 foreach (FaceExtended face in FaceExtendedConst.FACES) {
@@ -94,7 +92,7 @@ public class Chunk
                     bool added = chunkLoader.NewJob(new ChunkLoadingTask(this, ChunkState.GENERATEDTERRAIN, chunkWaitingTaskBlockGenerated));
                     if(added) chunkWaitingTaskBlockGenerated.counter++;
                 }
-                return chunkWaitingTaskBlockGenerated.counter > 0 ? chunkWaitingTaskBlockGenerated : null;
+                return chunkWaitingTaskBlockGenerated.counter <= 0;
             case ChunkState.LIGHTING:
                 ChunkWaitingTask chunkWaitingTaskLighting = new ChunkWaitingTask(chunkLoadingTask, FaceExtendedConst.FACES.Count);
                 foreach (FaceExtended face in FaceExtendedConst.FACES) {
@@ -106,7 +104,7 @@ public class Chunk
                     bool added = chunkLoader.NewJob(new ChunkLoadingTask(this, ChunkState.BLOCKGENERATED, chunkWaitingTaskLighting));
                     if(added) chunkWaitingTaskLighting.counter++;
                 }
-                return chunkWaitingTaskLighting.counter > 0 ? chunkWaitingTaskLighting : null;
+                return chunkWaitingTaskLighting.counter <= 0;
             case ChunkState.DRAWABLE:
                 ChunkWaitingTask chunkWaitingTaskDrawable = new ChunkWaitingTask(chunkLoadingTask, FaceExtendedConst.FACES.Count);
                 foreach (FaceExtended face in FaceExtendedConst.FACES) {
@@ -118,7 +116,7 @@ public class Chunk
                     bool added = chunkLoader.NewJob(new ChunkLoadingTask(this, ChunkState.LIGHTING, chunkWaitingTaskDrawable));
                     if(added) chunkWaitingTaskDrawable.counter++;
                 }
-                return chunkWaitingTaskDrawable.counter > 0 ? chunkWaitingTaskDrawable : null;
+                return chunkWaitingTaskDrawable.counter <= 0;
             default:
                 throw new ArgumentException("ChunkState not found");
         }

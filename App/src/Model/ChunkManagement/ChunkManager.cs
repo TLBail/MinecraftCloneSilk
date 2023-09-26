@@ -142,25 +142,12 @@ public class ChunkManager : IChunkManager
     private ChunkState GetMinimumChunkStateOfChunk(Vector3D<int> position) {
         ChunkState chunkState = ChunkState.EMPTY;
         Chunk chunk;
-        if (chunks.TryGetValue(position + new Vector3D<int>((int)Chunk.CHUNK_SIZE, 0, 0), out chunk) &&
-            chunk.GetMinimumChunkStateOfNeighbors() > chunkState)
-            chunkState = chunk.GetMinimumChunkStateOfNeighbors();
-        if (chunks.TryGetValue(position + new Vector3D<int>(-(int)Chunk.CHUNK_SIZE, 0, 0), out chunk) &&
-            chunk.GetMinimumChunkStateOfNeighbors() > chunkState)
-            chunkState = chunk.GetMinimumChunkStateOfNeighbors();
-        if (chunks.TryGetValue(position + new Vector3D<int>(0, (int)Chunk.CHUNK_SIZE, 0), out chunk) &&
-            chunk.GetMinimumChunkStateOfNeighbors() > chunkState)
-            chunkState = chunk.GetMinimumChunkStateOfNeighbors();
-        if (chunks.TryGetValue(position + new Vector3D<int>(0, -(int)Chunk.CHUNK_SIZE, 0), out chunk) &&
-            chunk.GetMinimumChunkStateOfNeighbors() > chunkState)
-            chunkState = chunk.GetMinimumChunkStateOfNeighbors();
-        if (chunks.TryGetValue(position + new Vector3D<int>(0, 0, (int)Chunk.CHUNK_SIZE), out chunk) &&
-            chunk.GetMinimumChunkStateOfNeighbors() > chunkState)
-            chunkState = chunk.GetMinimumChunkStateOfNeighbors();
-        if (chunks.TryGetValue(position + new Vector3D<int>(0, 0, -(int)Chunk.CHUNK_SIZE), out chunk) &&
-            chunk.GetMinimumChunkStateOfNeighbors() > chunkState)
-            chunkState = chunk.GetMinimumChunkStateOfNeighbors();
-
+        foreach (FaceExtended face in FaceExtendedConst.FACES) {
+            if (chunks.TryGetValue(position + (FaceExtendedOffset.GetOffsetOfFace(face) * Chunk.CHUNK_SIZE), out chunk) &&
+                chunk.GetMinimumChunkStateOfNeighbors() > chunkState) {
+                chunkState = chunk.GetMinimumChunkStateOfNeighbors();
+            }
+        }
         return chunkState;
     }
 
