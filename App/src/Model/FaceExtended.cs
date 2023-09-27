@@ -12,25 +12,25 @@ public enum FaceExtended
     FRONT = 4,
     BACK = 5,
 		
-    TOPLEFT = 6,
-    TOPRIGHT = 7,
+    LEFTTOP = 6,
+    RIGHTTOP = 7,
     TOPFRONT = 8,
     TOPBACK = 9,
 		
-    BOTTOMLEFT = 10,
-    BOTTOMRIGHT = 11,
+    LEFTBOTTOM = 10,
+    RIGHTBOTTOM = 11,
     BOTTOMFRONT = 12,
     BOTTOMBACK = 13,
 		
-    TOPLEFTFRONT = 14,
-    TOPRIGHTFRONT = 15,
-    TOPLEFTBACK = 16,
-    TOPRIGHTBACK = 17,
+    LEFTTOPFRONT = 14,
+    RIGHTTOPFRONT = 15,
+    LEFTTOPBACK = 16,
+    RIGHTTOPBACK = 17,
 
-    BOTTOMLEFTFRONT = 18,
-    BOTTOMRIGHTFRONT = 19,
-    BOTTOMLEFTBACK = 20,
-    BOTTOMRIGHTBACK = 21,
+    LEFTBOTTOMFRONT = 18,
+    RIGHTBOTTOMFRONT = 19,
+    LEFTBOTTOMBACK = 20,
+    RIGHTBOTTOMBACK = 21,
 		
     LEFTFRONT = 22,
     RIGHTFRONT = 23,
@@ -61,40 +61,40 @@ public static class FaceExtendedOffset
 			case FaceExtended.BACK:
 				return new Vector3D<int>(0, 0, -1);
 				
-			case FaceExtended.TOPLEFT:
+			case FaceExtended.LEFTTOP:
 				return new Vector3D<int>(-1, 1, 0);
-			case FaceExtended.TOPRIGHT:
+			case FaceExtended.RIGHTTOP:
 				return new Vector3D<int>(1, 1, 0);
 			case FaceExtended.TOPFRONT:
 				return new Vector3D<int>(0, 1, 1);
 			case FaceExtended.TOPBACK:
 				return new Vector3D<int>(0, 1, -1);
 				
-			case FaceExtended.BOTTOMLEFT:
+			case FaceExtended.LEFTBOTTOM:
 				return new Vector3D<int>(-1, -1, 0);
-			case FaceExtended.BOTTOMRIGHT:
+			case FaceExtended.RIGHTBOTTOM:
 				return new Vector3D<int>(1, -1, 0);
 			case FaceExtended.BOTTOMFRONT:
 				return new Vector3D<int>(0, -1, 1);
 			case FaceExtended.BOTTOMBACK:
 				return new Vector3D<int>(0, -1, -1);
 				
-			case FaceExtended.TOPLEFTFRONT:
+			case FaceExtended.LEFTTOPFRONT:
 				return new Vector3D<int>(-1, 1, 1);
-			case FaceExtended.TOPRIGHTFRONT:
+			case FaceExtended.RIGHTTOPFRONT:
 				return new Vector3D<int>(1, 1, 1);
-			case FaceExtended.TOPLEFTBACK:
+			case FaceExtended.LEFTTOPBACK:
 				return new Vector3D<int>(-1, 1, -1);
-			case FaceExtended.TOPRIGHTBACK:
+			case FaceExtended.RIGHTTOPBACK:
 				return new Vector3D<int>(1, 1, -1);
 				
-			case FaceExtended.BOTTOMLEFTFRONT:
+			case FaceExtended.LEFTBOTTOMFRONT:
 				return new Vector3D<int>(-1, -1, 1);
-			case FaceExtended.BOTTOMRIGHTFRONT:
+			case FaceExtended.RIGHTBOTTOMFRONT:
 				return new Vector3D<int>(1, -1, 1);
-			case FaceExtended.BOTTOMLEFTBACK:
+			case FaceExtended.LEFTBOTTOMBACK:
 				return new Vector3D<int>(-1, -1, -1);
-			case FaceExtended.BOTTOMRIGHTBACK:
+			case FaceExtended.RIGHTBOTTOMBACK:
 				return new Vector3D<int>(1, -1, -1);
 				
 				

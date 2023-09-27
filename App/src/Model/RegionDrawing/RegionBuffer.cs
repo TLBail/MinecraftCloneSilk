@@ -13,7 +13,7 @@ namespace MinecraftCloneSilk.Model.RegionDrawing;
 
 public class RegionBuffer : IDisposable
 {
-    const int SUPER_CHUNK_SIZE = Chunk.CHUNK_SIZE + 2;
+    public const int SUPER_CHUNK_SIZE = Chunk.CHUNK_SIZE + 2;
     const int SUPER_CHUNK_NB_BLOCK = SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE;
     
     internal static BufferObject<Vector4> transparentBlocksBuffer; 
@@ -151,7 +151,8 @@ public class RegionBuffer : IDisposable
         
         vao!.Bind();
         cubeShader!.Use();
-        cubeShader.SetUniform("ambientStrength", lighting.lightLevel);
+        const string uniformName = "ambientStrength";
+        cubeShader.SetUniform(uniformName, lighting.lightLevel);
         cubeTexture.Bind();
 
         gl.DrawArrays(PrimitiveType.Triangles, 0, (uint)nbVertex);
@@ -159,6 +160,9 @@ public class RegionBuffer : IDisposable
     }
 
     private bool RegionInCameraView(Camera cam) {
+        //Todo make a better frustrum culling
+        return true;
+        
         Frustrum frustrum = cam.GetFrustrum();
         for (int i = 0; i < chunkCount; i++) {
             Chunk chunk = chunks[i]!;
@@ -318,15 +322,15 @@ public class RegionBuffer : IDisposable
             }
             
             
-            //TOPLEFT
-            Chunk chkn = chunk.chunksNeighbors![(int)FaceExtended.TOPLEFT];
+            //LEFTTOP
+            Chunk chkn = chunk.chunksNeighbors![(int)FaceExtended.LEFTTOP];
             Debug.Assert(chkn.chunkState >= ChunkState.BLOCKGENERATED);
             for(int b = 0; b < Chunk.CHUNK_SIZE; b++) {
                 superChunkIndex = (0 * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE) + ((SUPER_CHUNK_SIZE - 1) * SUPER_CHUNK_SIZE) + (b + 1);
                 superChunk[offset + superChunkIndex] = chkn.blocks[15,0,b];
             }
-            //TOPRIGHT 
-            chkn = chunk.chunksNeighbors![(int)FaceExtended.TOPRIGHT];
+            //RIGHTTOP] 
+            chkn = chunk.chunksNeighbors![(int)FaceExtended.RIGHTTOP];
             Debug.Assert(chkn.chunkState >= ChunkState.BLOCKGENERATED);
             for(int b = 0; b < Chunk.CHUNK_SIZE; b++) {
                 superChunkIndex = ((SUPER_CHUNK_SIZE - 1) * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE) + ((SUPER_CHUNK_SIZE - 1) * SUPER_CHUNK_SIZE) + (b + 1);
@@ -347,15 +351,15 @@ public class RegionBuffer : IDisposable
                 superChunk[offset + superChunkIndex] = chkn.blocks[b,0,15];
             }
 		
-            //BOTTOMLEFT 
-            chkn = chunk.chunksNeighbors![(int)FaceExtended.BOTTOMLEFT];
+            //LEFTBOTTOM 
+            chkn = chunk.chunksNeighbors![(int)FaceExtended.LEFTBOTTOM];
             Debug.Assert(chkn.chunkState >= ChunkState.BLOCKGENERATED);
             for(int b = 0; b < Chunk.CHUNK_SIZE; b++) {
                 superChunkIndex = (0 * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE) + (0 * SUPER_CHUNK_SIZE) + (b+ 1);
                 superChunk[offset + superChunkIndex] = chkn.blocks[15,15,b];
             }
-            //BOTTOMRIGHT 
-            chkn = chunk.chunksNeighbors![(int)FaceExtended.BOTTOMRIGHT];
+            //RIGHTBOTTOM 
+            chkn = chunk.chunksNeighbors![(int)FaceExtended.RIGHTBOTTOM];
             Debug.Assert(chkn.chunkState >= ChunkState.BLOCKGENERATED);
             for(int b = 0; b < Chunk.CHUNK_SIZE; b++) {
                 superChunkIndex = ((SUPER_CHUNK_SIZE - 1) * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE) + (0 * SUPER_CHUNK_SIZE) + (b+ 1);
@@ -376,25 +380,72 @@ public class RegionBuffer : IDisposable
                 superChunk[offset + superChunkIndex] = chkn.blocks[b,15,15];
             }
 
-            //TOPLEFTFRONT 
-            chkn = chunk.chunksNeighbors![(int)FaceExtended.TOPLEFTFRONT];
+            //LEFTTOPFRONT 
+            chkn = chunk.chunksNeighbors![(int)FaceExtended.LEFTTOPFRONT];
             Debug.Assert(chkn.chunkState >= ChunkState.BLOCKGENERATED);
             superChunkIndex = ((0) * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE) + ((SUPER_CHUNK_SIZE - 1) * SUPER_CHUNK_SIZE) + (SUPER_CHUNK_SIZE - 1);
             superChunk[offset + superChunkIndex] = chkn.blocks[15,0,0];
             
-            //TOPRIGHTFRONT 
-            //TOPLEFTBACK 
-            //TOPRIGHTBACK 
+            //RIGHTTOPFRONT 
+            chkn = chunk.chunksNeighbors![(int)FaceExtended.RIGHTTOPFRONT];
+            Debug.Assert(chkn.chunkState >= ChunkState.BLOCKGENERATED);
+            superChunkIndex = ((SUPER_CHUNK_SIZE - 1) * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE) + ((SUPER_CHUNK_SIZE - 1) * SUPER_CHUNK_SIZE) + (SUPER_CHUNK_SIZE - 1);
+            superChunk[offset + superChunkIndex] = chkn.blocks[0,0,0];
+            
+            
+            //LEFTTOPBACK 
+            chkn = chunk.chunksNeighbors![(int)FaceExtended.LEFTTOPBACK];
+            Debug.Assert(chkn.chunkState >= ChunkState.BLOCKGENERATED);
+            superChunkIndex = ((0) * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE) + ((SUPER_CHUNK_SIZE - 1) * SUPER_CHUNK_SIZE) + (0);
+            superChunk[offset + superChunkIndex] = chkn.blocks[15,0,15];
+            
+            //RIGHTTOPBACK 
+            chkn = chunk.chunksNeighbors![(int)FaceExtended.RIGHTTOPBACK];
+            Debug.Assert(chkn.chunkState >= ChunkState.BLOCKGENERATED);
+            superChunkIndex = ((SUPER_CHUNK_SIZE - 1) * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE) + ((SUPER_CHUNK_SIZE - 1) * SUPER_CHUNK_SIZE) + (0);
+            superChunk[offset + superChunkIndex] = chkn.blocks[0,0,15];
 
-            //BOTTOMLEFTFRONT 
+            //LEFTBOTTOMFRONT 
+            chkn = chunk.chunksNeighbors![(int)FaceExtended.LEFTBOTTOMFRONT];
+            Debug.Assert(chkn.chunkState >= ChunkState.BLOCKGENERATED);
+            superChunkIndex = ((0) * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE) + ((0) * SUPER_CHUNK_SIZE) + (SUPER_CHUNK_SIZE - 1);
+            superChunk[offset + superChunkIndex] = chkn.blocks[15,15,0];
+            
             //BOTTOMRIGHTFRONT 
             //BOTTOMLEFTBACK 
             //BOTTOMRIGHTBACK 
 		
             //LEFTFRONT  
+            chkn = chunk.chunksNeighbors![(int)FaceExtended.LEFTFRONT];
+            Debug.Assert(chkn.chunkState >= ChunkState.BLOCKGENERATED);
+            for(int b = 0; b < Chunk.CHUNK_SIZE; b++) {
+                superChunkIndex = (0 * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE) + ((b+1) * SUPER_CHUNK_SIZE) + (SUPER_CHUNK_SIZE - 1);
+                superChunk[offset + superChunkIndex] = chkn.blocks[15,b,0];
+            }
+            
             //RIGHTFRONT  
+            chkn = chunk.chunksNeighbors![(int)FaceExtended.RIGHTFRONT];
+            Debug.Assert(chkn.chunkState >= ChunkState.BLOCKGENERATED);
+            for(int b = 0; b < Chunk.CHUNK_SIZE; b++) {
+                superChunkIndex = ((SUPER_CHUNK_SIZE - 1) * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE) + ((b+1) * SUPER_CHUNK_SIZE) + (SUPER_CHUNK_SIZE - 1);
+                superChunk[offset + superChunkIndex] = chkn.blocks[0,b,0];
+            }
+            
             //LEFTBACK  
+            chkn = chunk.chunksNeighbors![(int)FaceExtended.LEFTBACK];
+            Debug.Assert(chkn.chunkState >= ChunkState.BLOCKGENERATED);
+            for(int b = 0; b < Chunk.CHUNK_SIZE; b++) {
+                superChunkIndex = ((0) * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE) + ((b+1) * SUPER_CHUNK_SIZE) + (0);
+                superChunk[offset + superChunkIndex] = chkn.blocks[15,b,15];
+            }
+            
             //RIGHTBACK  
+            chkn = chunk.chunksNeighbors![(int)FaceExtended.RIGHTBACK];
+            Debug.Assert(chkn.chunkState >= ChunkState.BLOCKGENERATED);
+            for(int b = 0; b < Chunk.CHUNK_SIZE; b++) {
+                superChunkIndex = ((SUPER_CHUNK_SIZE - 1) * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE) + ((b+1) * SUPER_CHUNK_SIZE) + (0);
+                superChunk[offset + superChunkIndex] = chkn.blocks[0,b,15];
+            }
             
             
             

@@ -150,7 +150,7 @@ void main(){
     }
     
     vec4 chunkCoord = chunkCoords[chunkIndex];
-    vec4 position = vec4(chunkCoord.x + x, chunkCoord.y + y,+ z + chunkCoord.z, 1.0f);
+    vec4 position = vec4(chunkCoord.x + x, chunkCoord.y + y,chunkCoord.z + z, 1.0f);
     
     
     uint vertexIndex = atomicAdd(count.vertexCount, nbFaces * 6);

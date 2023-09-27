@@ -19,7 +19,7 @@ public enum WorldMode
 public class World : GameObject
 {
     private Player player = null!;
-    public int radius { get; set; } = 3;
+    public int radius { get; set; } = 6;
     private readonly WorldUi worldUi;
     public IWorldGenerator worldGeneration;
     public WorldMode worldMode { get; set; }
@@ -35,7 +35,7 @@ public class World : GameObject
         this.worldMode = worldMode;
         this.lighting = new Lighting();
         worldUi = new WorldUi(this, lighting);
-        worldGeneration = new WorldFlatGeneration();
+        worldGeneration = new WorldNaturalGeneration();
         regionStorage = new RegionStorage("./Worlds/newWorld");
         chunkManager = new ChunkManager(radius, worldGeneration, regionStorage);
     }

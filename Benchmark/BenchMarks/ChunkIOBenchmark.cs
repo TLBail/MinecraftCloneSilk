@@ -38,9 +38,9 @@ public class ChunkIOBenchmark
         regionStorage.Clear(); 
 
         chunks = new();
-        for (int i = 0; i < 16; i++) {
-            for (int j = 0; j < 16; j++) {
-                for (int k = 0; k < 16; k++) {
+        for (int i = 0; i < Chunk.CHUNK_SIZE; i++) {
+            for (int j = 0; j < Chunk.CHUNK_SIZE; j++) {
+                for (int k = 0; k < Chunk.CHUNK_SIZE; k++) {
                     Chunk chunk = ChunkManagerTools.GetBlockGeneratedChunk(chunkManagerEmpty, chunkLoader,
                         new Vector3D<int>(i * Chunk.CHUNK_SIZE, j * Chunk.CHUNK_SIZE, k * Chunk.CHUNK_SIZE));
                     chunks.Add(chunk);
