@@ -88,7 +88,7 @@ public class ChunkLoader
 
 
             bool added = ThreadPool.QueueUserWorkItem(ThreadChunkLoading, chunkTask);
-            if (!added) throw new Exception("failed to add chunk to threadpool");
+            if (!added) throw new Exception("failed to add chunk to load threadpool");
     }
 
 

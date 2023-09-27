@@ -47,69 +47,37 @@ public static class FaceExtendedOffset
 {
 	public static Vector3D<int> GetOffsetOfFace(FaceExtended face)
 	{
-		switch (face) {
-			case FaceExtended.TOP:
-				return new Vector3D<int>(0, 1, 0);
-			case FaceExtended.BOTTOM:
-				return new Vector3D<int>(0, -1, 0);
-			case FaceExtended.LEFT:
-				return new Vector3D<int>(-1, 0, 0);
-			case FaceExtended.RIGHT:
-				return new Vector3D<int>(1, 0, 0);
-			case FaceExtended.FRONT:
-				return new Vector3D<int>(0, 0, 1);
-			case FaceExtended.BACK:
-				return new Vector3D<int>(0, 0, -1);
-				
-			case FaceExtended.LEFTTOP:
-				return new Vector3D<int>(-1, 1, 0);
-			case FaceExtended.RIGHTTOP:
-				return new Vector3D<int>(1, 1, 0);
-			case FaceExtended.TOPFRONT:
-				return new Vector3D<int>(0, 1, 1);
-			case FaceExtended.TOPBACK:
-				return new Vector3D<int>(0, 1, -1);
-				
-			case FaceExtended.LEFTBOTTOM:
-				return new Vector3D<int>(-1, -1, 0);
-			case FaceExtended.RIGHTBOTTOM:
-				return new Vector3D<int>(1, -1, 0);
-			case FaceExtended.BOTTOMFRONT:
-				return new Vector3D<int>(0, -1, 1);
-			case FaceExtended.BOTTOMBACK:
-				return new Vector3D<int>(0, -1, -1);
-				
-			case FaceExtended.LEFTTOPFRONT:
-				return new Vector3D<int>(-1, 1, 1);
-			case FaceExtended.RIGHTTOPFRONT:
-				return new Vector3D<int>(1, 1, 1);
-			case FaceExtended.LEFTTOPBACK:
-				return new Vector3D<int>(-1, 1, -1);
-			case FaceExtended.RIGHTTOPBACK:
-				return new Vector3D<int>(1, 1, -1);
-				
-			case FaceExtended.LEFTBOTTOMFRONT:
-				return new Vector3D<int>(-1, -1, 1);
-			case FaceExtended.RIGHTBOTTOMFRONT:
-				return new Vector3D<int>(1, -1, 1);
-			case FaceExtended.LEFTBOTTOMBACK:
-				return new Vector3D<int>(-1, -1, -1);
-			case FaceExtended.RIGHTBOTTOMBACK:
-				return new Vector3D<int>(1, -1, -1);
-				
-				
-			case FaceExtended.LEFTFRONT:
-				return new Vector3D<int>(-1, 0, 1);
-			case FaceExtended.RIGHTFRONT:
-				return new Vector3D<int>(1, 0, 1);
-			case FaceExtended.LEFTBACK:
-				return new Vector3D<int>(-1, 0, -1);
-			case FaceExtended.RIGHTBACK:
-				return new Vector3D<int>(1, 0, -1);
-			
-			default:
-				return Vector3D<int>.Zero;
-		}
+		return _faceOffsets[(int) face];
 	}
-
+	
+	
+	private static readonly Vector3D<int>[] _faceOffsets = new Vector3D<int>[]
+	{
+		new Vector3D<int>(0, 1, 0),
+    	new Vector3D<int>(0, -1, 0),
+    	new Vector3D<int>(-1, 0, 0),
+    	new Vector3D<int>(1, 0, 0),
+    	new Vector3D<int>(0, 0, 1),
+    	new Vector3D<int>(0, 0, -1),
+    	new Vector3D<int>(-1, 1, 0),
+    	new Vector3D<int>(1, 1, 0),
+    	new Vector3D<int>(0, 1, 1),
+    	new Vector3D<int>(0, 1, -1),
+    	new Vector3D<int>(-1, -1, 0),
+    	new Vector3D<int>(1, -1, 0),
+    	new Vector3D<int>(0, -1, 1),
+    	new Vector3D<int>(0, -1, -1),
+    	new Vector3D<int>(-1, 1, 1),
+    	new Vector3D<int>(1, 1, 1),
+    	new Vector3D<int>(-1, 1, -1),
+    	new Vector3D<int>(1, 1, -1),
+    	new Vector3D<int>(-1, -1, 1),
+    	new Vector3D<int>(1, -1, 1),
+    	new Vector3D<int>(-1, -1, -1),
+    	new Vector3D<int>(1, -1, -1),
+    	new Vector3D<int>(-1, 0, 1),
+    	new Vector3D<int>(1, 0, 1),
+    	new Vector3D<int>(-1, 0, -1),
+    	new Vector3D<int>(1, 0, -1),
+	};
 }
