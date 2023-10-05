@@ -52,6 +52,7 @@ namespace MinecraftCloneSilk.Core
             var options = WindowOptions.Default;
             options.Size = new Vector2D<int>(1920, 1080);
             options.Title = "MinecraftCloneSilk";
+            options.Samples = 4; //Anti-aliasing
             options.API = new GraphicsAPI(ContextAPI.OpenGL, new APIVersion(4, 3));
             window = Window.Create(options);
 
@@ -99,9 +100,11 @@ namespace MinecraftCloneSilk.Core
             primaryKeyboard.KeyDown += KeyDown;
             
             EnableFaceCulling();
-            Thread.CurrentThread.Priority = ThreadPriority.Highest;
+            EnableAntiAliasing();
+            
             game.Start(Gl);
         }
+
 
         private void LoadIcon() {
             Configuration configuration = Configuration.Default;
@@ -134,6 +137,9 @@ namespace MinecraftCloneSilk.Core
             Gl.Enable(GLEnum.CullFace);
             Gl.CullFace(GLEnum.Front);
             Gl.FrontFace(GLEnum.CW);
+        }
+        private void EnableAntiAliasing() {
+            Gl.Enable(GLEnum.Multisample);
         }
         
         private void OnUpdate(double deltaTime)
