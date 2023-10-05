@@ -101,9 +101,11 @@ namespace MinecraftCloneSilk.Core
             
             EnableFaceCulling();
             EnableAntiAliasing();
+            EnableBlending();
             
             game.Start(Gl);
         }
+
 
 
         private void LoadIcon() {
@@ -140,6 +142,10 @@ namespace MinecraftCloneSilk.Core
         }
         private void EnableAntiAliasing() {
             Gl.Enable(GLEnum.Multisample);
+        }
+        private void EnableBlending() {
+            Gl.Enable(GLEnum.Blend);
+            Gl.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
         }
         
         private void OnUpdate(double deltaTime)
