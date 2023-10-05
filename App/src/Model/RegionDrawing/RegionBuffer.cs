@@ -151,9 +151,9 @@ public class RegionBuffer : IDisposable
         
         vao!.Bind();
         cubeShader!.Use();
-        const string uniformName = "ambientStrength";
-        cubeShader.SetUniform(uniformName, lighting.lightLevel);
+        cubeShader.SetUniform("ambientStrength", lighting.lightLevel);
         cubeTexture.Bind();
+        
 
         gl.DrawArrays(PrimitiveType.Triangles, 0, (uint)nbVertex);
         haveDrawLastFrame = true;

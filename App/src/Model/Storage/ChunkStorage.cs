@@ -25,11 +25,9 @@ public class ChunkStorage : IChunkStorage
 
 
     public void SaveChunk(Chunk chunk) {
-        if(!chunk.blockModified) return;
         using Stream stream = File.Create(PathToChunk(chunk.position));
         using ZLibStream zs = new ZLibStream(stream, CompressionLevel.Fastest, false);
         SaveChunk(zs, chunk);
-        chunk.blockModified = false;
     }
 
     public void SaveChunks(List<Chunk> chunks) {

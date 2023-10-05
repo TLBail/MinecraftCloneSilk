@@ -17,27 +17,20 @@ public class ChunkManager : IChunkManager
     private List<Chunk> chunksToUpdate = new List<Chunk>();
     private ChunkPool chunkPool;
     private ChunkLoader chunkLoader;
-    private IChunkStorage chunkStorage;
-    private List<Chunk> chunksToUnload;
+    private ChunkUnloader chunkUnloader;
 
     public ChunkManager(int radius, IWorldGenerator worldGenerator, IChunkStorage chunkStorage) {
         chunks = new ConcurrentDictionary<Vector3D<int>, Chunk>(Environment.ProcessorCount * 2,
             radius * radius * radius);
         this.worldGenerator = worldGenerator;
-        this.chunkStorage = chunkStorage;
-        this.chunkLoader = new ChunkLoader();
+        chunkLoader = new ChunkLoader();
         chunkPool = new ChunkPool(this, worldGenerator, chunkStorage);
-        chunksToUnload = new List<Chunk>();
-        
+        chunkUnloader = new ChunkUnloader(chunkStorage, chunkPool);
     }
 
     [Logger.Timer]
     public void Update(double deltatime) {
-        if(chunksToUnload.Count > 0) {
-            chunkStorage.SaveChunks(chunksToUnload);
-            chunkPool.ReturnChunks(chunksToUnload);
-            chunksToUnload.Clear();
-        }
+        chunkUnloader.Update();
         chunkLoader.Update(); 
         foreach (Chunk chunk in chunksToUpdate) {
             Debug.Assert(chunk.chunkState >= ChunkState.DRAWABLE, $"try to update a chunk:{chunk} with a lower state than the minimum");
@@ -52,7 +45,6 @@ public class ChunkManager : IChunkManager
 
     public void Clear() {
         List<Chunk> chunksCopy = new List<Chunk>(chunks.Values);
-        List<Chunk> chunkRemaining = new List<Chunk>();
         foreach (Chunk chunk in chunksCopy) {
             ForceUnloadChunk(chunk);
         }
@@ -87,8 +79,15 @@ public class ChunkManager : IChunkManager
             }
         }
         AddChunksToLoad(chunksToLoad);
-        IEnumerable<Vector3D<int>> chunksToDeletePosition = chunks.Keys.Except(positionsRelevant);
-        foreach (var chunkToDeletePosition in chunksToDeletePosition) TryToUnloadChunk(chunkToDeletePosition);
+        TryToUnloadChunks(chunks.Keys.Except(positionsRelevant));
+    }
+    
+    
+    [Logger.Timer]
+    private void TryToUnloadChunks(IEnumerable<Vector3D<int>> positions) {
+        foreach (Vector3D<int> position in positions) {
+            TryToUnloadChunk(position);
+        }
     }
 
     public void AddChunkToLoad(Vector3D<int> position) {
@@ -125,7 +124,7 @@ public class ChunkManager : IChunkManager
         
         if (chunks.TryRemove(new KeyValuePair<Vector3D<int>, Chunk>(position, chunkToUnload))) {
             chunkToUnload.addRequiredByChunkUnloader(); 
-            chunksToUnload.Add(chunkToUnload);
+            chunkUnloader.AddChunkToUnload(chunkToUnload);
             return true;
         } else {
             Debug.Assert(false,"race condition while deleting chunk");
@@ -136,7 +135,7 @@ public class ChunkManager : IChunkManager
     private void ForceUnloadChunk(Chunk chunkToUnload) {
         if(chunkToUnload.isRequiredByChunkLoader()) return;
         chunks.TryRemove(new KeyValuePair<Vector3D<int>, Chunk>(chunkToUnload.position, chunkToUnload));
-        chunksToUnload.Add(chunkToUnload);
+        chunkUnloader.AddChunkToUnload(chunkToUnload);
     }
     
     private ChunkState GetMinimumChunkStateOfChunk(Vector3D<int> position) {

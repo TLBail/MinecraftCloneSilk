@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Diagnostics;
+using System.Text;
 using LightningDB;
 using MinecraftCloneSilk.Core;
 using MinecraftCloneSilk.Logger;
@@ -44,8 +45,9 @@ public class RegionStorage : IChunkStorage, IDisposable
         using var tx = env.BeginTransaction();
         Span<byte> mykey = stackalloc byte[12];
         foreach (Chunk chunk in chunks) {
-            chunk.blockModified = false;
-            if(GetChunkStateInStorage(tx, chunk.position) > chunk.chunkState){ continue;}
+            //Todo fix this
+            //Debug.Assert(GetChunkStateInStorage(tx, chunk.position) == chunk.chunkStateInStorage);
+            //Debug.Assert(GetChunkStateInStorage(tx, chunk.position) <= chunk.chunkState, $"erreur : chunkState in storage:{GetChunkStateInStorage(tx, chunk.position)} is higher than chunkState:{chunk.chunkState}");
             MathHelper.EncodeVector3Int(mykey, chunk.position.X, chunk.position.Y, chunk.position.Z); 
             MemoryStream stream = new MemoryStream();
             ChunkStorage.SaveChunk(stream, chunk);

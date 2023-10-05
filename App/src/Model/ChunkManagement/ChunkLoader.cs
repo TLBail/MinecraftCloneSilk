@@ -30,10 +30,6 @@ public class ChunkLoader
     public ConcurrentBag<ChunkLoadingTask> chunksToFinish = new();
     private Stopwatch stopwatch = new Stopwatch();
 
-    public ChunkLoader() {
-    }
-    
-
     public void Update() {
         stopwatch.Restart();
         while(chunkTasks.Count > 0 && stopwatch.ElapsedMilliseconds < 10) {
@@ -52,17 +48,15 @@ public class ChunkLoader
         }
         
     }
+    
+    
 
     private void UpdateJob() {
             ChunkLoadingTask chunkTask = chunkTasks.First!.Value;
             chunkTasks.RemoveFirst();
 
 
-            if (chunkTask.chunk.chunkState == ChunkState.STORAGELOADING || 
-                chunkTask.chunk.chunkState == ChunkState.TERRAINLOADING || 
-                chunkTask.chunk.chunkState == ChunkState.BLOCKLOADING ||
-                chunkTask.chunk.chunkState == ChunkState.LIGHTLOADING ||
-                chunkTask.chunk.chunkState == ChunkState.DRAWLOADING) {
+            if (ChunkStateTools.IsChunkIsLoading(chunkTask.chunk.chunkState)) {
                 chunkTasks.AddLast(chunkTask);
                 return;
             }
