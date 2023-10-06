@@ -13,11 +13,13 @@ namespace MinecraftCloneSilk.Model.RegionDrawing;
 
 public class RegionBuffer : IDisposable
 {
+    const int nbFacePerBlock = 6;
+    const int nbVertexPerFace = 4;
     public const int SUPER_CHUNK_SIZE = Chunk.CHUNK_SIZE + 2;
     const int SUPER_CHUNK_NB_BLOCK = SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE;
     
     internal static BufferObject<Vector4> transparentBlocksBuffer; 
-    internal static BufferObject<Vector4D<float>> textureCoordsBuffer;
+    internal static BufferObject<FacesTextureCoords> textureCoordsBuffer;
     internal static ComputeShader computeShader;
     internal static BufferObject<Vector4D<float>> chunksPositionBuffer;
     internal static BufferObject<BlockData> blockDataBuffer;
@@ -103,15 +105,15 @@ public class RegionBuffer : IDisposable
         gl.BindBufferBase(BufferTargetARB.UniformBuffer, 4, transparentBlocksBuffer.handle);
 
         // init texture coords buffer
-        Vector4D<float>[] textureCoords = new Vector4D<float>[(maxIndex + 1) * 6];
+        FacesTextureCoords[] textureCoords = new FacesTextureCoords[(maxIndex + 1) * nbFacePerBlock];
         foreach (KeyValuePair<int,Block> keyValuePair in blockFactory.blocksReadOnly) {
             if(keyValuePair.Value.textureBlock is  null) continue;
             foreach (Face face in Enum.GetValues(typeof(Face))) {
                 int[] coords = keyValuePair.Value.textureBlock.blockJson.texture[face];
-                textureCoords[(keyValuePair.Key * 6) +  (int)face] = new Vector4D<float>(coords[0], coords[1], 0.0f, 0.0f);
+                textureCoords[(keyValuePair.Key * nbFacePerBlock) +  (int)face]= new FacesTextureCoords(new Vector2D<int>(coords[0], coords[1]), 32.0f, 256.0f);
             }
         }
-        textureCoordsBuffer = new BufferObject<Vector4D<float>>(gl, textureCoords, BufferTargetARB.UniformBuffer, BufferUsageARB.StaticDraw);
+        textureCoordsBuffer = new BufferObject<FacesTextureCoords>(gl, textureCoords, BufferTargetARB.UniformBuffer, BufferUsageARB.StaticDraw);
         gl.BindBufferBase(BufferTargetARB.UniformBuffer, 3, textureCoordsBuffer.handle); 
         
         
@@ -122,8 +124,6 @@ public class RegionBuffer : IDisposable
         
         // init output buffer
         
-        const int nbFacePerBlock = 6;
-        const int nbVertexPerFace = 6;
         int nbVertexMax = (int)(nbVertexPerFace * nbFacePerBlock * Chunk.CHUNK_SIZE * Chunk.CHUNK_SIZE *
                                 Chunk.CHUNK_SIZE);
         outputBuffer = new BufferObject<CubeVertex>(gl, CHUNKS_PER_REGION * nbVertexMax, BufferTargetARB.ShaderStorageBuffer,
