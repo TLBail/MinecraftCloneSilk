@@ -23,7 +23,7 @@ public class ChunkManager : IChunkManager
         chunks = new ConcurrentDictionary<Vector3D<int>, Chunk>(Environment.ProcessorCount * 2,
             radius * radius * radius);
         this.worldGenerator = worldGenerator;
-        chunkLoader = new ChunkLoader();
+        chunkLoader = new ChunkLoader(ChunkLoader.ChunkLoaderMode.ASYNC);
         chunkPool = new ChunkPool(this, worldGenerator, chunkStorage);
         chunkUnloader = new ChunkUnloader(chunkStorage, chunkPool);
     }

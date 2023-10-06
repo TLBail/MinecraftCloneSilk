@@ -26,7 +26,7 @@ public class RegionStorageTEst
         }   
         regionStorage = new RegionStorage("./Worlds/newWorld");
         chunkManagerEmpty = new ChunkManagerEmpty(new WorldFlatGeneration(), regionStorage);
-        chunkLoader = new ChunkLoader();
+        chunkLoader = new ChunkLoader(ChunkLoader.ChunkLoaderMode.SYNC);
     }
     
     [OneTimeTearDown]

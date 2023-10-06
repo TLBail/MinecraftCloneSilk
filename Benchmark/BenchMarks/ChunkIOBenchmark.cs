@@ -23,7 +23,7 @@ public class ChunkIOBenchmark
         Chunk.InitStaticMembers(null, BlockFactory.GetInstance());
         regionStorage = new RegionStorage("./Worlds/newWorld");
         chunkManagerEmpty = new ChunkManagerEmpty(new WorldFlatGeneration(), regionStorage);
-        chunkLoader = new ChunkLoader();
+        chunkLoader = new ChunkLoader(ChunkLoader.ChunkLoaderMode.SYNC);
     }
 
      
