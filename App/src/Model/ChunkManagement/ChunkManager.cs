@@ -17,20 +17,19 @@ public class ChunkManager : IChunkManager
     private List<Chunk> chunksToUpdate = new List<Chunk>();
     private ChunkPool chunkPool;
     private ChunkLoader chunkLoader;
-    private ChunkUnloader chunkUnloader;
+    private IChunkStorage chunkStorage;
 
     public ChunkManager(int radius, IWorldGenerator worldGenerator, IChunkStorage chunkStorage) {
         chunks = new ConcurrentDictionary<Vector3D<int>, Chunk>(Environment.ProcessorCount * 2,
             radius * radius * radius);
         this.worldGenerator = worldGenerator;
+        this.chunkStorage = chunkStorage;
         chunkLoader = new ChunkLoader(ChunkLoader.ChunkLoaderMode.ASYNC);
         chunkPool = new ChunkPool(this, worldGenerator, chunkStorage);
-        chunkUnloader = new ChunkUnloader(chunkStorage, chunkPool);
     }
 
     [Logger.Timer]
     public void Update(double deltatime) {
-        chunkUnloader.Update();
         chunkLoader.Update(); 
         foreach (Chunk chunk in new List<Chunk>(chunksToUpdate)) {
             Debug.Assert(chunk.chunkState >= ChunkState.DRAWABLE, $"try to update a chunk:{chunk} with a lower state than the minimum");
@@ -67,6 +66,10 @@ public class ChunkManager : IChunkManager
 
     public void RemoveChunkToUpdate(Chunk chunk) {
         chunksToUpdate.Remove(chunk);
+    }
+    
+    public bool RemoveChunk(Chunk chunk) {
+        return chunks.TryRemove(new KeyValuePair<Vector3D<int>, Chunk>(chunk.position, chunk));
     }
 
     
@@ -114,7 +117,7 @@ public class ChunkManager : IChunkManager
 
     public bool TryToUnloadChunk(Vector3D<int> position) {
         Chunk chunkToUnload = chunks[position];
-        if(chunkToUnload.isRequiredByChunkLoader()) return false;
+        if(chunkToUnload.IsRequiredByChunkLoader() || chunkToUnload.IsRequiredByChunkUnloader()) return false;
         ChunkState minimumChunkStateOfChunk = GetMinimumChunkStateOfChunk(position);
         if (chunkToUnload.chunkState == ChunkState.DRAWABLE) {
             chunkToUnload.SetChunkState(ChunkState.BLOCKGENERATED);
@@ -122,9 +125,15 @@ public class ChunkManager : IChunkManager
         }
         if(minimumChunkStateOfChunk > ChunkState.EMPTY) return false;
         
+        if (chunkToUnload.blockModified) {
+            chunkToUnload.AddRequiredByChunkUnloader();
+            chunkStorage.SaveChunkAsync(chunkToUnload);
+            return false;
+        }
+        
+        
         if (chunks.TryRemove(new KeyValuePair<Vector3D<int>, Chunk>(position, chunkToUnload))) {
-            chunkToUnload.addRequiredByChunkUnloader(); 
-            chunkUnloader.AddChunkToUnload(chunkToUnload);
+            chunkPool.ReturnChunk(chunkToUnload);
             return true;
         } else {
             Debug.Assert(false,"race condition while deleting chunk");
@@ -133,9 +142,8 @@ public class ChunkManager : IChunkManager
     }
 
     private void ForceUnloadChunk(Chunk chunkToUnload) {
-        if(chunkToUnload.isRequiredByChunkLoader()) return;
+        if(chunkToUnload.IsRequiredByChunkLoader()) return;
         chunks.TryRemove(new KeyValuePair<Vector3D<int>, Chunk>(chunkToUnload.position, chunkToUnload));
-        chunkUnloader.AddChunkToUnload(chunkToUnload);
     }
     
     private ChunkState GetMinimumChunkStateOfChunk(Vector3D<int> position) {

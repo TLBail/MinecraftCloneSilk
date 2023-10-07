@@ -23,6 +23,14 @@ public class ChunkStorage : IChunkStorage
     }
 
 
+    public void SaveChunkAsync(Chunk chunk) {
+        Task task = new Task(() =>
+        {
+            SaveChunk(chunk);
+            chunk.blockModified = false;
+        });
+        task.Start();
+    }
 
     public void SaveChunk(Chunk chunk) {
         using Stream stream = File.Create(PathToChunk(chunk.position));

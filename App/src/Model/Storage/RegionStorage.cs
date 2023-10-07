@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Text;
 using LightningDB;
 using MinecraftCloneSilk.Core;
@@ -14,13 +15,26 @@ namespace MinecraftCloneSilk.Model.Storage;
 
 public class RegionStorage : IChunkStorage, IDisposable
 {
+    public void ChunkUnloaderProcessor() {
+        foreach (Chunk chunk in chunksToUnload.GetConsumingEnumerable()) {
+            SaveChunk(chunk);
+            chunk.blockModified = false;
+            chunk.RemoveRequiredByChunkUnloader();
+            Debug.Assert(!chunk.IsRequiredByChunkUnloader());
+        }
+    }
 
     
     LightningEnvironment env;
     LightningDatabase db;
     private const string DB_NAME = "world";
+    private readonly BlockingCollection<Chunk> chunksToUnload = new BlockingCollection<Chunk>();
+    private readonly Task chunkUnloaderTask;
 
     public RegionStorage(string pathToChunkFolder) {
+        chunkUnloaderTask = new Task(ChunkUnloaderProcessor);
+        chunkUnloaderTask.Start();
+        
         var directory = Directory.CreateDirectory(pathToChunkFolder);
         if(!directory.Exists) {
             throw new Exception("Can't create directory for chunk storage");
@@ -38,6 +52,10 @@ public class RegionStorage : IChunkStorage, IDisposable
 
     public void SaveChunk(Chunk chunk) {
         SaveChunks(new (){chunk});
+    }
+    
+    public void SaveChunkAsync(Chunk chunk) {
+        chunksToUnload.Add(chunk);
     }
 
     [Logger.Timer]
@@ -111,6 +129,12 @@ public class RegionStorage : IChunkStorage, IDisposable
     {
         if (!disposing)
             throw new InvalidOperationException("The LightningEnvironment was not disposed and cannot be reliably dealt with from the finalizer");
+        chunksToUnload.CompleteAdding();
+        Console.WriteLine("Waiting for chunk to be saved");
+        chunkUnloaderTask.Wait();
+        Console.WriteLine("Chunk saved");
+        chunkUnloaderTask.Dispose();
+        chunksToUnload.Dispose();
         env.Dispose();
     }
     ~RegionStorage() => this.Dispose(false);

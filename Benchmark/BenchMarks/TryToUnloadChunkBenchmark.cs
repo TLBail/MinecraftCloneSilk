@@ -15,7 +15,6 @@ public class TryToUnloadChunkBenchmark
     private ChunkManagerEmpty chunkManagerEmpty;
     private ChunkLoader chunkLoader;
     private RegionStorage regionStorage;
-    private ChunkUnloader chunkUnloader;
     
     [GlobalSetup]
     public void globalSetup() {
@@ -23,14 +22,12 @@ public class TryToUnloadChunkBenchmark
         Chunk.InitStaticMembers(null, BlockFactory.GetInstance());
         regionStorage = new RegionStorage("./Worlds/newWorld");
         chunkManagerEmpty = new ChunkManagerEmpty(new WorldFlatGeneration(), regionStorage);
-        chunkUnloader = new ChunkUnloader(regionStorage,
-            new ChunkPool(chunkManagerEmpty, new WorldFlatGeneration(), regionStorage)); 
         chunkLoader = new ChunkLoader(ChunkLoader.ChunkLoaderMode.SYNC);
         for (int i = 0; i < 16; i++) {
             for (int j = 0; j < 16; j++) {
                 for (int k = 0; k < 16; k++) {
                     ChunkManagerTools.GetBlockGeneratedChunk(chunkManagerEmpty, chunkLoader, new Vector3D<int>(i * Chunk.CHUNK_SIZE,
-                    j * Chunk.CHUNK_SIZE,
+                        j * Chunk.CHUNK_SIZE,
                         k * Chunk.CHUNK_SIZE));
                 }
             }
@@ -51,7 +48,7 @@ public class TryToUnloadChunkBenchmark
     }
     public bool TryToUnloadChunk(Vector3D<int> position) {
         Chunk chunkToUnload = chunkManagerEmpty.chunks[position];
-        if(chunkToUnload.isRequiredByChunkLoader()) return false;
+        if(chunkToUnload.IsRequiredByChunkLoader()) return false;
         ChunkState minimumChunkStateOfChunk = GetMinimumChunkStateOfChunk(position);
         if (chunkToUnload.chunkState == ChunkState.DRAWABLE) {
             chunkToUnload.SetChunkState(ChunkState.BLOCKGENERATED);
@@ -60,8 +57,6 @@ public class TryToUnloadChunkBenchmark
         if(minimumChunkStateOfChunk > ChunkState.EMPTY) return false;
         
         if (chunkManagerEmpty.chunks.Remove(position)) {
-            chunkToUnload.addRequiredByChunkUnloader(); 
-            chunkUnloader.AddChunkToUnload(chunkToUnload);
             return true;
         } else {
             return false;

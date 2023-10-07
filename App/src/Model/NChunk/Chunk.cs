@@ -165,18 +165,18 @@ public class Chunk
     public void Debug(bool? setDebug = null) => chunkStrategy.Debug(setDebug);
     public void Update(double deltaTime) => chunkStrategy.Update(deltaTime);
 
-    public bool isRequiredByChunkLoader() => requiredByChunkLoader > 0;
-    public void addRequiredByChunkLoader() => Interlocked.Increment(ref requiredByChunkLoader);
-    public void removeRequiredByChunkLoader() => Interlocked.Decrement(ref requiredByChunkLoader);
+    public bool IsRequiredByChunkLoader() => requiredByChunkLoader > 0;
+    public void AddRequiredByChunkLoader() => Interlocked.Increment(ref requiredByChunkLoader);
+    public void RemoveRequiredByChunkLoader() => Interlocked.Decrement(ref requiredByChunkLoader);
     
-    public bool isRequiredByChunkUnloader() => requiredByChunkUnloader > 0;
-    public void addRequiredByChunkUnloader() => Interlocked.Increment(ref requiredByChunkUnloader);
-    public void removeRequiredByChunkUnloader() => Interlocked.Decrement(ref requiredByChunkUnloader);
+    public bool IsRequiredByChunkUnloader() => requiredByChunkUnloader > 0;
+    public void AddRequiredByChunkUnloader() => Interlocked.Increment(ref requiredByChunkUnloader);
+    public void RemoveRequiredByChunkUnloader() => Interlocked.Decrement(ref requiredByChunkUnloader);
     
     public AABBCube GetAABBCube() => aabbCube;
     
     public void Reset(Vector3D<int> position, IChunkManager chunkManager, IWorldGenerator worldGenerator, IChunkStorage chunkStorage) {
-        if(isRequiredByChunkLoader()) {
+        if(IsRequiredByChunkLoader()) {
             throw new Exception("Chunk is still required by chunk loader");
         }
         this.position = position;
