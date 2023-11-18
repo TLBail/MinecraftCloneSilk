@@ -237,7 +237,7 @@ public class World : GameObject
         Vector3D<int>[] postions =
         {
             Vector3D<int>.Zero,
-            //new Vector3D<int>(Chunk.CHUNK_SIZE, 0, 0),
+            new Vector3D<int>(Chunk.CHUNK_SIZE, 0, 0),
             
             //new Vector3D<int>(-(int)Chunk.CHUNK_SIZE, 0, (int)Chunk.CHUNK_SIZE),
             //new Vector3D<int>(-(int)Chunk.CHUNK_SIZE, 0, -(int)Chunk.CHUNK_SIZE),

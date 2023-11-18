@@ -159,6 +159,9 @@ public class ChunkManager : IChunkManager
     }
 
     public void ToImGui() {
+        ImGui.Text($"number of chunkTasks {chunkLoader.chunkTasks.Count}");
+        
+        
         ImGui.Text($"number of chunks {chunks.Count}");
         ImGui.Text($"number of chunks in pool {chunkPool.Count()}");
         if (ImGui.Button("reload Chunks")) {

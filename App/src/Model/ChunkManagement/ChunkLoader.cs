@@ -105,20 +105,24 @@ public class ChunkLoader
             
         if(chunkTask.chunk.chunkState >= chunkTask.wantedChunkState) {
             chunkTask.chunk.RemoveRequiredByChunkLoader();
-            if (chunkTask.parent is not null) {
-                ChunkWaitingTask parent = chunkTask.parent;
+            foreach (ChunkWaitingTask parent in chunkTask.parents) {
                 Interlocked.Decrement(ref parent.counter);
-                
                 if(parent.counter == 0) {
-                    chunkTasks.AddFirst(parent.chunkLoadingTask);
+                    if (ChunkStateTools.IsChunkIsLoading(parent.chunkLoadingTask.chunk.chunkState)) {
+                        chunkTasks.AddLast(parent.chunkLoadingTask);
+                    } else {
+                        chunkTasks.AddFirst(parent.chunkLoadingTask);
+                    }
                 }
             }
             return;
         }
 
+        ChunkState chunkStateTest = chunkTask.chunk.chunkState;
         bool canLoad = chunkTask.chunk.TryToSetChunkState(this, chunkTask); 
         if(!canLoad)return;
                 
+        if(chunkStateTest != chunkTask.chunk.chunkState) throw new Exception("chunk state has been changed");
         chunkTask.chunk.SetChunkState(chunkTask.wantedChunkState);
         chunkTask.chunk.InitChunkState();
 
@@ -132,13 +136,15 @@ public class ChunkLoader
         if(!chunksToFinish.TryTake(out ChunkLoadingTask? chunkTask)) return;
         chunkTask.chunk.FinishChunkState();
         chunkTask.chunk.RemoveRequiredByChunkLoader();
-            
-        if (chunkTask.parent is not null) {
-            ChunkWaitingTask parent = chunkTask.parent;
+
+        foreach (ChunkWaitingTask parent in chunkTask.parents) {
             Interlocked.Decrement(ref parent.counter);
-                
             if(parent.counter == 0) {
-                chunkTasks.AddFirst(parent.chunkLoadingTask);
+                if (ChunkStateTools.IsChunkIsLoading(parent.chunkLoadingTask.chunk.chunkState)) {
+                    chunkTasks.AddLast(parent.chunkLoadingTask);
+                } else {
+                    chunkTasks.AddFirst(parent.chunkLoadingTask);
+                }
             }
         }
     }
@@ -154,6 +160,16 @@ public class ChunkLoader
 
     public void AddChunkToQueue(Chunk chunk, ChunkState chunkState = ChunkState.DRAWABLE) {
         chunk.AddRequiredByChunkLoader();
-        chunkTasks.AddLast(new ChunkLoadingTask(chunk, chunkState, null));
+        chunkTasks.AddLast(new ChunkLoadingTask(chunk, chunkState));
+    }
+
+    public ChunkLoadingTask? FindTask(Chunk neighborChunk, ChunkState chunkState) {
+        //Todo optimize 
+        foreach (ChunkLoadingTask task in chunkTasks) {
+            if(task.chunk == neighborChunk && task.wantedChunkState <= chunkState ) {
+                return task;
+            }
+        }
+        return null;
     }
 }

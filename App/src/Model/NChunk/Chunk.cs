@@ -32,6 +32,8 @@ public class Chunk
     public ChunkState chunkStateInStorage { get; internal set; } = ChunkState.EMPTY;
     public const ChunkState DEFAULTSTARTINGCHUNKSTATE = ChunkState.EMPTY;
 
+    public List<ChunkWaitingTask> chunkWaitingTasks = new List<ChunkWaitingTask>();
+
     internal ChunkStrategy chunkStrategy;
 
     internal static BlockFactory? blockFactory;
@@ -68,11 +70,11 @@ public class Chunk
             if(chunkLoadingTask.wantedChunkState == ChunkState.STORAGELOADED) {
                 return true;
             }
-           System.Diagnostics.Debug.Assert(chunkState == ChunkState.EMPTY, "chunkState == ChunkState.EMPTY");
-           ChunkWaitingTask chunkWaitingTaskStorage = new ChunkWaitingTask(chunkLoadingTask, 1);
-           bool added = chunkLoader.NewJob(new ChunkLoadingTask(this, ChunkState.STORAGELOADED, chunkWaitingTaskStorage));
-           if(!added) throw new Exception("chunkLoadingTaskStorage not added");
-           return false;
+            System.Diagnostics.Debug.Assert(chunkState == ChunkState.EMPTY, "chunkState == ChunkState.EMPTY");
+            ChunkWaitingTask chunkWaitingTaskStorage = new ChunkWaitingTask(chunkLoadingTask, 1);
+            bool added = chunkLoader.NewJob(new ChunkLoadingTask(this, ChunkState.STORAGELOADED, chunkWaitingTaskStorage));
+            if(!added) throw new Exception("chunkLoadingTaskStorage not added");
+            return false;
         }
         
         switch (chunkLoadingTask.wantedChunkState) {
@@ -84,37 +86,88 @@ public class Chunk
                 ChunkWaitingTask chunkWaitingTaskBlockGenerated = new ChunkWaitingTask(chunkLoadingTask, FaceExtendedConst.FACES.Count);
                 foreach (FaceExtended face in FaceExtendedConst.FACES) {
                     Vector3D<int> positionChunkToLoad = position + (FaceExtendedOffset.GetOffsetOfFace(face) * CHUNK_SIZE);
-                    bool added = chunkLoader.NewJob(new ChunkLoadingTask(chunkManager.GetChunk(positionChunkToLoad), ChunkState.GENERATEDTERRAIN, chunkWaitingTaskBlockGenerated));
-                    if (!added) chunkWaitingTaskBlockGenerated.counter--;
+                    Chunk neighborChunk = chunkManager.GetChunk(positionChunkToLoad);
+                    if (neighborChunk.chunkState >= ChunkState.BLOCKGENERATED) {
+                        chunkWaitingTaskBlockGenerated.counter--;
+                        continue;
+                    }
+                    
+                    ChunkLoadingTask? alreadyExistingTask = chunkLoader.FindTask(neighborChunk, ChunkState.GENERATEDTERRAIN);
+                    if (alreadyExistingTask is not null) {
+                       alreadyExistingTask.parents.Add(chunkWaitingTaskBlockGenerated); 
+                    } else {
+                        bool added = chunkLoader.NewJob(new ChunkLoadingTask(neighborChunk, ChunkState.GENERATEDTERRAIN, chunkWaitingTaskBlockGenerated));
+                        if(!added) chunkWaitingTaskBlockGenerated.counter--;
+                    }
                 }
-
                 if (chunkState != ChunkState.GENERATEDTERRAIN) {
-                    bool added = chunkLoader.NewJob(new ChunkLoadingTask(this, ChunkState.GENERATEDTERRAIN, chunkWaitingTaskBlockGenerated));
-                    if(added) chunkWaitingTaskBlockGenerated.counter++;
+                    ChunkLoadingTask? alreadyExistingTask = chunkLoader.FindTask(this, ChunkState.GENERATEDTERRAIN);
+                    if (alreadyExistingTask is not null) {
+                       alreadyExistingTask.parents.Add(chunkWaitingTaskBlockGenerated);
+                       chunkWaitingTaskBlockGenerated.counter++;
+                    } else {
+                        bool added = chunkLoader.NewJob(new ChunkLoadingTask(this, ChunkState.GENERATEDTERRAIN, chunkWaitingTaskBlockGenerated));
+                        if(added) chunkWaitingTaskBlockGenerated.counter++;
+                    }
                 }
                 return chunkWaitingTaskBlockGenerated.counter <= 0;
             case ChunkState.LIGHTING:
                 ChunkWaitingTask chunkWaitingTaskLighting = new ChunkWaitingTask(chunkLoadingTask, FaceExtendedConst.FACES.Count);
                 foreach (FaceExtended face in FaceExtendedConst.FACES) {
                     Vector3D<int> positionChunkToLoad = position + (FaceExtendedOffset.GetOffsetOfFace(face) * CHUNK_SIZE);
-                    bool added = chunkLoader.NewJob(new ChunkLoadingTask(chunkManager.GetChunk(positionChunkToLoad), ChunkState.BLOCKGENERATED, chunkWaitingTaskLighting));
-                    if(!added) chunkWaitingTaskLighting.counter--;
+                    Chunk neighborChunk = chunkManager.GetChunk(positionChunkToLoad);
+                    if (neighborChunk.chunkState >= ChunkState.BLOCKGENERATED) {
+                        chunkWaitingTaskLighting.counter--;
+                        continue;
+                    }
+                    
+                    ChunkLoadingTask? alreadyExistingTask = chunkLoader.FindTask(neighborChunk, ChunkState.BLOCKGENERATED);
+                    if (alreadyExistingTask is not null) {
+                        alreadyExistingTask.parents.Add(chunkWaitingTaskLighting); 
+                    } else {
+                        bool added = chunkLoader.NewJob(new ChunkLoadingTask(neighborChunk, ChunkState.BLOCKGENERATED, chunkWaitingTaskLighting));
+                        if(!added) chunkWaitingTaskLighting.counter--;
+                    }
+                    
                 }
                 if (chunkState != ChunkState.BLOCKGENERATED) {
-                    bool added = chunkLoader.NewJob(new ChunkLoadingTask(this, ChunkState.BLOCKGENERATED, chunkWaitingTaskLighting));
-                    if(added) chunkWaitingTaskLighting.counter++;
+                    ChunkLoadingTask? alreadyExistingTask = chunkLoader.FindTask(this, ChunkState.BLOCKGENERATED);
+                    if (alreadyExistingTask is not null) {
+                        alreadyExistingTask.parents.Add(chunkWaitingTaskLighting); 
+                        chunkWaitingTaskLighting.counter++;
+                    } else {
+                        bool added = chunkLoader.NewJob(new ChunkLoadingTask(this, ChunkState.BLOCKGENERATED, chunkWaitingTaskLighting));
+                        if(added) chunkWaitingTaskLighting.counter++;
+                    }
                 }
                 return chunkWaitingTaskLighting.counter <= 0;
             case ChunkState.DRAWABLE:
                 ChunkWaitingTask chunkWaitingTaskDrawable = new ChunkWaitingTask(chunkLoadingTask, FaceExtendedConst.FACES.Count);
                 foreach (FaceExtended face in FaceExtendedConst.FACES) {
                     Vector3D<int> positionChunkToLoad = position + (FaceExtendedOffset.GetOffsetOfFace(face) * CHUNK_SIZE);
-                    bool added = chunkLoader.NewJob(new ChunkLoadingTask(chunkManager.GetChunk(positionChunkToLoad), ChunkState.BLOCKGENERATED, chunkWaitingTaskDrawable));
-                    if(!added) chunkWaitingTaskDrawable.counter--;
+                    Chunk neighborChunk = chunkManager.GetChunk(positionChunkToLoad);
+                    if (neighborChunk.chunkState >= ChunkState.BLOCKGENERATED) {
+                        chunkWaitingTaskDrawable.counter--;
+                        continue;
+                    }
+                    
+                    ChunkLoadingTask? alreadyExistingTask = chunkLoader.FindTask(neighborChunk, ChunkState.BLOCKGENERATED);
+                    if (alreadyExistingTask is not null) {
+                        alreadyExistingTask.parents.Add(chunkWaitingTaskDrawable); 
+                    } else {
+                        bool added = chunkLoader.NewJob(new ChunkLoadingTask(neighborChunk, ChunkState.BLOCKGENERATED, chunkWaitingTaskDrawable));
+                        if(!added) chunkWaitingTaskDrawable.counter--;
+                    }
                 }
                 if (chunkState != ChunkState.LIGHTING) {
-                    bool added = chunkLoader.NewJob(new ChunkLoadingTask(this, ChunkState.LIGHTING, chunkWaitingTaskDrawable));
-                    if(added) chunkWaitingTaskDrawable.counter++;
+                    ChunkLoadingTask? alreadyExistingTask = chunkLoader.FindTask(this, ChunkState.LIGHTING);
+                    if (alreadyExistingTask is not null) {
+                        alreadyExistingTask.parents.Add(chunkWaitingTaskDrawable);
+                        chunkWaitingTaskDrawable.counter++;
+                    } else {
+                        bool added = chunkLoader.NewJob(new ChunkLoadingTask(this, ChunkState.LIGHTING, chunkWaitingTaskDrawable));
+                        if(added) chunkWaitingTaskDrawable.counter++;
+                    }
                 }
                 return chunkWaitingTaskDrawable.counter <= 0;
             default:
@@ -176,6 +229,7 @@ public class Chunk
     public AABBCube GetAABBCube() => aabbCube;
     
     public void Reset(Vector3D<int> position, IChunkManager chunkManager, IWorldGenerator worldGenerator, IChunkStorage chunkStorage) {
+        System.Diagnostics.Debug.Assert(chunkWaitingTasks.Count == 0, "chunkWaitingTasks.Count != 0");
         if(IsRequiredByChunkLoader()) {
             throw new Exception("Chunk is still required by chunk loader");
         }
