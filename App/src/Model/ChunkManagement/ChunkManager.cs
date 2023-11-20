@@ -55,6 +55,10 @@ public class ChunkManager : IChunkManager
         }
         return chunk;
     }
+
+    public Chunk GetBlockGeneratedChunk(Vector3D<int> position) {
+        return ChunkManagerTools.GetBlockGeneratedChunk(this, chunkLoader, position);
+    }
     
     public bool ContainChunk(Vector3D<int> position) {
         return chunks.ContainsKey(position);

@@ -32,7 +32,7 @@ public class ChunkStorageStrategy : ChunkStrategy
     }
 
     public override void SetBlock(int x, int y, int z, string name) {
-        throw new InvalidOperationException("try to access to block data but the chunk is empty");
+        throw new InvalidOperationException("try to set the block data but the chunk is empty");
     }
 
     public override Block GetBlock(int x, int y, int z) {

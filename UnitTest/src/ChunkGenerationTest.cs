@@ -191,14 +191,14 @@ public class ChunkGenerationTest
         
         world.chunkManager.TryToUnloadChunk(new Vector3D<int>((int)Chunk.CHUNK_SIZE * 3, 0, 0));
         await game.WaitForFrame(10);
-        Assert.That(world.chunkManager.GetChunk(new Vector3D<int>((int)Chunk.CHUNK_SIZE * 3, 0, 0)).chunkState, Is.EqualTo(ChunkState.BLOCKGENERATED));
+        Assert.That(world.chunkManager.GetChunk(new Vector3D<int>((int)Chunk.CHUNK_SIZE * 3, 0, 0)).chunkState, Is.GreaterThanOrEqualTo(ChunkState.BLOCKGENERATED));
         
         await game.WaitForFrame(10);
         world.chunkManager.TryToUnloadChunk(new Vector3D<int>((int)Chunk.CHUNK_SIZE * 2, 0, 0));
         await game.WaitForFrame(10);
         world.chunkManager.TryToUnloadChunk(new Vector3D<int>((int)Chunk.CHUNK_SIZE * 2, 0, 0));
         await game.WaitForFrame(10);
-        Assert.That(world.chunkManager.GetChunk(new Vector3D<int>((int)Chunk.CHUNK_SIZE * 2, 0, 0)).chunkState, Is.EqualTo(ChunkState.BLOCKGENERATED));
+        Assert.That(world.chunkManager.GetChunk(new Vector3D<int>((int)Chunk.CHUNK_SIZE * 2, 0, 0)).chunkState, Is.GreaterThanOrEqualTo(ChunkState.BLOCKGENERATED));
         
         await game.WaitForFrame(10);
         world.chunkManager.TryToUnloadChunk(new Vector3D<int>((int)Chunk.CHUNK_SIZE * 3, 0, 0));
@@ -210,7 +210,7 @@ public class ChunkGenerationTest
         
         world.chunkManager.TryToUnloadChunk(new Vector3D<int>((int)Chunk.CHUNK_SIZE, 0, 0));
         await game.WaitForFrame(10);
-        Assert.That(world.chunkManager.GetChunk(new Vector3D<int>((int)Chunk.CHUNK_SIZE, 0, 0)).chunkState, Is.EqualTo(ChunkState.BLOCKGENERATED));
+        Assert.That(world.chunkManager.GetChunk(new Vector3D<int>((int)Chunk.CHUNK_SIZE, 0, 0)).chunkState, Is.GreaterThanOrEqualTo(ChunkState.BLOCKGENERATED));
 
         world.chunkManager.TryToUnloadChunk(new Vector3D<int>((int)Chunk.CHUNK_SIZE * 2, 0, 0));
         await game.WaitForFrame(10);

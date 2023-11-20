@@ -72,6 +72,7 @@ public class ChunkLoader
         }
     }
 
+    [Logger.Timer]
     public void Update() {
         stopwatch.Restart();
         while(chunkTasks.Count > 0 && stopwatch.ElapsedMilliseconds < 10) {
@@ -85,11 +86,19 @@ public class ChunkLoader
     }
     
     public void LoadAllChunks() {
+        ChunkTaskLoader? oldLoader = null;
+        if (chunkTaskLoader is ChunkTaskLoaderAsync) {
+            oldLoader = chunkTaskLoader;
+            chunkTaskLoader = new ChunkTaskLoaderSync(this);
+        }
         while(chunkTasks.Count > 0) {
             UpdateJob();
             while(chunksToFinish.Count > 0) {
                 FinishJob();
             }
+        }
+        if (oldLoader is not null) {
+            chunkTaskLoader = oldLoader;
         }
     }
 
@@ -104,7 +113,7 @@ public class ChunkLoader
         }
             
         if(chunkTask.chunk.chunkState >= chunkTask.wantedChunkState) {
-            chunkTask.chunk.RemoveRequiredByChunkLoader();
+            chunkTask.chunk.RemoveRequiredByChunkLoader(chunkTask);
             foreach (ChunkWaitingTask parent in chunkTask.parents) {
                 Interlocked.Decrement(ref parent.counter);
                 if(parent.counter == 0) {
@@ -135,7 +144,7 @@ public class ChunkLoader
     private void FinishJob() {
         if(!chunksToFinish.TryTake(out ChunkLoadingTask? chunkTask)) return;
         chunkTask.chunk.FinishChunkState();
-        chunkTask.chunk.RemoveRequiredByChunkLoader();
+        chunkTask.chunk.RemoveRequiredByChunkLoader(chunkTask);
 
         foreach (ChunkWaitingTask parent in chunkTask.parents) {
             Interlocked.Decrement(ref parent.counter);
@@ -154,19 +163,19 @@ public class ChunkLoader
             return false;
         }
         chunkTasks.AddFirst(chunkLoadingTask);
-        chunkLoadingTask.chunk.AddRequiredByChunkLoader();
+        chunkLoadingTask.chunk.AddRequiredByChunkLoader(chunkLoadingTask);
         return true;
     }
 
     public void AddChunkToQueue(Chunk chunk, ChunkState chunkState = ChunkState.DRAWABLE) {
-        chunk.AddRequiredByChunkLoader();
-        chunkTasks.AddLast(new ChunkLoadingTask(chunk, chunkState));
+        ChunkLoadingTask task = new ChunkLoadingTask(chunk, chunkState);
+        chunk.AddRequiredByChunkLoader(task);
+        chunkTasks.AddLast(task);
     }
 
-    public ChunkLoadingTask? FindTask(Chunk neighborChunk, ChunkState chunkState) {
-        //Todo optimize 
-        foreach (ChunkLoadingTask task in chunkTasks) {
-            if(task.chunk == neighborChunk && task.wantedChunkState <= chunkState ) {
+    public ChunkLoadingTask? FindTask(Chunk chunk, ChunkState chunkState) {
+        foreach (ChunkLoadingTask task in chunk.chunkTaskOfChunk) {
+            if(task.chunk == chunk && task.wantedChunkState <= chunkState ) {
                 return task;
             }
         }

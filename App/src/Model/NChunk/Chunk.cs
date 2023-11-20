@@ -32,17 +32,15 @@ public class Chunk
     public ChunkState chunkStateInStorage { get; internal set; } = ChunkState.EMPTY;
     public const ChunkState DEFAULTSTARTINGCHUNKSTATE = ChunkState.EMPTY;
 
-    public List<ChunkWaitingTask> chunkWaitingTasks = new List<ChunkWaitingTask>();
-
     internal ChunkStrategy chunkStrategy;
 
     internal static BlockFactory? blockFactory;
 
-    private int requiredByChunkLoader = 0;
     private int requiredByChunkUnloader = 0;
     internal bool blockModified = false;
     private AABBCube aabbCube;
 
+    public List<ChunkLoadingTask> chunkTaskOfChunk = new();
 
     public Chunk(Vector3D<int> position, IChunkManager chunkManager, IWorldGenerator worldGenerator, IChunkStorage chunkStorage) {
         this.chunkState = DEFAULTSTARTINGCHUNKSTATE;
@@ -218,9 +216,9 @@ public class Chunk
     public void Debug(bool? setDebug = null) => chunkStrategy.Debug(setDebug);
     public void Update(double deltaTime) => chunkStrategy.Update(deltaTime);
 
-    public bool IsRequiredByChunkLoader() => requiredByChunkLoader > 0;
-    public void AddRequiredByChunkLoader() => Interlocked.Increment(ref requiredByChunkLoader);
-    public void RemoveRequiredByChunkLoader() => Interlocked.Decrement(ref requiredByChunkLoader);
+    public bool IsRequiredByChunkLoader() => chunkTaskOfChunk.Count > 0;
+    public void AddRequiredByChunkLoader(ChunkLoadingTask chunkLoadingTask) => chunkTaskOfChunk.Add(chunkLoadingTask);
+    public void RemoveRequiredByChunkLoader(ChunkLoadingTask chunkLoadingTask) => chunkTaskOfChunk.Remove(chunkLoadingTask);
     
     public bool IsRequiredByChunkUnloader() => requiredByChunkUnloader > 0;
     public void AddRequiredByChunkUnloader() => Interlocked.Increment(ref requiredByChunkUnloader);
@@ -229,7 +227,8 @@ public class Chunk
     public AABBCube GetAABBCube() => aabbCube;
     
     public void Reset(Vector3D<int> position, IChunkManager chunkManager, IWorldGenerator worldGenerator, IChunkStorage chunkStorage) {
-        System.Diagnostics.Debug.Assert(chunkWaitingTasks.Count == 0, "chunkWaitingTasks.Count != 0");
+        System.Diagnostics.Debug.Assert(!IsRequiredByChunkLoader(), "is required by chunk loader");
+        System.Diagnostics.Debug.Assert(!IsRequiredByChunkUnloader(), "is required by chunk unloader");
         if(IsRequiredByChunkLoader()) {
             throw new Exception("Chunk is still required by chunk loader");
         }
