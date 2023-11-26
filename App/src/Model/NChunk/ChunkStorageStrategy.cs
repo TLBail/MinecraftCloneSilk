@@ -1,5 +1,6 @@
 ﻿using MinecraftCloneSilk.Model.ChunkManagement;
 using Silk.NET.Maths;
+using System.Diagnostics;
 
 namespace MinecraftCloneSilk.Model.NChunk;
 
@@ -17,6 +18,7 @@ public class ChunkStorageStrategy : ChunkStrategy
 
     public override void Load() {
         chunk.chunkStateInStorage = chunk.chunkStorage.GetChunkStateInStorage(chunk.position);
+        System.Diagnostics.Debug.Assert(!ChunkStateTools.IsChunkIsLoading(chunk.chunkStateInStorage), "bad chunk state in storage 💾");
         if(chunk.chunkStateInStorage > ChunkState.EMPTY)
             chunk.chunkStorage.LoadChunk(chunk);
     }

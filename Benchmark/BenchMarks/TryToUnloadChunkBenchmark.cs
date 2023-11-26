@@ -12,12 +12,12 @@ namespace Benchmark.BenchMarks;
 public class TryToUnloadChunkBenchmark
 {
     
-    private ChunkManagerEmpty chunkManagerEmpty;
-    private ChunkLoader chunkLoader;
-    private RegionStorage regionStorage;
+    private ChunkManagerEmpty chunkManagerEmpty = null!;
+    private ChunkLoader chunkLoader = null!;
+    private RegionStorage regionStorage = null!;
     
     [GlobalSetup]
-    public void globalSetup() {
+    public void GlobalSetup() {
         Directory.SetCurrentDirectory("./../../../../../../../../");
         Chunk.InitStaticMembers(null, BlockFactory.GetInstance());
         regionStorage = new RegionStorage("./Worlds/newWorld");
@@ -37,9 +37,8 @@ public class TryToUnloadChunkBenchmark
 
     private ChunkState GetMinimumChunkStateOfChunk(Vector3D<int> position) {
         ChunkState chunkState = ChunkState.EMPTY;
-        Chunk chunk;
         foreach (FaceExtended face in FaceExtendedConst.FACES) {
-            if (chunkManagerEmpty.chunks.TryGetValue(position + (FaceExtendedOffset.GetOffsetOfFace(face) * Chunk.CHUNK_SIZE), out chunk) &&
+            if (chunkManagerEmpty.chunks.TryGetValue(position + (FaceExtendedOffset.GetOffsetOfFace(face) * Chunk.CHUNK_SIZE), out var chunk) &&
                 chunk.GetMinimumChunkStateOfNeighbors() > chunkState) {
                 chunkState = chunk.GetMinimumChunkStateOfNeighbors();
             }

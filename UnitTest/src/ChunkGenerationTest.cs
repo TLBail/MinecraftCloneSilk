@@ -13,9 +13,9 @@ namespace UnitTest;
 
 public class ChunkGenerationTest
 {
-    private Game game;
-    private Thread gameThread;
-    private World world;
+    private Game game = null!;
+    private Thread gameThread = null!;
+    private World world = null!;
 
     [OneTimeSetUp]
     public  void initGame() {
@@ -41,7 +41,7 @@ public class ChunkGenerationTest
     [TearDown]
     public async Task TearDown() {
         await game.WaitForFrame(10);
-        world = (World)game.gameObjects[typeof(World).FullName];
+        world = (World)game.gameObjects[typeof(World).FullName!];
         world.chunkManager.Clear();
         await game.WaitForFrame(10);
     }
@@ -59,7 +59,7 @@ public class ChunkGenerationTest
     [Test]
     public async Task TestOneChunkGeneration() {
          await game.WaitForFrame(1);
-         world = (World)game.gameObjects[typeof(World).FullName];
+         world = (World)game.gameObjects[typeof(World).FullName!];
          world.chunkManager.AddChunksToLoad(new List<Vector3D<int>>(){Vector3D<int>.Zero});
          await game.WaitForFrame(3);
          Assert.NotNull( world.GetBlock(Vector3D<int>.Zero));
@@ -68,7 +68,7 @@ public class ChunkGenerationTest
     [Test]
     public async Task TestDeletingBlock() {
         await game.WaitForFrame(1);
-        world = (World)game.gameObjects[typeof(World).FullName];
+        world = (World)game.gameObjects[typeof(World).FullName!];
         world.chunkManager.AddChunksToLoad(new List<Vector3D<int>>(){Vector3D<int>.Zero});
         await game.WaitForFrame(10);
         world.SetBlock(BlockFactory.AIR_BLOCK, Vector3D<int>.Zero);
@@ -80,7 +80,7 @@ public class ChunkGenerationTest
     [Test]
     public async Task TestUnloading() {
         await game.WaitForFrame(1);
-        world = (World)game.gameObjects[typeof(World).FullName];
+        world = (World)game.gameObjects[typeof(World).FullName!];
         world.chunkManager.AddChunksToLoad(new List<Vector3D<int>>(){Vector3D<int>.Zero});
         await game.WaitForFrame(10);
         world.SetBlock(BlockFactory.AIR_BLOCK, Vector3D<int>.Zero);
@@ -98,7 +98,7 @@ public class ChunkGenerationTest
     [Test]
     public async Task TestChunkHaveBeenSave() {
         await game.WaitForFrame(1);
-        world = (World)game.gameObjects[typeof(World).FullName];
+        world = (World)game.gameObjects[typeof(World).FullName!];
         world.chunkManager.AddChunksToLoad(new List<Vector3D<int>>(){Vector3D<int>.Zero});
         await game.WaitForFrame(10);
         world.SetBlock(BlockFactory.AIR_BLOCK, Vector3D<int>.Zero);
@@ -116,7 +116,7 @@ public class ChunkGenerationTest
     [Test]
     public async Task TestChunkSaveWhenblockGenerated() {
         await game.WaitForFrame(1);
-        world = (World)game.gameObjects[typeof(World).FullName];
+        world = (World)game.gameObjects[typeof(World).FullName!];
         world.chunkManager.AddChunksToLoad(new List<Vector3D<int>>()
         {
             Vector3D<int>.Zero,
@@ -138,7 +138,7 @@ public class ChunkGenerationTest
     [Test]
     public async Task TestChunkSaveWhenEmpty() {
         await game.WaitForFrame(1);
-        world = (World)game.gameObjects[typeof(World).FullName];
+        world = (World)game.gameObjects[typeof(World).FullName!];
         world.chunkManager.AddChunksToLoad(new List<Vector3D<int>>()
         {
             Vector3D<int>.Zero,
@@ -177,7 +177,7 @@ public class ChunkGenerationTest
     [Test]
     public async Task TestVeryFareChunkSaveWhenEmpty() {
         await game.WaitForFrame(1);
-        world = (World)game.gameObjects[typeof(World).FullName];
+        world = (World)game.gameObjects[typeof(World).FullName!];
         world.chunkManager.AddChunksToLoad(new List<Vector3D<int>>()
         {
             Vector3D<int>.Zero,

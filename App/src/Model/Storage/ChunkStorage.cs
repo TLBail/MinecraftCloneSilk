@@ -1,4 +1,5 @@
-﻿using System.IO.Compression;
+﻿using System.Diagnostics;
+using System.IO.Compression;
 using System.Text;
 using MinecraftCloneSilk.Model.ChunkManagement;
 using MinecraftCloneSilk.Model.NChunk;
@@ -48,6 +49,7 @@ public class ChunkStorage : IChunkStorage
         using BinaryWriter binaryWriter = new BinaryWriter(stream, Encoding.UTF8, true);
         int version = 1;
         binaryWriter.Write(version);
+        Debug.Assert(!ChunkStateTools.IsChunkIsLoading(chunk.chunkState), "try to save a chunk that is loading");
         byte chunkState = chunk.chunkState > ChunkState.BLOCKGENERATED ? (byte)ChunkState.BLOCKGENERATED : (byte)chunk.chunkState;
         binaryWriter.Write(chunkState);
         int tick = 0; //Todo specify tick

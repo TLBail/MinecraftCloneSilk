@@ -5,6 +5,7 @@ using Plane = MinecraftCloneSilk.Collision.Plane;
 
 namespace UnitTest;
 
+[TestFixture]
 public class CollisionSquareTEst
 {
     

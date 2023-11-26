@@ -52,8 +52,13 @@ namespace MinecraftCloneSilk.GameComponent
         public Vector3 GetDirection3D() {
             return camera.Front;
         }
+        
+        public void Click(MouseButton mouseButton)
+        {
+            OnMouseClick(mouse!, mouseButton);
+        }
 
-        public void OnMouseClick(IMouse mouse, MouseButton mouseButton)
+        private void OnMouseClick(IMouse mouse, MouseButton mouseButton)
         {
             if(debugActivated) ShowDebugRayOnClick();
             Block? block = playerInteractionToWorld.GetBlock();

@@ -1,5 +1,6 @@
 ﻿using Silk.NET.OpenGL;
 using System;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using MinecraftCloneSilk.GameComponent;
 
@@ -34,8 +35,10 @@ namespace MinecraftCloneSilk.Core
          * <param name="fieldName">The name of the field of the vertex type</param>
          */
         public unsafe void VertexAttributePointer(uint index, int count, VertexAttribPointerType type, string fieldName)
+            => VertexAttributePointer(index, count, type,(int)Marshal.OffsetOf(typeof(TVertexType), fieldName));
+        public unsafe void VertexAttributePointer(uint index, int count, VertexAttribPointerType type, int offset)
         {
-            gl.VertexAttribPointer(index, count, type, false,(uint) sizeof(TVertexType), (void*) (Marshal.OffsetOf(typeof(TVertexType), fieldName)));
+            gl.VertexAttribPointer(index, count, type, false,(uint) sizeof(TVertexType), (void*)offset);
             gl.EnableVertexAttribArray(index);
         }
         
@@ -49,12 +52,13 @@ namespace MinecraftCloneSilk.Core
          * <param name="type">The type of the vertex attribute</param>
          * <param name="fieldName">The name of the field of the vertex type</param>
          */
-        public unsafe void VertexAttributeIPointer(uint index, int count,  VertexAttribIType type, string fieldName)
+        public unsafe void VertexAttributeIPointer(uint index, int count,  VertexAttribIType type, string fieldName) => 
+            VertexAttributeIPointer(index, count, type,(int)Marshal.OffsetOf(typeof(TVertexType), fieldName));
+        public unsafe void VertexAttributeIPointer(uint index, int count,  VertexAttribIType type, int offset)
         {
-            gl.VertexAttribIPointer(index, count, type,(uint) sizeof(TVertexType), (void*) (Marshal.OffsetOf(typeof(TVertexType), fieldName)));
+            gl.VertexAttribIPointer(index, count, type,(uint) sizeof(TVertexType), (void*) (offset));
             gl.EnableVertexAttribArray(index);
         }
- 
 
         public void Bind()
         {
@@ -78,6 +82,11 @@ namespace MinecraftCloneSilk.Core
         {
             Dispose(true);
             GC.SuppressFinalize(this);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public int GetOffset<TF>(ref TVertexType vertex, ref TF field) {
+            return Unsafe.ByteOffset(ref Unsafe.As<TVertexType, byte>(ref vertex), ref Unsafe.As<TF, byte>(ref field)).ToInt32();
         }
     }
 }

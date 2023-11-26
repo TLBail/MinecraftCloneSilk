@@ -13,24 +13,24 @@ namespace MinecraftCloneSilk.Model.RegionDrawing;
 
 public class RegionBuffer : IDisposable
 {
-    const int nbFacePerBlock = 6;
-    const int nbVertexPerFace = 4;
+    const int NB_FACE_PER_BLOCK = 6;
+    const int NB_VERTEX_PER_FACE = 4;
     public const int SUPER_CHUNK_SIZE = Chunk.CHUNK_SIZE + 2;
     const int SUPER_CHUNK_NB_BLOCK = SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE;
-    
-    internal static BufferObject<Vector4> transparentBlocksBuffer; 
-    internal static BufferObject<FacesTextureCoords> textureCoordsBuffer;
-    internal static ComputeShader computeShader;
-    internal static BufferObject<Vector4D<float>> chunksPositionBuffer;
-    internal static BufferObject<BlockData> blockDataBuffer;
-    internal static BufferObject<CountCompute> countComputeBuffer;
-    internal static BufferObject<CubeVertex> outputBuffer;
+
+    private static BufferObject<Vector4> transparentBlocksBuffer = null!;
+    private static BufferObject<FacesTextureCoords> textureCoordsBuffer = null!;
+    private static ComputeShader computeShader = null!;
+    private static BufferObject<Vector4D<float>> chunksPositionBuffer = null!;
+    private static BufferObject<BlockData> blockDataBuffer = null!;
+    private static BufferObject<CountCompute> countComputeBuffer = null!;
+    private static BufferObject<CubeVertex> outputBuffer = null!;
 
 
 
     private BufferObject<CubeVertex>? vbo;
     private VertexArrayObject<CubeVertex, uint>? vao;
-    private Texture cubeTexture;
+    private readonly Texture cubeTexture;
     private GL gl;
     internal static Shader? cubeShader;
     public int nbVertex { get; private set; }
@@ -105,12 +105,12 @@ public class RegionBuffer : IDisposable
         gl.BindBufferBase(BufferTargetARB.UniformBuffer, 4, transparentBlocksBuffer.handle);
 
         // init texture coords buffer
-        FacesTextureCoords[] textureCoords = new FacesTextureCoords[(maxIndex + 1) * nbFacePerBlock];
+        FacesTextureCoords[] textureCoords = new FacesTextureCoords[(maxIndex + 1) * NB_FACE_PER_BLOCK];
         foreach (KeyValuePair<int,Block> keyValuePair in blockFactory.blocksReadOnly) {
             if(keyValuePair.Value.textureBlock is  null) continue;
             foreach (Face face in Enum.GetValues(typeof(Face))) {
                 int[] coords = keyValuePair.Value.textureBlock.blockJson.texture[face];
-                textureCoords[(keyValuePair.Key * nbFacePerBlock) +  (int)face]= new FacesTextureCoords(new Vector2D<int>(coords[0], coords[1]), 32.0f, 256.0f);
+                textureCoords[(keyValuePair.Key * NB_FACE_PER_BLOCK) +  (int)face]= new FacesTextureCoords(new Vector2D<int>(coords[0], coords[1]), 32.0f, 256.0f);
             }
         }
         textureCoordsBuffer = new BufferObject<FacesTextureCoords>(gl, textureCoords, BufferTargetARB.UniformBuffer, BufferUsageARB.StaticDraw);
@@ -124,7 +124,7 @@ public class RegionBuffer : IDisposable
         
         // init output buffer
         
-        int nbVertexMax = (int)(nbVertexPerFace * nbFacePerBlock * Chunk.CHUNK_SIZE * Chunk.CHUNK_SIZE *
+        int nbVertexMax = (int)(NB_VERTEX_PER_FACE * NB_FACE_PER_BLOCK * Chunk.CHUNK_SIZE * Chunk.CHUNK_SIZE *
                                 Chunk.CHUNK_SIZE);
         outputBuffer = new BufferObject<CubeVertex>(gl, CHUNKS_PER_REGION * nbVertexMax, BufferTargetARB.ShaderStorageBuffer,
             BufferUsageARB.StaticCopy);
@@ -235,15 +235,17 @@ public class RegionBuffer : IDisposable
         
         vao = new VertexArrayObject<CubeVertex, uint>(gl, vbo);
         vao.Bind();
-        vao.VertexAttributePointer(0, 4, VertexAttribPointerType.Float, "position");
-        vao.VertexAttributePointer(1, 2, VertexAttribPointerType.Float, "texCoords");
-        vao.VertexAttributeIPointer(2, 1, VertexAttribIType.Int, "ambientOcclusion");
-        vao.VertexAttributeIPointer(3, 1, VertexAttribIType.Int, "lightLevel");
+        
+        CubeVertex vertex = new CubeVertex();
+        vao.VertexAttributePointer(0, 4, VertexAttribPointerType.Float, vao.GetOffset(ref vertex, ref vertex.position));
+        vao.VertexAttributePointer(1, 2, VertexAttribPointerType.Float, vao.GetOffset(ref vertex, ref vertex.texCoords));
+        vao.VertexAttributeIPointer(2, 1, VertexAttribIType.Int, vao.GetOffset(ref vertex, ref vertex.ambientOcclusion));
+        vao.VertexAttributeIPointer(3, 1, VertexAttribIType.Int, vao.GetOffset(ref vertex, ref vertex.lightLevel));
+
     }
     
     
     private unsafe void CreateSuperChunk(Span<BlockData> superChunk) {
-        //Todo rajouter les chunks dans toutes les diagonales donc 9 * 3 = 27 chunks au total comme sa les ambiant occlusion seront correct
         int offset = 0;
         for (int i = 0; i < chunkCount; i++) {
             Chunk chunk = chunks[i]!;

@@ -6,10 +6,10 @@ namespace Benchmark.BenchMarks;
 
 public class ChunkFaceBenchmark
 {
-    private BlockFactory blockFactory;
-    private BlockData[,,] blocks;
+    private BlockFactory blockFactory = null!;
+    private BlockData[,,] blocks = null!;
     [GlobalSetup]
-    public void setup() {
+    public void Setup() {
         Directory.SetCurrentDirectory("./../../../../../../../../");
         blockFactory = BlockFactory.GetInstance();
         blocks = new BlockData[Chunk.CHUNK_SIZE, Chunk.CHUNK_SIZE, Chunk.CHUNK_SIZE];
@@ -18,7 +18,7 @@ public class ChunkFaceBenchmark
     }
 
     [Benchmark]
-    public void benchmark() {
+    public void Benchmark() {
         ChunkFaceUtils.GetChunkFaceFlags(blockFactory, blocks);
     }
     

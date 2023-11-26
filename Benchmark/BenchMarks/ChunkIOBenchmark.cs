@@ -13,12 +13,12 @@ namespace Benchmark.BenchMarks;
 [MemoryDiagnoser]
 public class ChunkIOBenchmark
 {
-    private ChunkManagerEmpty chunkManagerEmpty;
-    private ChunkLoader chunkLoader;
-    private RegionStorage regionStorage;
+    private ChunkManagerEmpty chunkManagerEmpty = null!;
+    private ChunkLoader chunkLoader = null!;
+    private RegionStorage regionStorage = null!;
     
     [GlobalSetup]
-    public void globalSetup() {
+    public void GlobalSetup() {
         Directory.SetCurrentDirectory("./../../../../../../../../");
         Chunk.InitStaticMembers(null, BlockFactory.GetInstance());
         regionStorage = new RegionStorage("./Worlds/newWorld");
@@ -27,14 +27,10 @@ public class ChunkIOBenchmark
     }
 
      
-    public void loadChunk() {
-        Chunk chunk = ChunkManagerTools.GetBlockGeneratedChunk(chunkManagerEmpty, chunkLoader,
-                        new Vector3D<int>(0 * Chunk.CHUNK_SIZE, 0 * Chunk.CHUNK_SIZE, 0 * Chunk.CHUNK_SIZE));
-    }
 
-    private List<Chunk> chunks;
+    private List<Chunk> chunks = null!;
     [IterationSetup]
-    public void setup() {
+    public void Setup() {
         regionStorage.Clear(); 
 
         chunks = new();
@@ -51,7 +47,7 @@ public class ChunkIOBenchmark
     }
 
     [Benchmark]
-    public void saveChunk() {
+    public void SaveChunk() {
         regionStorage.SaveChunks(chunks);
     }
     

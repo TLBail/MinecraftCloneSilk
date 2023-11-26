@@ -148,27 +148,27 @@ public class ChunkStorageTest
     [Test]
     public void TestCalculNbBytePerBlock() {
         int nbBlock = 1;
-        Assert.AreEqual(1,ChunkStorage.Log8Ceil(nbBlock));
+        Assert.That(ChunkStorage.Log8Ceil(nbBlock), Is.EqualTo(1));
         
 
         nbBlock = 55;
-        Assert.AreEqual(1,ChunkStorage.Log8Ceil(nbBlock));
+        Assert.That(ChunkStorage.Log8Ceil(nbBlock), Is.EqualTo(1));
 
         nbBlock = 255;
-        Assert.AreEqual(1,ChunkStorage.Log8Ceil(nbBlock));
+        Assert.That(ChunkStorage.Log8Ceil(nbBlock), Is.EqualTo(1));
 
         nbBlock = 256;
-        Assert.AreEqual(2,ChunkStorage.Log8Ceil(nbBlock));
+        Assert.That(ChunkStorage.Log8Ceil(nbBlock), Is.EqualTo(2));
         
         nbBlock = 65535;
-        Assert.AreEqual(2,ChunkStorage.Log8Ceil(nbBlock));
+        Assert.That(ChunkStorage.Log8Ceil(nbBlock), Is.EqualTo(2));
 
         nbBlock = 65536;
-        Assert.AreEqual(3,ChunkStorage.Log8Ceil(nbBlock));
+        Assert.That(ChunkStorage.Log8Ceil(nbBlock), Is.EqualTo(3));
         nbBlock = 16777215;
-        Assert.AreEqual(3,ChunkStorage.Log8Ceil(nbBlock));
+        Assert.That(ChunkStorage.Log8Ceil(nbBlock), Is.EqualTo(3));
         nbBlock = 16777216;
-        Assert.AreEqual(4,ChunkStorage.Log8Ceil(nbBlock));
+        Assert.That(ChunkStorage.Log8Ceil(nbBlock), Is.EqualTo(4));
     }
 
 

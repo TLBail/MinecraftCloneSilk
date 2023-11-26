@@ -312,7 +312,7 @@ public class World : GameObject
 
                     // Augmente l'angle, le rayon et la hauteur
                     angle += 0.4f; // Plus cette valeur est petite, plus la spirale sera serrée
-                    radius += 0.01f; // Augmente le rayon progressivement
+                    radius += 0.005f; // Augmente le rayon progressivement
                     height += heightIncrement / 360; // Augmente la hauteur après chaque tour complet
 
                     if (angle >= 360 * nbTurns)
