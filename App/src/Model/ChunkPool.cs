@@ -39,7 +39,7 @@ public class ChunkPool
     public void ReturnChunk(Chunk chunk) {
         Debug.Assert(!chunk.IsRequiredByChunkLoader(), " chunk is still required by chunk loader");
         Debug.Assert(!chunk.blockModified, " chunk still have block modified");
-        Debug.Assert(!chunk.IsRequiredByChunkUnloader());
+        Debug.Assert(!chunk.IsRequiredByChunkSaver());
         chunkPool.Add(chunk);  
     } 
     

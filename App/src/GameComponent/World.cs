@@ -104,7 +104,7 @@ public class World : GameObject
         }
     }
 
-    public List<Chunk> GetWorldChunks() {
+    public ICollection<Chunk> GetWorldChunks() {
         return chunkManager.GetChunksList();
     }
 
@@ -216,21 +216,10 @@ public class World : GameObject
         console.AddCommand("/blockLine", (commandParams) =>
         {
             if (commandParams.Length == 2) {
-                int nbBlock = int.Parse(commandParams[0]);
-                string blockName = commandParams[1];
-                
-                Vector3 position = new Vector3(
-                    (int)player.position.X,
-                    (int)player.position.Y,
-                    (int)player.position.Z
-                );
-                
-                
-                for (int i = 0; i < nbBlock; i++) {
-                    SetBlock(blockName, new Vector3D<int>((int)position.X, (int)position.Y, (int)position.Z));
-                    position += player.GetDirection3D();
-                }
-                
+                Brush.Line(this,
+                    player,
+                    int.Parse(commandParams[0]),
+                    commandParams[1]);
             } else {
                 console.Log("require the number of block and the block name");
             }
@@ -239,22 +228,12 @@ public class World : GameObject
         {
             int size = 10;
             if (commandParams.Length >= 1) size = int.Parse(commandParams[0]);
-            
-            Vector3D<int> position = new Vector3D<int>(
+            Brush.Bomb(this,
+                new Vector3D<int>(
                 (int)player.position.X,
                 (int)player.position.Y,
                 (int)player.position.Z
-            );
-            
-            for (int x = -size; x < size; x++) {
-                for (int y = -size; y < size; y++) {
-                    for (int z = -size; z < size; z++) {
-                        Vector3D<int> positionS = position + new Vector3D<int>(x, y, z);
-                        if(Vector3D.Distance(positionS, position) < size)
-                            SetBlock("air", positionS);
-                    }
-                }
-            }
+            ), size);
         });
         
         console.AddCommand("/wall", (commandParams) =>
@@ -262,22 +241,13 @@ public class World : GameObject
             if (commandParams.Length == 2) {
                 int size = int.Parse(commandParams[0]);
                 string blockName = commandParams[1];
-                Vector3 position = player.position + player.GetDirection3D() * size;
-                Vector3D<int> centerWall = new Vector3D<int>(
-                    (int)position.X,
-                    (int)position.Y,
-                    (int)position.Z);
-                for (int x = 0; x < size; x++) {
-                    for (int y = 0; y < size; y++) {
-                        SetBlock(blockName, centerWall + (new Vector3D<int>(x, y, 0) - new Vector3D<int>(size / 2, size / 2, 0)));
-                    }
-                }
-
+                Brush.Wall(this,
+                    player,
+                    size,
+                    blockName);
             }else {
                 console.Log("require the size and the block name");
             }
-
-            
         });
         
         console.AddCommand("/spiral", (commandParams) =>
@@ -287,39 +257,11 @@ public class World : GameObject
                 int nbTurns = int.Parse(commandParams[0]); // Nombre de tours de la spirale
                 string blockName = commandParams[1]; // Nom du bloc à utiliser pour la spirale
                 float heightIncrement = float.Parse(commandParams[2]); // Incrément de hauteur après chaque tour complet
-
-                Vector3 position = new Vector3(
-                    (int)player.position.X,
-                    (int)player.position.Y,
-                    (int)player.position.Z
-                );
-
-                float angle = 0;
-                float radius = 0;
-                float height = 0;
-
-                // Détermine le nombre de blocs en fonction du nombre de tours et de la précision
-                int totalBlocks = (int)(nbTurns * 360 * 1.5f);
-
-                for (int i = 0; i < totalBlocks; i++)
-                {
-                    // Convertit l'angle et le rayon en coordonnées X et Z
-                    float x = radius * MathF.Cos(MathHelper.DegreesToRadians(angle));
-                    float z = radius * MathF.Sin(MathHelper.DegreesToRadians(angle));
-
-                    // Place le bloc
-                    SetBlock(blockName, new Vector3D<int>((int)(position.X + x), (int)(position.Y + height), (int)(position.Z + z)));
-
-                    // Augmente l'angle, le rayon et la hauteur
-                    angle += 0.4f; // Plus cette valeur est petite, plus la spirale sera serrée
-                    radius += 0.005f; // Augmente le rayon progressivement
-                    height += heightIncrement / 360; // Augmente la hauteur après chaque tour complet
-
-                    if (angle >= 360 * nbTurns)
-                    {
-                        break; // Sort de la boucle une fois le nombre de tours atteint
-                    }
-                }
+                Brush.Spiral(this,
+                    player.position,
+                    nbTurns,
+                    heightIncrement,
+                    blockName);
             }
             else
             {
@@ -335,14 +277,7 @@ public class World : GameObject
                 int level = int.Parse(commandParams[0]); // Niveau de récursivité du fractal
                 string blockName = commandParams[1]; // Nom du bloc à utiliser
                 int size = int.Parse(commandParams[2]); // Taille de base du triangle
-
-                Vector3 startPosition = new Vector3(
-                    (int)player.position.X,
-                    (int)player.position.Y,
-                    (int)player.position.Z
-                );
-
-                DrawSierpinski(startPosition, level, size, blockName);
+                Brush.Sierpinski(this,player.position, level, size, blockName);
             }
             else
             {
@@ -357,14 +292,7 @@ public class World : GameObject
                 int level = int.Parse(commandParams[0]); // Niveau de récursivité du fractal
                 string blockName = commandParams[1]; // Nom du bloc à utiliser
                 int size = int.Parse(commandParams[2]); // Taille initiale du cube
-
-                Vector3 startPosition = new Vector3(
-                    (int)player.position.X,
-                    (int)player.position.Y,
-                    (int)player.position.Z
-                );
-
-                DrawMengerSponge(startPosition, level, size, blockName);
+                Brush.MengerSponge(this,player.position, level, size, blockName);
             }
             else
             {
@@ -416,75 +344,5 @@ public class World : GameObject
     public override void ToImGui() {
         worldUi.DrawUi();
     }
-    
-    void DrawSierpinski(Vector3 position, int level, int size, string blockName)
-    {
-        if (level == 0)
-        {
-            // Dessine un triangle simple à la position donnée
-            DrawTriangle(position, size, blockName);
-        }
-        else
-        {
-            int newSize = size / 2;
-            // Dessine 3 triangles de Sierpinski de niveau inférieur
-            DrawSierpinski(position, level - 1, newSize, blockName);
-            DrawSierpinski(new Vector3(position.X + newSize, position.Y, position.Z), level - 1, newSize, blockName);
-            DrawSierpinski(new Vector3(position.X + newSize / 2, position.Y, position.Z + (int)(newSize * Math.Sqrt(3) / 2)), level - 1, newSize, blockName);
-        }
-    }
 
-    void DrawTriangle(Vector3 position, int size, string blockName)
-    {
-        for (int y = 0; y <= size; y++)
-        {
-            for (int x = 0; x <= y; x++)
-            {
-                SetBlock(blockName, new Vector3D<int>((int)position.X + x, (int)position.Y, (int)position.Z + y));
-                SetBlock(blockName, new Vector3D<int>((int)position.X - x, (int)position.Y, (int)position.Z + y));
-            }
-        }
-    }
-    
-    
-    void DrawMengerSponge(Vector3 position, int level, int size, string blockName)
-    {
-        if (level == 0)
-        {
-            // Dessiner un cube plein à la position donnée
-            DrawCube(position, size, blockName);
-        }
-        else
-        {
-            int newSize = size / 3;
-            for (int x = 0; x < 3; x++)
-            {
-                for (int y = 0; y < 3; y++)
-                {
-                    for (int z = 0; z < 3; z++)
-                    {
-                        if (x != 1 || y != 1 && z != 1) // Ne pas dessiner le cube central et les cubes centraux de chaque face
-                        {
-                            Vector3 newPosition = new Vector3(position.X + x * newSize, position.Y + y * newSize, position.Z + z * newSize);
-                            DrawMengerSponge(newPosition, level - 1, newSize, blockName);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    void DrawCube(Vector3 position, int size, string blockName)
-    {
-        for (int x = 0; x < size; x++)
-        {
-            for (int y = 0; y < size; y++)
-            {
-                for (int z = 0; z < size; z++)
-                {
-                    SetBlock(blockName, new Vector3D<int>((int)position.X + x, (int)position.Y + y, (int)position.Z + z));
-                }
-            }
-        }
-    }
 }

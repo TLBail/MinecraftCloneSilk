@@ -16,11 +16,10 @@ namespace MinecraftCloneSilk.Model.Storage;
 public class RegionStorage : IChunkStorage, IDisposable
 {
     public void ChunkUnloaderProcessor() {
-        foreach (Chunk chunk in chunksToUnload.GetConsumingEnumerable()) {
+        foreach (Chunk chunk in chunksToSave.GetConsumingEnumerable()) {
             SaveChunk(chunk);
             chunk.blockModified = false;
-            chunk.RemoveRequiredByChunkUnloader();
-            Debug.Assert(!chunk.IsRequiredByChunkUnloader());
+            chunk.RemoveRequiredByChunkSaver();
         }
     }
 
@@ -28,7 +27,7 @@ public class RegionStorage : IChunkStorage, IDisposable
     LightningEnvironment env;
     LightningDatabase db;
     private const string DB_NAME = "world";
-    private readonly BlockingCollection<Chunk> chunksToUnload = new BlockingCollection<Chunk>();
+    private readonly BlockingCollection<Chunk> chunksToSave = new BlockingCollection<Chunk>();
     private readonly Task chunkUnloaderTask;
 
     public RegionStorage(string pathToChunkFolder) {
@@ -55,7 +54,8 @@ public class RegionStorage : IChunkStorage, IDisposable
     }
     
     public void SaveChunkAsync(Chunk chunk) {
-        chunksToUnload.Add(chunk);
+        chunk.AddRequiredByChunkSaver();
+        chunksToSave.Add(chunk);
     }
 
     [Logger.Timer]
@@ -130,12 +130,12 @@ public class RegionStorage : IChunkStorage, IDisposable
     {
         if (!disposing)
             throw new InvalidOperationException("The LightningEnvironment was not disposed and cannot be reliably dealt with from the finalizer");
-        chunksToUnload.CompleteAdding();
+        chunksToSave.CompleteAdding();
         Console.WriteLine("Waiting for chunk to be saved");
         chunkUnloaderTask.Wait();
         Console.WriteLine("Chunk saved");
         chunkUnloaderTask.Dispose();
-        chunksToUnload.Dispose();
+        chunksToSave.Dispose();
         env.Dispose();
     }
     ~RegionStorage() => this.Dispose(false);

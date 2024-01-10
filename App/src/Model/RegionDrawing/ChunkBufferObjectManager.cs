@@ -71,6 +71,7 @@ public class ChunkBufferObjectManager
         }
     }
 
+    [Logger.Timer]
     private void Update(double deltatime) {
         foreach (RegionBuffer region in regionsToUpdate) {
             region.Update();

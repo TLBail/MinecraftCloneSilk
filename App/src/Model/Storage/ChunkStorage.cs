@@ -25,10 +25,12 @@ public class ChunkStorage : IChunkStorage
 
 
     public void SaveChunkAsync(Chunk chunk) {
+        chunk.AddRequiredByChunkSaver();
         Task task = new Task(() =>
         {
             SaveChunk(chunk);
             chunk.blockModified = false;
+            chunk.RemoveRequiredByChunkSaver();
         });
         task.Start();
     }

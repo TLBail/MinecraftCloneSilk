@@ -36,7 +36,7 @@ public class Chunk
 
     internal static BlockFactory? blockFactory;
 
-    private int requiredByChunkUnloader = 0;
+    private int requiredByChunkSaver = 0;
     internal bool blockModified = false;
     private AABBCube aabbCube;
 
@@ -170,15 +170,15 @@ public class Chunk
     public void AddRequiredByChunkLoader(ChunkLoadingTask chunkLoadingTask) => chunkTaskOfChunk.Add(chunkLoadingTask);
     public void RemoveRequiredByChunkLoader(ChunkLoadingTask chunkLoadingTask) => chunkTaskOfChunk.Remove(chunkLoadingTask);
     
-    public bool IsRequiredByChunkUnloader() => requiredByChunkUnloader > 0;
-    public void AddRequiredByChunkUnloader() => Interlocked.Increment(ref requiredByChunkUnloader);
-    public void RemoveRequiredByChunkUnloader() => Interlocked.Decrement(ref requiredByChunkUnloader);
+    public bool IsRequiredByChunkSaver() => requiredByChunkSaver > 0;
+    public void AddRequiredByChunkSaver() => Interlocked.Increment(ref requiredByChunkSaver);
+    public void RemoveRequiredByChunkSaver() => Interlocked.Decrement(ref requiredByChunkSaver);
     
     public AABBCube GetAABBCube() => aabbCube;
     
     public void Reset(Vector3D<int> position, IChunkManager chunkManager, IWorldGenerator worldGenerator, IChunkStorage chunkStorage) {
         System.Diagnostics.Debug.Assert(!IsRequiredByChunkLoader(), "is required by chunk loader");
-        System.Diagnostics.Debug.Assert(!IsRequiredByChunkUnloader(), "is required by chunk unloader");
+        System.Diagnostics.Debug.Assert(!IsRequiredByChunkSaver(), "is required by chunk unloader");
         if(IsRequiredByChunkLoader()) {
             throw new Exception("Chunk is still required by chunk loader");
         }
