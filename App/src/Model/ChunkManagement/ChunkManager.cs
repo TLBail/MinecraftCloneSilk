@@ -19,6 +19,8 @@ public class ChunkManager : IChunkManager
     private ChunkLoader chunkLoader;
     private ChunkUnloader chunkUnloader;
 
+    public Vector3D<int> centerChunk;
+
     public ChunkManager(int radius, IWorldGenerator worldGenerator, IChunkStorage chunkStorage) {
         chunks = new ConcurrentDictionary<Vector3D<int>, Chunk>(Environment.ProcessorCount * 2,
             radius * radius * radius);
@@ -31,6 +33,7 @@ public class ChunkManager : IChunkManager
     [Logger.Timer]
     public void Update(double deltatime) {
         chunkLoader.Update(); 
+        chunkUnloader.Update();
         foreach (Chunk chunk in new List<Chunk>(chunksToUpdate)) {
             Debug.Assert(chunk.chunkState >= ChunkState.DRAWABLE, $"try to update a chunk:{chunk} with a lower state than the minimum");
             chunk.Update(deltatime);
@@ -70,21 +73,29 @@ public class ChunkManager : IChunkManager
     public void RemoveChunkToUpdate(Chunk chunk) {
         chunksToUpdate.Remove(chunk);
     }
-    
+
     [Logger.Timer]
-    public void UpdateRelevantChunks(List<Vector3D<int>> positionsRelevant) {
-        Dictionary<Vector3D<int>, Chunk> chunksCopy = new Dictionary<Vector3D<int>, Chunk>(chunks); 
-        List<Vector3D<int>> chunksToLoad = new List<Vector3D<int>>();
-        foreach (Vector3D<int> position in positionsRelevant) {
-            chunksCopy.Remove(position);
-            if (IsChunkRelevantForLoading(position)) {
-                chunksToLoad.Add(position);
+    public void LoadChunkAroundACenter(Vector3D<int> newCenterChunk, int radius) {
+        if (newCenterChunk == centerChunk) return;
+        centerChunk = newCenterChunk;
+        List<Vector3D<int>> positionsRelevant = new List<Vector3D<int>>();
+        var rootChunk = centerChunk + new Vector3D<int>((int)(-radius * Chunk.CHUNK_SIZE));
+        for (var x = 0; x < 2 * radius; x++)
+        for (var y = 0; y < 2 * radius; y++)
+        for (var z = 0; z < 2 * radius; z++) {
+            var key = rootChunk + new Vector3D<int>((int)(x * Chunk.CHUNK_SIZE), (int)(y * Chunk.CHUNK_SIZE),
+                (int)(z * Chunk.CHUNK_SIZE));
+            if(Vector3D.Distance(centerChunk, key) > radius * Chunk.CHUNK_SIZE) continue;
+            if (IsChunkRelevantForLoading(key)) {
+                positionsRelevant.Add(key);
             }
         }
-        AddChunksToLoad(chunksToLoad);
-        TryToUnloadChunks(chunksCopy.Keys);
-    }
+        AddChunksToLoad(positionsRelevant);
 
+        chunkUnloader.SetCenterOfUnload(centerChunk, radius + 2);
+    }
+    
+    
     private bool IsChunkRelevantForLoading(Vector3D<int> position) {
         if (!chunks.TryGetValue(position, out Chunk? chunk)) {
             return true;
@@ -93,12 +104,6 @@ public class ChunkManager : IChunkManager
         return chunk.chunkState < ChunkState.DRAWABLE;
     }
     
-    [Logger.Timer]
-    private void TryToUnloadChunks(IEnumerable<Vector3D<int>> positions) {
-        foreach (Vector3D<int> position in positions) {
-            chunkUnloader.TryToUnloadChunk(position);
-        }
-    }
 
     public void AddChunkToLoad(Vector3D<int> position) {
         position = World.GetChunkPosition(position);
