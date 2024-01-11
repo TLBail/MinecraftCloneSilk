@@ -19,7 +19,7 @@ public class ChunkManager : IChunkManager
     private ChunkLoader chunkLoader;
     private ChunkUnloader chunkUnloader;
 
-    public Vector3D<int> centerChunk;
+    public Vector3D<int> centerChunk = new Vector3D<int>(-1);
 
     public ChunkManager(int radius, IWorldGenerator worldGenerator, IChunkStorage chunkStorage) {
         chunks = new ConcurrentDictionary<Vector3D<int>, Chunk>(Environment.ProcessorCount * 2,

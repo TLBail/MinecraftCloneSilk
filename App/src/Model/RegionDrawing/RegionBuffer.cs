@@ -249,7 +249,7 @@ public class RegionBuffer : IDisposable
         int offset = 0;
         for (int i = 0; i < chunkCount; i++) {
             Chunk chunk = chunks[i]!;
-            if(chunk.chunkState != ChunkState.DRAWABLE) continue;
+            if(chunk.chunkState != ChunkState.DRAWABLE) throw new Exception("chunk state is not drawable");
             int superChunkIndex = 0;
            
             // inner chunk

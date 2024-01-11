@@ -21,7 +21,7 @@ public enum WorldMode
 public class World : GameObject
 {
     private Player player = null!;
-    public int radius { get; set; } = 6;
+    public int radius { get; set; } = 12;
     private readonly WorldUi worldUi;
     public IWorldGenerator worldGeneration;
     public WorldMode worldMode { get; set; }

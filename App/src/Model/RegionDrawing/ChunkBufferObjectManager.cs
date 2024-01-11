@@ -73,10 +73,12 @@ public class ChunkBufferObjectManager
 
     [Logger.Timer]
     private void Update(double deltatime) {
-        foreach (RegionBuffer region in regionsToUpdate) {
-            region.Update();
+        Stopwatch stopwatch = new Stopwatch();
+        stopwatch.Start();
+        while(regionsToUpdate.Count > 0 && stopwatch.ElapsedMilliseconds < 5) {
+            regionsToUpdate[0].Update();
+            regionsToUpdate.RemoveAt(0);
         }
-        regionsToUpdate.Clear();
     }
 
     
