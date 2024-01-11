@@ -62,5 +62,7 @@ public class WorldFlatGeneration : IWorldGenerator
         
     }
 
-    
+    public bool HaveTreeOnThisCoord(int positionX, int positionZ) {
+        return false;
+    }
 }

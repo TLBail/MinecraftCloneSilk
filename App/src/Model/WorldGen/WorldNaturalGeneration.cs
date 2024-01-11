@@ -14,6 +14,12 @@ public class WorldNaturalGeneration : IWorldGenerator
     private BlockData grass;
     private BlockData stone;
     
+    private FastNoiseLite conantinalnessNoiseGenerator;
+    private FastNoiseLite amplitudeNoiseGenerator;
+    
+    private FastNoiseLite treeNoiseGenerator;
+    private FastNoiseLite treeProbabilityNoiseGenerator;
+    
 
     public WorldNaturalGeneration()
     {
@@ -24,6 +30,22 @@ public class WorldNaturalGeneration : IWorldGenerator
         noiseGenerator.SetFractalLacunarity(2);
         noiseGenerator.SetFractalGain(0.9f);
         noiseGenerator.SetFrequency(0.0015f);
+        
+        conantinalnessNoiseGenerator = new FastNoiseLite(seed);
+        conantinalnessNoiseGenerator.SetNoiseType(FastNoiseLite.NoiseType.Perlin);
+        conantinalnessNoiseGenerator.SetFrequency(0.0002f);
+        
+        amplitudeNoiseGenerator = new FastNoiseLite(seed * 2);
+        amplitudeNoiseGenerator.SetNoiseType(FastNoiseLite.NoiseType.Perlin);
+        amplitudeNoiseGenerator.SetFrequency(0.0005f);
+        
+        treeNoiseGenerator = new FastNoiseLite(seed * 3);
+        treeNoiseGenerator.SetNoiseType(FastNoiseLite.NoiseType.Perlin);
+        treeNoiseGenerator.SetFrequency(0.4f);
+        
+        treeProbabilityNoiseGenerator = new FastNoiseLite(seed * 4);
+        treeProbabilityNoiseGenerator.SetNoiseType(FastNoiseLite.NoiseType.Perlin);
+        treeProbabilityNoiseGenerator.SetFrequency(0.0005f);
         
         
         if(blockFactory == null) blockFactory = BlockFactory.GetInstance();
@@ -36,14 +58,25 @@ public class WorldNaturalGeneration : IWorldGenerator
     }
 
     private bool IsAirBlock(int globalX, int globalY, int globalZ) {
+        float cotenitalness = conantinalnessNoiseGenerator.GetNoise(globalX, globalY, globalZ);
+        cotenitalness = Math.Abs(cotenitalness) * 500;
+        cotenitalness -= 50;
+        globalY -= (int)cotenitalness;
+        
+        float amplitudeNoise = amplitudeNoiseGenerator.GetNoise(globalX, globalY, globalZ);
+        float amplitude = 100.0f; // define the amplitude of the noise  lower = more flat
+        amplitude += amplitudeNoise * 200;
+        
         float noise = noiseGenerator.GetNoise(globalX, globalY, globalZ);
         float threasholdAir = -0.2f;
-        threasholdAir += globalY / 200.0f;
+        threasholdAir += globalY / amplitude;
         return noise <= threasholdAir;
     }
     
     public void GenerateTerrain(Vector3D<int> position, BlockData[,,] blocks)
     {
+        
+        
         for (int x = 0; x < Chunk.CHUNK_SIZE; x++) {
             for (int y = Chunk.CHUNK_SIZE - 1; y >= 0; y--) {
                 for (int z = 0; z < Chunk.CHUNK_SIZE; z++) {
@@ -82,44 +115,13 @@ public class WorldNaturalGeneration : IWorldGenerator
                 }
             }
         }
+    }
 
+    public bool HaveTreeOnThisCoord(int positionX, int positionZ) {
+        float noise = treeNoiseGenerator.GetNoise(positionX, positionZ);
+        noise = Math.Abs(noise);
         
-        
-        
-        /*
-        for (int i = 0; i < Chunk.CHUNK_SIZE; i++) {
-            for (int j = 0; j < Chunk.CHUNK_SIZE; j++) {
-                double x = (double)j / ((double)Chunk.CHUNK_SIZE);
-                double z = (double)i / ((double)Chunk.CHUNK_SIZE);
-    
-                x *= Chunk.CHUNK_SIZE;
-                z *= Chunk.CHUNK_SIZE;
-    
-                if (globalY >= position.Y && globalY < position.Y + Chunk.CHUNK_SIZE)
-                {
-                    int localY = (int)(globalY % Chunk.CHUNK_SIZE);
-                    if (localY < 0)
-                        localY = (int)(Chunk.CHUNK_SIZE + localY);
-                    blocks[(int)x,localY,(int)z] = blockFactory!.GetBlockData("grass");
-                    for (int g = localY - 1; g >= 0 && g >= localY - 4; g--)
-                    {
-                        blocks[(int)x,g,(int)z] = blockFactory!.GetBlockData("stone");
-                    }
-                    for (int g = localY - 5; g >= 0; g--)
-                    {
-                        blocks[(int)x,g,(int)z] = blockFactory!.GetBlockData("stone");
-                    }
-                }
-                else if (globalY >= position.Y + Chunk.CHUNK_SIZE)
-                {
-                    for (int y = 0; y < Chunk.CHUNK_SIZE; y++)
-                    {
-                        blocks[j, y,i] = blockFactory!.GetBlockData("stone");
-                    }
-                }
-            }
-        }
-        */
+        return noise > (0.7f + treeProbabilityNoiseGenerator.GetNoise(positionX, positionZ) / 5);
         
     }
 

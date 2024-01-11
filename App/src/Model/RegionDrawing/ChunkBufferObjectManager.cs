@@ -75,7 +75,7 @@ public class ChunkBufferObjectManager
     private void Update(double deltatime) {
         Stopwatch stopwatch = new Stopwatch();
         stopwatch.Start();
-        while(regionsToUpdate.Count > 0 && stopwatch.ElapsedMilliseconds < 5) {
+        while(regionsToUpdate.Count > 0 && stopwatch.ElapsedMilliseconds < 10) {
             regionsToUpdate[0].Update();
             regionsToUpdate.RemoveAt(0);
         }

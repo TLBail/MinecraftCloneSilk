@@ -13,6 +13,7 @@ public class ChunkBlockGeneratedStrategy : ChunkStrategy
 
     private ChunkState minimumChunkStateOfNeighborsValue = ChunkState.EMPTY;
     public override ChunkState MinimumChunkStateOfNeighbors() => minimumChunkStateOfNeighborsValue;
+    
 
     public override void SetBlock(int x, int y, int z, string name) {
         chunk.blocks[x, y, z].id = Chunk.blockFactory!.GetBlockIdByName(name);
@@ -56,15 +57,13 @@ public class ChunkBlockGeneratedStrategy : ChunkStrategy
 
     protected override Vector3D<float> ChunkStrategyColor() => new Vector3D<float>(0, 0, 1);
 
-    private bool haveTreeOnThisCoord(int x, int z) => x % 20 == 0 && z % 20 == 0;
-
     private void GenerateStruture() {
         int idGrass = Chunk.blockFactory!.GetBlockIdByName("grass");
         for (int x = 0; x < Chunk.CHUNK_SIZE; x++) {
             for (int y = 0; y < Chunk.CHUNK_SIZE; y++) {
                 for (int z = 0; z < Chunk.CHUNK_SIZE; z++) {
                     if (chunk.blocks[x, y, z].id == idGrass &&
-                        haveTreeOnThisCoord(x, z)) {
+                        chunk.worldGenerator.HaveTreeOnThisCoord(chunk.position.X + x, chunk.position.Z + z)) {
                         addTreeOnThisBlock(x, y, z);
                     }
                 }
