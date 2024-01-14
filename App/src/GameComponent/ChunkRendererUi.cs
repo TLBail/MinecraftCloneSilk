@@ -25,7 +25,7 @@ public class ChunkRendererUi : GameObject
         int nbChunk = 0;
         foreach (RegionBuffer region in chunkBufferObjectManager.regions) {
             if(region.haveDrawLastFrame) nbRegionDrawing++;
-            if(region.nbVertex > 0) nbRegionWithVertices++;
+            if(region.nbBlockVertex > 0 || region.nbWaterVertex > 0) nbRegionWithVertices++;
             nbChunk += region.chunkCount;
         }
         ImGui.Text("nbRegionDrawing : " + nbRegionDrawing);

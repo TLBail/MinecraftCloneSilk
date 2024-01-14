@@ -69,6 +69,9 @@ public class ChunkBufferObjectManager
         foreach (RegionBuffer region in regions) {
             region.Draw(cam!, lighting);
         }
+        foreach (RegionBuffer region in regions) {
+            region.DrawWater(cam!, lighting);
+        }
     }
 
     [Logger.Timer]

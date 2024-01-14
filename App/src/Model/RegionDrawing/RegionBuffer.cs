@@ -25,15 +25,19 @@ public class RegionBuffer : IDisposable
     private static BufferObject<BlockData> blockDataBuffer = null!;
     private static BufferObject<CountCompute> countComputeBuffer = null!;
     private static BufferObject<CubeVertex> outputBuffer = null!;
+    private static BufferObject<CubeVertex> waterOutputBuffer = null!;
 
 
 
-    private BufferObject<CubeVertex>? vbo;
-    private VertexArrayObject<CubeVertex, uint>? vao;
+    private BufferObject<CubeVertex>? vboBlock;
+    private BufferObject<CubeVertex>? vboWater;
+    private VertexArrayObject<CubeVertex, uint>? vaoBlock;
+    private VertexArrayObject<CubeVertex, uint>? vaoWater;
     private readonly Texture cubeTexture;
     private GL gl;
     internal static Shader? cubeShader;
-    public int nbVertex { get; private set; }
+    public int nbBlockVertex { get; private set; }
+    public int nbWaterVertex { get; private set; }
 
     public const int CHUNKS_PER_REGION = 16;
 
@@ -75,6 +79,8 @@ public class RegionBuffer : IDisposable
         gl.ShaderStorageBlockBinding(computeShader.handle, inputBufferIndex, 2);
         uint ouputBufferIndex =  gl.GetProgramResourceIndex(computeShader.handle, ProgramInterface.ShaderStorageBlock, "outputBuffer");
         gl.ShaderStorageBlockBinding(computeShader.handle, ouputBufferIndex, 1);
+        uint waterOuputBufferIndex =  gl.GetProgramResourceIndex(computeShader.handle, ProgramInterface.ShaderStorageBlock, "waterOutputBuffer");
+        gl.ShaderStorageBlockBinding(computeShader.handle, waterOuputBufferIndex, 7);
         
         //init block data buffer
         blockDataBuffer = new BufferObject<BlockData>(gl, CHUNKS_PER_REGION * SUPER_CHUNK_NB_BLOCK, BufferTargetARB.ShaderStorageBuffer,
@@ -123,10 +129,15 @@ public class RegionBuffer : IDisposable
         
         
         // init output buffer
-        
         int nbVertexMax = (int)(NB_VERTEX_PER_FACE * NB_FACE_PER_BLOCK * Chunk.CHUNK_SIZE * Chunk.CHUNK_SIZE *
                                 Chunk.CHUNK_SIZE);
         outputBuffer = new BufferObject<CubeVertex>(gl, CHUNKS_PER_REGION * nbVertexMax, BufferTargetARB.ShaderStorageBuffer,
+            BufferUsageARB.StaticCopy);
+        
+        int nbWaterVertexMax = (int)(NB_VERTEX_PER_FACE * NB_FACE_PER_BLOCK * Chunk.CHUNK_SIZE * Chunk.CHUNK_SIZE *
+                                Chunk.CHUNK_SIZE);
+        waterOutputBuffer = new BufferObject<CubeVertex>(gl, CHUNKS_PER_REGION * nbWaterVertexMax,
+            BufferTargetARB.ShaderStorageBuffer,
             BufferUsageARB.StaticCopy);
     }
 
@@ -146,16 +157,29 @@ public class RegionBuffer : IDisposable
 
     public void Draw(Camera cam, Lighting lighting) {
         haveDrawLastFrame = false;
-        if (nbVertex == 0) return;
+        if (nbBlockVertex == 0) return;
         if (!RegionInCameraView(cam)) return;
-        
-        vao!.Bind();
+
+        vaoBlock!.Bind();
         cubeShader!.Use();
         cubeShader.SetUniform("ambientStrength", lighting.lightLevel);
         cubeTexture.Bind();
-        
 
-        gl.DrawArrays(PrimitiveType.Triangles, 0, (uint)nbVertex);
+        gl.DrawArrays(PrimitiveType.Triangles, 0, (uint)nbBlockVertex);
+
+        haveDrawLastFrame = true;
+    }
+
+    public void DrawWater(Camera cam, Lighting lighting) {
+        if (nbWaterVertex == 0) return;
+        if (!RegionInCameraView(cam)) return;
+
+        vaoWater!.Bind();
+        cubeShader!.Use();
+        cubeShader.SetUniform("ambientStrength", lighting.lightLevel);
+        cubeTexture.Bind();
+        gl.DrawArrays(PrimitiveType.Triangles, 0, (uint)nbWaterVertex);
+        
         haveDrawLastFrame = true;
     }
 
@@ -174,9 +198,11 @@ public class RegionBuffer : IDisposable
 
     public unsafe void Update() {
         if (chunkCount == 0) {
-            vbo?.Dispose();
-            vao?.Dispose();
-            nbVertex = 0;
+            vboBlock?.Dispose();
+            vboWater?.Dispose();
+            vaoBlock?.Dispose();
+            vaoWater?.Dispose();
+            nbBlockVertex = 0;
             return;
         }
         
@@ -202,6 +228,9 @@ public class RegionBuffer : IDisposable
         // update countComputeBuffer
         gl.BindBufferBase(BufferTargetARB.ShaderStorageBuffer, 5, countComputeBuffer.handle);
         
+        // update water output buffer
+        gl.BindBufferBase(BufferTargetARB.ShaderStorageBuffer, 7, waterOutputBuffer.handle);
+        
         
         transparentBlocksBuffer.Bind(BufferTargetARB.UniformBuffer);
         textureCoordsBuffer.Bind(BufferTargetARB.UniformBuffer);
@@ -218,30 +247,51 @@ public class RegionBuffer : IDisposable
         gl.DispatchCompute((uint)(4 * chunkCount),4,4);
         gl.MemoryBarrier(MemoryBarrierMask.AllBarrierBits);
         CountCompute countCompute = countComputeBuffer.GetData();
-        nbVertex = countCompute.vertexCount;
+        nbBlockVertex = countCompute.vertexCount;
+        nbWaterVertex = countCompute.waterVertexCount;
         
-        vbo?.Dispose();
-        vao?.Dispose();
-        if(nbVertex == 0) return;
         
-       
-    
-        
-        vbo = new BufferObject<CubeVertex>(gl, nbVertex, BufferTargetARB.ArrayBuffer);
-        // copy output buffer to vbo
-        outputBuffer.Bind(BufferTargetARB.CopyReadBuffer);
-        vbo.Bind(BufferTargetARB.CopyWriteBuffer);
-        gl.CopyBufferSubData(CopyBufferSubDataTarget.CopyReadBuffer, CopyBufferSubDataTarget.CopyWriteBuffer, 0, 0,(uint)( nbVertex * sizeof(CubeVertex)));
-        
-        vao = new VertexArrayObject<CubeVertex, uint>(gl, vbo);
-        vao.Bind();
-        
-        CubeVertex vertex = new CubeVertex();
-        vao.VertexAttributePointer(0, 4, VertexAttribPointerType.Float, vao.GetOffset(ref vertex, ref vertex.position));
-        vao.VertexAttributePointer(1, 2, VertexAttribPointerType.Float, vao.GetOffset(ref vertex, ref vertex.texCoords));
-        vao.VertexAttributeIPointer(2, 1, VertexAttribIType.Int, vao.GetOffset(ref vertex, ref vertex.ambientOcclusion));
-        vao.VertexAttributeIPointer(3, 1, VertexAttribIType.Int, vao.GetOffset(ref vertex, ref vertex.lightLevel));
+        vboBlock?.Dispose();
+        vboWater?.Dispose();
+        vaoBlock?.Dispose();
+        vaoWater?.Dispose();
 
+        if (nbBlockVertex != 0) {
+            vboBlock = new BufferObject<CubeVertex>(gl, nbBlockVertex, BufferTargetARB.ArrayBuffer);
+            // copy output buffer to vbo
+            outputBuffer.Bind(BufferTargetARB.CopyReadBuffer);
+            vboBlock.Bind(BufferTargetARB.CopyWriteBuffer);
+            gl.CopyBufferSubData(CopyBufferSubDataTarget.CopyReadBuffer, CopyBufferSubDataTarget.CopyWriteBuffer, 0, 0,(uint)( nbBlockVertex * sizeof(CubeVertex)));
+        
+        
+            CubeVertex vertex = new CubeVertex();
+            vaoBlock = new VertexArrayObject<CubeVertex, uint>(gl, vboBlock);
+            vaoBlock.Bind();
+        
+            vaoBlock.VertexAttributePointer(0, 4, VertexAttribPointerType.Float, vaoBlock.GetOffset(ref vertex, ref vertex.position));
+            vaoBlock.VertexAttributePointer(1, 2, VertexAttribPointerType.Float, vaoBlock.GetOffset(ref vertex, ref vertex.texCoords));
+            vaoBlock.VertexAttributeIPointer(2, 1, VertexAttribIType.Int, vaoBlock.GetOffset(ref vertex, ref vertex.ambientOcclusion));
+            vaoBlock.VertexAttributeIPointer(3, 1, VertexAttribIType.Int, vaoBlock.GetOffset(ref vertex, ref vertex.lightLevel));
+        }
+
+
+        if (nbWaterVertex != 0) {
+            vboWater = new BufferObject<CubeVertex>(gl, nbWaterVertex, BufferTargetARB.ArrayBuffer);
+            // copy output buffer to vbo
+            waterOutputBuffer.Bind(BufferTargetARB.CopyReadBuffer);
+            vboWater.Bind(BufferTargetARB.CopyWriteBuffer);
+            gl.CopyBufferSubData(CopyBufferSubDataTarget.CopyReadBuffer, CopyBufferSubDataTarget.CopyWriteBuffer, 0, 0,(uint)( nbWaterVertex * sizeof(CubeVertex)));
+        
+            CubeVertex vertex = new CubeVertex();
+            vaoWater = new VertexArrayObject<CubeVertex, uint>(gl, vboWater);
+            vaoWater.Bind();
+        
+            vaoWater.VertexAttributePointer(0, 4, VertexAttribPointerType.Float, vaoWater.GetOffset(ref vertex, ref vertex.position));
+            vaoWater.VertexAttributePointer(1, 2, VertexAttribPointerType.Float, vaoWater.GetOffset(ref vertex, ref vertex.texCoords));
+            vaoWater.VertexAttributeIPointer(2, 1, VertexAttribIType.Int, vaoWater.GetOffset(ref vertex, ref vertex.ambientOcclusion));
+            vaoWater.VertexAttributeIPointer(3, 1, VertexAttribIType.Int, vaoWater.GetOffset(ref vertex, ref vertex.lightLevel));
+            
+        }
     }
     
     
@@ -469,8 +519,10 @@ public class RegionBuffer : IDisposable
     }
 
     public void Dispose() {
-        vbo?.Dispose();
-        vao?.Dispose();
+        vboBlock?.Dispose();
+        vaoBlock?.Dispose();
+        vboWater?.Dispose();
+        vaoWater?.Dispose();
     }
 
     public bool HaveAvailableSpace() {
@@ -498,12 +550,12 @@ public class RegionBuffer : IDisposable
     internal struct CountCompute
     {
         public int vertexCount{get;set;}
-        public int blockCount{get;set;}
+        public int waterVertexCount{get;set;}
         public int firstIndex{get;set;}
         public int vertexIndex{get;set;}
 
         public override string ToString() {
-            return $"vertexCount : {vertexCount} blockCount : {blockCount} firstIndex : {firstIndex} vertexIndex : {vertexIndex}";
+            return $"vertexCount : {vertexCount} blockCount : {waterVertexCount} firstIndex : {firstIndex} vertexIndex : {vertexIndex}";
         }
     }
 }

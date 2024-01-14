@@ -1,6 +1,6 @@
 {
     "name": "water",
-    "transparent": false,
+    "transparent": true,
     "id": 10,
     "texture": {
         "TOP": [
