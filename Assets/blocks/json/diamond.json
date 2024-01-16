@@ -1,0 +1,31 @@
+﻿{
+  "name": "diamond",
+  "transparent": false,
+  "id": 2,
+  "texture": {
+    "TOP": [
+      2,
+      2
+    ],
+    "BOTTOM": [
+      2,
+      2
+    ],
+    "LEFT": [
+      2,
+      2
+    ],
+    "RIGHT": [
+      2,
+      2
+    ],
+    "FRONT": [
+      2,
+      2
+    ],
+    "BACK": [
+      2,
+      2
+    ]
+  }
+}

@@ -13,12 +13,15 @@ public class WorldNaturalGeneration : IWorldGenerator
     private BlockData sand;
     private BlockData grass;
     private BlockData stone;
+    private BlockData diamond;
     
     private FastNoiseLite conantinalnessNoiseGenerator;
     private FastNoiseLite amplitudeNoiseGenerator;
     
     private FastNoiseLite treeNoiseGenerator;
     private FastNoiseLite treeProbabilityNoiseGenerator;
+    
+    private FastNoiseLite diamondNoiseGenerator;
     
 
     public WorldNaturalGeneration()
@@ -46,6 +49,10 @@ public class WorldNaturalGeneration : IWorldGenerator
         treeProbabilityNoiseGenerator = new FastNoiseLite(seed * 4);
         treeProbabilityNoiseGenerator.SetNoiseType(FastNoiseLite.NoiseType.Perlin);
         treeProbabilityNoiseGenerator.SetFrequency(0.0005f);
+
+        diamondNoiseGenerator = new FastNoiseLite(seed * 4);
+        diamondNoiseGenerator.SetNoiseType(FastNoiseLite.NoiseType.Perlin);
+        diamondNoiseGenerator.SetFrequency(0.2f);
         
         
         if(blockFactory == null) blockFactory = BlockFactory.GetInstance();
@@ -54,6 +61,7 @@ public class WorldNaturalGeneration : IWorldGenerator
         sand = blockFactory.GetBlockData("sand");
         grass = blockFactory.GetBlockData("grass");
         stone = blockFactory.GetBlockData("stone");
+        diamond = blockFactory.GetBlockData("diamond");
         
     }
 
@@ -80,10 +88,28 @@ public class WorldNaturalGeneration : IWorldGenerator
         for (int x = 0; x < Chunk.CHUNK_SIZE; x++) {
             for (int y = Chunk.CHUNK_SIZE - 1; y >= 0; y--) {
                 for (int z = 0; z < Chunk.CHUNK_SIZE; z++) {
+                    int globalY = y + position.Y;
+                    if (globalY < -60) {
+                        float noise = noiseGenerator.GetNoise(position.X + x, globalY, position.Z + z);
+                        float threasholdAir = -0.2f;
+                        
+                        
+                        if (noise >= threasholdAir) {
+                            noise = diamondNoiseGenerator.GetNoise(position.X + x, globalY, position.Z + z);
+                            float threasholdDiamond = -0.8f;
+                            if (noise <= threasholdDiamond) {
+                                blocks[x,y,z] = diamond;
+                            } else {
+                                blocks[x,y,z] = stone;
+                            }
+                        }
+                        continue;
+                        
+                    }
                     
                     bool isAir = IsAirBlock(position.X + x,position.Y + y,position.Z + z);   
                     
-                    if(isAir && position.Y + y <= 0) {
+                    if(isAir && globalY <= 0) {
                         blocks[x,y,z] = water;
                         continue;
                     }
@@ -102,7 +128,7 @@ public class WorldNaturalGeneration : IWorldGenerator
                         }
                     } else {
                         if (y < Chunk.CHUNK_SIZE - 1 &&  blocks[x, y + 1, z].id == 0) {
-                            if (y + position.Y < 4) {
+                            if (globalY < 4) {
                                 blocks[x,y,z] = sand;
                             } else {
                                 blocks[x, y, z] = grass;
