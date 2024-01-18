@@ -18,6 +18,7 @@ public class ChunkManager : IChunkManager
     private ChunkPool chunkPool;
     private ChunkLoader chunkLoader;
     private ChunkUnloader chunkUnloader;
+    private IChunkStorage chunkStorage;
 
     public Vector3D<int> centerChunk = new Vector3D<int>(-1);
 
@@ -28,6 +29,7 @@ public class ChunkManager : IChunkManager
         chunkLoader = new ChunkLoader(ChunkLoader.ChunkLoaderMode.ASYNC);
         chunkPool = new ChunkPool(this, worldGenerator, chunkStorage);
         chunkUnloader = new ChunkUnloader(this, chunkPool, chunkStorage);
+        this.chunkStorage = chunkStorage;
     }
 
     [Logger.Timer]
@@ -45,10 +47,15 @@ public class ChunkManager : IChunkManager
     public bool ContainsKey(Vector3D<int> position) => chunks.ContainsKey(position);
 
     public void Clear() {
+        while(chunkLoader.HaveTasks()) chunkLoader.Update();
+        
         List<Chunk> chunksCopy = new List<Chunk>(chunks.Values);
         foreach (Chunk chunk in chunksCopy) {
             chunkUnloader.ForceUnloadChunk(chunk);
         }
+        //Assert chunks is empty
+        Debug.Assert(chunks.Count == 0);
+        
     }
 
     public Chunk GetChunk(Vector3D<int> position) {

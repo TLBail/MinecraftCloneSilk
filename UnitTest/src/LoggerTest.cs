@@ -6,7 +6,6 @@ public class LoggerTest
 {
     [Test]
     public void testLogger() {
-        Directory.SetCurrentDirectory("./../../../../");
         ChromeTrace.Init();
 
         using (ChromeTrace.Profile("Test"))

@@ -26,15 +26,18 @@ public class World : GameObject
     public IWorldGenerator worldGeneration;
     public WorldMode worldMode { get; set; }
     public ChunkManager chunkManager;
-    private RegionStorage regionStorage;
+    private IChunkStorage chunkStorage;
     public Lighting lighting { get; private set; }
-    public World(Game game, WorldMode worldMode = WorldMode.EMPTY) : base(game) {
+    
+    public World(Game game) : this(game, WorldMode.EMPTY) { }
+    public World(Game game, WorldMode worldMode) : this(game, worldMode, null) { }
+    public World(Game game, WorldMode worldMode, string? saveLocation) : base(game) {
         this.worldMode = worldMode;
         this.lighting = new Lighting();
         worldUi = new WorldUi(this, lighting);
         worldGeneration = new WorldNaturalGeneration();
-        regionStorage = new RegionStorage("./Worlds/newWorld");
-        chunkManager = new ChunkManager(radius, worldGeneration, regionStorage);
+        chunkStorage = saveLocation is not null ? new RegionStorage(saveLocation) : new NullChunkStorage();
+        chunkManager = new ChunkManager(radius, worldGeneration, chunkStorage);
     }
 
     protected override void Start() {
@@ -55,7 +58,7 @@ public class World : GameObject
     }
 
     protected override void Stop() {
-        regionStorage.Dispose();
+        chunkStorage.Dispose();
     }
 
     public void SetBlock(string blockName, Vector3D<int> position) {

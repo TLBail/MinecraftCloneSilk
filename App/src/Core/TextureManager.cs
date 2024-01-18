@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Diagnostics;
+using System.Text.Json;
 using MinecraftCloneSilk.GameComponent;
 using Silk.NET.OpenGL;
 
@@ -42,6 +43,7 @@ public class TextureManager
     }
     
     public void Load(GL gl) {
+        textures.Clear();
         string jsonString = File.ReadAllText(PATH_TO_TEXTURES_JSON);
         TexturesJson? textJson = JsonSerializer.Deserialize<TexturesJson>(jsonString);
         if (textJson == null) {
@@ -56,7 +58,6 @@ public class TextureManager
                     if (Path.GetExtension(subfilepath).Equals(".png"))
                         textures.Add(Path.GetFileName(subfilepath), new Texture(gl,subfilepath));
                 }
-
             } else {
                 textures.Add(Path.GetFileName(filepath), new Texture(gl,filepath));
             }

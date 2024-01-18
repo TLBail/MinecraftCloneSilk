@@ -18,7 +18,6 @@ public class RegionStorage : IChunkStorage, IDisposable
     public void ChunkUnloaderProcessor() {
         foreach (Chunk chunk in chunksToSave.GetConsumingEnumerable()) {
             SaveChunk(chunk);
-            chunk.blockModified = false;
             chunk.RemoveRequiredByChunkSaver();
         }
     }

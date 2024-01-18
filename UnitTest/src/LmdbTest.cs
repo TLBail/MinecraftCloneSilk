@@ -13,11 +13,7 @@ public class LmdbTest
 {
 
     public const string pathToFolder = "./Worlds/newWorld";
-    [OneTimeSetUp]
-    public void setUp() {
-        Directory.SetCurrentDirectory("./../../../../");
-        
-    }
+    
     [SetUp]
     public void setup() {
         DirectoryInfo directory = Directory.CreateDirectory("./Worlds/newWorld");

@@ -181,4 +181,8 @@ public class ChunkLoader
         }
         return null;
     }
+
+    public bool HaveTasks() {
+        return chunkTasks.Count > 0 || chunksToFinish.Count > 0;
+    }
 }

@@ -78,6 +78,7 @@ public sealed class Game
 #if DEBUG
         ChromeTrace.Dispose();
 #endif
+        instance = null;
     }
 
     [Logger.Timer]

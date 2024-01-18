@@ -150,7 +150,6 @@ namespace MinecraftCloneSilk.Core
         
         private void OnUpdate(double deltaTime)
         {
-
             if (!running) {
                 CloseWindow();
                 return;
@@ -159,7 +158,7 @@ namespace MinecraftCloneSilk.Core
             game.Update(deltaTime);
         }
 
-        private unsafe void OnRender(double delta)
+        private void OnRender(double delta)
         {
 
             Gl.Enable(EnableCap.DepthTest);

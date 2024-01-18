@@ -29,7 +29,6 @@ public class ChunkStorage : IChunkStorage
         Task task = new Task(() =>
         {
             SaveChunk(chunk);
-            chunk.blockModified = false;
             chunk.RemoveRequiredByChunkSaver();
         });
         task.Start();
@@ -85,6 +84,8 @@ public class ChunkStorage : IChunkStorage
             }
             binaryWriter.Write(bytes);
         }
+        
+        chunk.blockModified = false;
     } 
     
     
@@ -185,4 +186,7 @@ public class ChunkStorage : IChunkStorage
         }
         return r;
     }
+    
+    
+    public void Dispose() { }
 }

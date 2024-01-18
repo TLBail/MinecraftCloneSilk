@@ -81,8 +81,31 @@ public class ChunkUnloader
     }
 
     internal void ForceUnloadChunk(Chunk chunkToUnload) {
-        if(chunkToUnload.IsRequiredByChunkLoader()) return;
-        chunkManager.chunks.TryRemove(new KeyValuePair<Vector3D<int>, Chunk>(chunkToUnload.position, chunkToUnload));
+        Console.WriteLine("force unload chunk" + chunkToUnload.position + " " + chunkToUnload.chunkState);
+        if(chunkToUnload.IsRequiredByChunkLoader() || chunkToUnload.IsRequiredByChunkSaver()) throw new Exception("chunk required by chunkLoader or chunkSaver");
+        
+        
+        if (chunkToUnload.chunkState == ChunkState.DRAWABLE) {
+            chunkToUnload.SetChunkState(ChunkState.BLOCKGENERATED);
+            chunkToUnload.FinishChunkState();
+        }
+        
+        if (chunkToUnload.blockModified) {
+            chunkStorage.SaveChunk(chunkToUnload);
+        }
+        
+        foreach (FaceExtended face in FaceExtendedConst.FACES) {
+            Vector3D<int> positionChunkToTest = chunkToUnload.position + (FaceExtendedOffset.GetOffsetOfFace(face) * Chunk.CHUNK_SIZE);
+            if (chunkManager.chunks.TryGetValue(positionChunkToTest, out Chunk chunk) &&
+                         chunk.GetMinimumChunkStateOfNeighbors() > ChunkState.EMPTY) {
+                ForceUnloadChunk(chunk);
+            }
+        }
+        
+        Console.WriteLine(chunkToUnload.position);
+        if (chunkManager.chunks.TryRemove(new KeyValuePair<Vector3D<int>, Chunk>(chunkToUnload.position, chunkToUnload))) {
+            chunkPool.ReturnChunk(chunkToUnload);
+        } 
     }
 
 

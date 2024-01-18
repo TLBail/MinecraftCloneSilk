@@ -19,7 +19,6 @@ public class ChunkStorageTest
     
     [OneTimeSetUp]
     public void SetUp() {
-        Directory.SetCurrentDirectory("./../../../../");
         Chunk.InitStaticMembers(null, BlockFactory.GetInstance());
         chunkStorage = new ChunkStorage("./Worlds/newWorld");
         chunkManagerEmpty = new ChunkManagerEmpty(new WorldFlatGeneration(), chunkStorage);

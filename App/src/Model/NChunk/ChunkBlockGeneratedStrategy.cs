@@ -13,14 +13,10 @@ public class ChunkBlockGeneratedStrategy : ChunkStrategy
 
     private ChunkState minimumChunkStateOfNeighborsValue = ChunkState.EMPTY;
     public override ChunkState MinimumChunkStateOfNeighbors() => minimumChunkStateOfNeighborsValue;
-    
-
     public override void SetBlock(int x, int y, int z, string name) {
         chunk.blocks[x, y, z].id = Chunk.blockFactory!.GetBlockIdByName(name);
     }
-
-    public ChunkBlockGeneratedStrategy(Chunk chunk) : base(chunk) {
-    }
+    public ChunkBlockGeneratedStrategy(Chunk chunk) : base(chunk) { }
 
     public override void Init() {
         chunk.chunkState = ChunkState.BLOCKLOADING;
@@ -259,15 +255,4 @@ public class ChunkBlockGeneratedStrategy : ChunkStrategy
         new StructureBlock(1, 4, -2, 18),
         new StructureBlock(-1, 4, -2, 18),
     };
-
-    static ChunkBlockGeneratedStrategy() {
-        FaceExtended[] faces = (FaceExtended[])Enum.GetValues(typeof(FaceExtended));
-        DependatesChunkOffset = new Vector3D<int>[faces.Length];
-        for (int i = 0; i < faces.Length; i++) {
-            DependatesChunkOffset[i] = FaceExtendedOffset.GetOffsetOfFace(faces[i]) * Chunk.CHUNK_SIZE;
-        }
-    }
-
-    public static readonly Vector3D<int>[] DependatesChunkOffset;
-
 }

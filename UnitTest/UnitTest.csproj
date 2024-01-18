@@ -13,6 +13,14 @@
         <ChromeTracing>false</ChromeTracing>
     </PropertyGroup>
 
+    <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+        <Exec Command="xcopy /E /I /Y &quot;$(ProjectDir)\..\Assets&quot; &quot;$(OutDir)Assets&quot;" />
+    </Target>
+    <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+        <Exec Command="xcopy /E /I /Y &quot;$(ProjectDir)\..\Shader&quot; &quot;$(OutDir)Shader&quot;" />
+    </Target>
+
+
     <ItemGroup>
         <PackageReference Include="BenchmarkDotNet" Version="0.13.2" />
         <PackageReference Include="LightningDB" Version="0.15.0" />

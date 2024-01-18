@@ -16,7 +16,6 @@ public class PlayerTest
 
     [OneTimeSetUp]
     public  void InitGame() {
-        Directory.SetCurrentDirectory("./../../../../");
         Scene scene = new Scene(new List<InitGameData>()
             {
                 new (typeof(Player).FullName!),
@@ -50,7 +49,7 @@ public class PlayerTest
 
     [TearDown]
     public async Task TearDown() {
-        await game.WaitForFrame(1);
+        await game.WaitForFrame(10);
         world = (World)game.gameObjects[typeof(World).FullName!];
         world.chunkManager.Clear();
         await game.WaitForFrame(10);

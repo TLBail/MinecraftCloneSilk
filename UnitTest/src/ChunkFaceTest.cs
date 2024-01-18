@@ -11,7 +11,6 @@ public class ChunkFaceTest
 
     [OneTimeSetUp]
     public void setup() {
-        Directory.SetCurrentDirectory("./../../../../");
         blockFactory = BlockFactory.GetInstance();
     }
 

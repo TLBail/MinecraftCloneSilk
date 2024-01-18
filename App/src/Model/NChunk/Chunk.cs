@@ -81,18 +81,18 @@ public class Chunk
             case ChunkState.GENERATEDTERRAIN:
                 return true;
             case ChunkState.BLOCKGENERATED:
-                return addTask(chunkLoader, chunkLoadingTask, ChunkState.GENERATEDTERRAIN, ChunkState.GENERATEDTERRAIN);
+                return AddTask(chunkLoader, chunkLoadingTask, ChunkState.GENERATEDTERRAIN, ChunkState.GENERATEDTERRAIN);
             case ChunkState.LIGHTING:
-                return addTask(chunkLoader, chunkLoadingTask, ChunkState.BLOCKGENERATED, ChunkState.BLOCKGENERATED);
+                return AddTask(chunkLoader, chunkLoadingTask, ChunkState.BLOCKGENERATED, ChunkState.BLOCKGENERATED);
             case ChunkState.DRAWABLE:
-                return addTask(chunkLoader, chunkLoadingTask, ChunkState.BLOCKGENERATED, ChunkState.LIGHTING);
+                return AddTask(chunkLoader, chunkLoadingTask, ChunkState.BLOCKGENERATED, ChunkState.LIGHTING);
             default:
                 throw new ArgumentException("ChunkState not found");
         }
     }
 
 
-    private bool addTask(ChunkLoader chunkLoader, ChunkLoadingTask chunkLoadingTask, ChunkState chunkStateGoalNeighboor, ChunkState chunkStateGoal) {   
+    private bool AddTask(ChunkLoader chunkLoader, ChunkLoadingTask chunkLoadingTask, ChunkState chunkStateGoalNeighboor, ChunkState chunkStateGoal) {   
         ChunkWaitingTask chunkWaitingTask = new ChunkWaitingTask(chunkLoadingTask, FaceExtendedConst.FACES.Count);
         foreach (FaceExtended face in FaceExtendedConst.FACES) {
             Vector3D<int> positionChunkToLoad = position + (FaceExtendedOffset.GetOffsetOfFace(face) * CHUNK_SIZE);
@@ -179,6 +179,8 @@ public class Chunk
     public void Reset(Vector3D<int> position, IChunkManager chunkManager, IWorldGenerator worldGenerator, IChunkStorage chunkStorage) {
         System.Diagnostics.Debug.Assert(!IsRequiredByChunkLoader(), "is required by chunk loader");
         System.Diagnostics.Debug.Assert(!IsRequiredByChunkSaver(), "is required by chunk unloader");
+        System.Diagnostics.Debug.Assert(!blockModified, "block is modified but not saved");
+        
         if(IsRequiredByChunkLoader()) {
             throw new Exception("Chunk is still required by chunk loader");
         }

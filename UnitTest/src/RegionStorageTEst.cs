@@ -18,7 +18,6 @@ public class RegionStorageTEst
     
     [OneTimeSetUp]
     public void SetUp() {
-        Directory.SetCurrentDirectory("./../../../../");
         Chunk.InitStaticMembers(null, BlockFactory.GetInstance());
         DirectoryInfo directory = Directory.CreateDirectory("./Worlds/newWorld");
         foreach (var file in Directory.GetFiles("./Worlds/newWorld")) {
