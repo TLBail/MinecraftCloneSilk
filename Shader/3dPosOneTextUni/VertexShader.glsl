@@ -5,7 +5,7 @@ layout (location = 2) in int ambiantOcclusion;
 layout (location = 3) in int lightLevel;
 
 out vec2 TexCoord;
-out vec4 lightColor;
+out vec3 lightColor;
 
 layout (std140, binding = 0) uniform Matrices{
     mat4 projection;
@@ -16,7 +16,7 @@ void main()
 {
     gl_Position = projection * view * aPos;
     TexCoord = vec2(aTexCoord.x, aTexCoord.y);
-    lightColor = vec4(1.0f, 1.0f, 1.0f, 1.0f);
+    lightColor = vec3(1.0f, 1.0f, 1.0f);
     float factor = 1.0f;
     
     if(ambiantOcclusion == 2){
@@ -30,6 +30,6 @@ void main()
     }
     
     factor *= float(lightLevel) / 15.0f;
-    lightColor = vec4(lightColor.r * factor, lightColor.g * factor, lightColor.b * factor, 1.0f);
+    lightColor = vec3(lightColor.r * factor, lightColor.g * factor, lightColor.b * factor);
     
 } 

@@ -36,6 +36,14 @@ public static class ChunkFaceUtils
 	}
 
 
+    public static ChunkFace GetChunkFaceFlags(BlockFactory blockFactory, ChunkData chunkData) {
+        if(chunkData.IsOnlyOneBlock() ) {
+            if (chunkData.GetBlock().id == 0) {
+                return ChunkFace.EMPTYCHUNK;
+            }
+        }
+        return GetChunkFaceFlags(blockFactory, chunkData.GetBlocks());
+    }
     public static ChunkFace GetChunkFaceFlags(BlockFactory blockFactory, BlockData[,,] blocks) {
         ChunkFace faceFlag = ChunkFace.EMPTYCHUNK |
                              ChunkFace.TOPOPAQUE | ChunkFace.TOPTRANSPARENT |

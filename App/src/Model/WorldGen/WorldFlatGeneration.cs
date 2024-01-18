@@ -23,7 +23,7 @@ public class WorldFlatGeneration : IWorldGenerator
     }
     
     
-    public void GenerateTerrain(Vector3D<int> position, BlockData[,,] blocks)
+    public void GenerateTerrain(Vector3D<int> position, ChunkData chunkData)
     {
 
         for (int i = 0; i < Chunk.CHUNK_SIZE; i++) {
@@ -40,21 +40,21 @@ public class WorldFlatGeneration : IWorldGenerator
                     int localY = (int)(globalY % Chunk.CHUNK_SIZE);
                     if (localY < 0)
                         localY = (int)(Chunk.CHUNK_SIZE + localY);
-                    blocks[(int)x,localY,(int)z] = blockFactory.GetBlockData("grass");
+                    chunkData.SetBlock((int)x,localY,(int)z,  blockFactory.GetBlockData("grass"));
                     for (int g = localY - 1; g >= 0 && g >= localY - 4; g--)
                     {
-                        blocks[(int)x,g,(int)z] = blockFactory.GetBlockData("stone");
+                        chunkData.SetBlock((int)x,g,(int)z,  blockFactory.GetBlockData("stone"));
                     }
                     for (int g = localY - 5; g >= 0; g--)
                     {
-                        blocks[(int)x,g,(int)z] = blockFactory.GetBlockData("stone");
+                        chunkData.SetBlock((int)x,g,(int)z,  blockFactory.GetBlockData("stone"));
                     }
                 }
                 else if (globalY >= position.Y + Chunk.CHUNK_SIZE)
                 {
                     for (int y = 0; y < Chunk.CHUNK_SIZE; y++)
                     {
-                        blocks[j, y,i] = blockFactory.GetBlockData("stone");
+                        chunkData.SetBlock(j, y,i,  blockFactory.GetBlockData("stone"));
                     }
                 }
             }

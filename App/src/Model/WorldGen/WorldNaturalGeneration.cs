@@ -81,10 +81,8 @@ public class WorldNaturalGeneration : IWorldGenerator
         return noise <= threasholdAir;
     }
     
-    public void GenerateTerrain(Vector3D<int> position, BlockData[,,] blocks)
+    public void GenerateTerrain(Vector3D<int> position, ChunkData chunkData)
     {
-        
-        
         for (int x = 0; x < Chunk.CHUNK_SIZE; x++) {
             for (int y = Chunk.CHUNK_SIZE - 1; y >= 0; y--) {
                 for (int z = 0; z < Chunk.CHUNK_SIZE; z++) {
@@ -98,9 +96,9 @@ public class WorldNaturalGeneration : IWorldGenerator
                             noise = diamondNoiseGenerator.GetNoise(position.X + x, globalY, position.Z + z);
                             float threasholdDiamond = -0.8f;
                             if (noise <= threasholdDiamond) {
-                                blocks[x,y,z] = diamond;
+                                chunkData.SetBlock(x,y,z,diamond);
                             } else {
-                                blocks[x,y,z] = stone;
+                                chunkData.SetBlock(x,y,z,stone);
                             }
                         }
                         continue;
@@ -110,7 +108,7 @@ public class WorldNaturalGeneration : IWorldGenerator
                     bool isAir = IsAirBlock(position.X + x,position.Y + y,position.Z + z);   
                     
                     if(isAir && globalY <= 0) {
-                        blocks[x,y,z] = water;
+                        chunkData.SetBlock(x,y,z,water);
                         continue;
                     }
                     
@@ -119,22 +117,22 @@ public class WorldNaturalGeneration : IWorldGenerator
                         bool upperIsAir = IsAirBlock(position.X + x,position.Y + y + 1,position.Z + z);
                         if(upperIsAir) {
                             if (y + position.Y < 4) {
-                                blocks[x,y,z] = sand;
+                                chunkData.SetBlock(x,y,z,sand);
                             } else {
-                                blocks[x, y, z] = grass;
+                                chunkData.SetBlock(x, y, z,grass);
                             }
                         } else {
-                            blocks[x,y,z] = stone;
+                            chunkData.SetBlock(x,y,z,stone);
                         }
                     } else {
-                        if (y < Chunk.CHUNK_SIZE - 1 &&  blocks[x, y + 1, z].id == 0) {
+                        if (y < Chunk.CHUNK_SIZE - 1 && chunkData.GetBlock(x, y + 1, z).id == 0) {
                             if (globalY < 4) {
-                                blocks[x,y,z] = sand;
+                                chunkData.SetBlock(x,y,z,sand);
                             } else {
-                                blocks[x, y, z] = grass;
+                                chunkData.SetBlock(x, y, z,grass);
                             }
                         } else {
-                            blocks[x,y,z] = stone;
+                            chunkData.SetBlock(x,y,z,stone);
                         }
                     }
                         

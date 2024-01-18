@@ -62,7 +62,7 @@ public class ChunkDrawableStrategy : ChunkStrategy
     }
 
     public override void UpdateChunkVertex() {
-        chunkFace = ChunkFaceUtils.GetChunkFaceFlags(Chunk.blockFactory!, chunk.blocks);
+        chunkFace = ChunkFaceUtils.GetChunkFaceFlags(Chunk.blockFactory!, chunk.chunkData);
         UpdateVerticesNextFrame();
     }
 
@@ -85,14 +85,23 @@ public class ChunkDrawableStrategy : ChunkStrategy
 
 
     public override void SetBlock(int x, int y, int z, string name) {
-        chunk.blocks[x, y, z].id = Chunk.blockFactory!.GetBlockIdByName(name);
+        chunk.chunkData.SetBlock(x, y, z,Chunk.blockFactory!.GetBlockData(name));
+        UpdateLight(x, y, z);
         UpdateBlocksAround(x, y, z);
         UpdateChunkVertex();
     }
 
+    private void UpdateLight(int x, int y, int z) {
+        if (chunk.chunkData.IsOnlyOneBlock()) {
+            //Todo unfuck this
+        } else {
+            chunk.chunkData.GetBlocks()[x, y, z].data1 = 15;
+        }
+    }
+
 
     private void InitChunkFaces() {
-        chunkFace = ChunkFaceUtils.GetChunkFaceFlags(Chunk.blockFactory!, chunk.blocks);
+        chunkFace = ChunkFaceUtils.GetChunkFaceFlags(Chunk.blockFactory!, chunk.chunkData);
         if (IsChunkVisible()) {
             return;
         }

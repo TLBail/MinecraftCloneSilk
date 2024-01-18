@@ -15,7 +15,7 @@ public class ChunkEmptyStrategy : ChunkStrategy
     }
 
     public override void SetBlock(int x, int y, int z, string name) {
-        chunk.blocks[x, y, z].id = Chunk.blockFactory!.GetBlockIdByName(name);
+        chunk.chunkData.SetBlock(x, y, z,Chunk.blockFactory!.GetBlockData(name));
     }
 
     public override Block GetBlock(int x, int y, int z) {

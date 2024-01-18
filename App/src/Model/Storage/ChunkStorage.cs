@@ -92,10 +92,16 @@ public class ChunkStorage : IChunkStorage
 
     private static Dictionary<int, BlockData> GetPallette(Chunk chunk) {
         Dictionary<int, BlockData> palette = new Dictionary<int, BlockData>();
+        if (chunk.chunkData.IsOnlyOneBlock()) {
+            palette.Add(chunk.chunkData.GetBlock().id, chunk.chunkData.GetBlock());
+            return palette;
+        }
+        
+        BlockData[,,] blocks = chunk.chunkData.GetBlocks();
         for (int x = 0; x < Chunk.CHUNK_SIZE; x++) {
             for (int y = 0; y < Chunk.CHUNK_SIZE; y++) {
                 for (int z = 0; z < Chunk.CHUNK_SIZE; z++) {
-                    BlockData blockData = chunk.blocks[x, y, z];
+                    BlockData blockData = blocks[x, y, z];
                     palette.TryAdd(blockData.id, blockData);
                 }
             }
@@ -151,6 +157,7 @@ public class ChunkStorage : IChunkStorage
         }
 
         if (nbBlockInPalette > 1) {
+            BlockData[,,] blocks = chunk.chunkData.GetBlocks();
             int nbBytePerBlock = Log8Ceil(nbBlockInPalette);
             for (int x = 0; x < Chunk.CHUNK_SIZE; x++) {
                 for (int y = 0; y < Chunk.CHUNK_SIZE; y++) {
@@ -159,18 +166,12 @@ public class ChunkStorage : IChunkStorage
                         for (int j = 0; j < nbBytePerBlock; j++) {
                             indexPalette += br.ReadByte() << (j * 8);
                         }
-                        chunk.blocks[x,y,z] = blocksData[indexPalette];
+                        blocks[x,y,z] = blocksData[indexPalette];
                     }
                 }
             }   
         } else if(nbBlockInPalette == 1) {
-            for (int x = 0; x < Chunk.CHUNK_SIZE; x++) {
-                for (int y = 0; y < Chunk.CHUNK_SIZE; y++) {
-                    for (int z = 0; z < Chunk.CHUNK_SIZE; z++) {
-                        chunk.blocks[x,y,z] = blocksData[0];
-                    }
-                }
-            }
+            chunk.chunkData.SetBlocks(blocksData[0]);
         }
     }
     

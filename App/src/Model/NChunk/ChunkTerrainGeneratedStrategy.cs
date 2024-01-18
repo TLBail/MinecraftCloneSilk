@@ -26,8 +26,7 @@ public class ChunkTerrainGeneratedStrategy : ChunkStrategy
     public override ChunkState GetChunkStateOfStrategy() => ChunkState.GENERATEDTERRAIN;
     
     public override void SetBlock(int x, int y, int z, string name) {
-        chunk.blockModified = true;
-        chunk.blocks[x, y, z].id = Chunk.blockFactory!.GetBlockIdByName(name);
+        chunk.chunkData.SetBlock(x, y, z,Chunk.blockFactory!.GetBlockData(name));
     }
     
     
@@ -38,6 +37,6 @@ public class ChunkTerrainGeneratedStrategy : ChunkStrategy
 
     private void GenerateTerrain()
     {
-        chunk.worldGenerator.GenerateTerrain(chunk.position, chunk.blocks);
+        chunk.worldGenerator.GenerateTerrain(chunk.position, chunk.chunkData);
     }
 }

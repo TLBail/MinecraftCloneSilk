@@ -44,7 +44,7 @@ public abstract class ChunkStrategy
                 .GetBlockData(new Vector3D<int>(localPosition.X, localPosition.Y,
                     localPosition.Z - (int)Chunk.CHUNK_SIZE));
         } else {
-            return chunk.blocks[localPosition.X, localPosition.Y, localPosition.Z];
+            return chunk.chunkData.GetBlock(localPosition.X, localPosition.Y, localPosition.Z);
         }
     }
 

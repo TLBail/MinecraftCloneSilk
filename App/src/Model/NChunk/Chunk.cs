@@ -15,7 +15,7 @@ namespace MinecraftCloneSilk.Model.NChunk;
 public class Chunk
 {
     public Vector3D<int> position;
-    internal BlockData[,,] blocks;
+    internal ChunkData chunkData = new();
 
     public const int CHUNK_SIZE = 16;
 
@@ -51,7 +51,6 @@ public class Chunk
         this.position = position;
         this.aabbCube = new AABBCube(new Vector3(position.X, position.Y, position.Z), new Vector3(position.X + Chunk.CHUNK_SIZE, position.Y + Chunk.CHUNK_SIZE, position.Z + Chunk.CHUNK_SIZE));
         this.chunkStateInStorage = ChunkState.UNKNOW;
-        blocks = new BlockData[CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE];
     }
 
     public static unsafe void InitStaticMembers(Shader? newCubeShader, BlockFactory? newBlockFactory, GL? gl = null) {
@@ -195,7 +194,7 @@ public class Chunk
         chunkState = DEFAULTSTARTINGCHUNKSTATE;
         this.chunkStrategy = new ChunkEmptyStrategy(this);
         blockModified = false;
-        Array.Clear(blocks);
+        chunkData.Reset();
     }
     
 

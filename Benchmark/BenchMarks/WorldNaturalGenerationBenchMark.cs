@@ -1,6 +1,7 @@
 ﻿using BenchmarkDotNet.Attributes;
 using MinecraftCloneSilk.Core;
 using MinecraftCloneSilk.Model;
+using MinecraftCloneSilk.Model.NChunk;
 using MinecraftCloneSilk.Model.WorldGen;
 using Silk.NET.Maths;
 
@@ -12,16 +13,16 @@ public class WorldNaturalGenerationBenchMark
     public int bob = 0;
     public static int dagniel = 0; 
     WorldNaturalGeneration worldNaturalGeneration;
-    BlockData[,,] blocks;
+    private ChunkData chunkData;
     Vector3D<int> position = Vector3D<int>.Zero;
     public WorldNaturalGenerationBenchMark() {
-        blocks = new BlockData[16, 16, 16];
+        chunkData = new ChunkData();
         worldNaturalGeneration = new WorldNaturalGeneration();
     }
 
     [Benchmark]
     public void createAllBlockForAChunk() {
-        worldNaturalGeneration.GenerateTerrain(position, blocks);
+        worldNaturalGeneration.GenerateTerrain(position, chunkData);
     }
     
 }
