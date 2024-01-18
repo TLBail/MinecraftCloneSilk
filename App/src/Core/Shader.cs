@@ -15,6 +15,7 @@ namespace MinecraftCloneSilk.Core
         private uint handle;
         private GL gl;
         private bool disposed = false;
+        private Dictionary<string, int> uniformLocations = new Dictionary<string, int>();
         
         public Shader(GL gl, string vertexPath, string fragmentPath)
         {
@@ -47,46 +48,26 @@ namespace MinecraftCloneSilk.Core
             return gl.GetUniformBlockIndex(handle, name);
         }
 
-        public void SetUniform(string name, int value)
-        {
-            int location = gl.GetUniformLocation(handle, name);
-            if (location == -1)
-            {
-                throw new Exception($"{name} uniform not found on shader.");
+        public void SetUniform(string name, int value) => gl.Uniform1(GetUniformLocation(name), value);
+
+        public int GetUniformLocation(string name) {
+            if (!uniformLocations.ContainsKey(name)) {
+                int location = gl.GetUniformLocation(handle, name);
+                if (location == -1)
+                {
+                    throw new Exception($"{name} uniform not found on shader.");
+                }
+                uniformLocations.Add(name, gl.GetUniformLocation(handle, name));
             }
-            gl.Uniform1(location, value);
+            return uniformLocations[name];
         }
 
-        public unsafe void SetUniform(string name, Matrix4x4 value)
-        {
-            //A new overload has been created for setting a uniform so we can use the transform in our shader.
-            int location = gl.GetUniformLocation(handle, name);
-            if (location == -1)
-            {
-                throw new Exception($"{name} uniform not found on shader.");
-            }
-            gl.UniformMatrix4(location, 1, false, (float*)&value);
-        }
+        public unsafe void SetUniform(string name, Matrix4x4 value) =>
+            gl.UniformMatrix4(GetUniformLocation(name), 1, false, (float*)&value);
 
-        public void SetUniform(string name, float value)
-        {
-            int location = gl.GetUniformLocation(handle, name);
-            if (location == -1)
-            {
-                throw new Exception($"{name} uniform not found on shader.");
-            }
-            gl.Uniform1(location, value);
-        }
+        public void SetUniform(string name, float value) => gl.Uniform1(GetUniformLocation(name), value);
 
-        public void SetUniform(string name, Vector3 value)
-        {
-            int location = gl.GetUniformLocation(handle, name);
-            if (location == -1)
-            {
-                throw new Exception($"{name} uniform not found on shader.");
-            }
-            gl.Uniform3(location, value.X, value.Y, value.Z);
-        }
+        public void SetUniform(string name, Vector3 value) => gl.Uniform3(GetUniformLocation(name), value.X, value.Y, value.Z);
 
         ~Shader() {
             Dispose(false);
