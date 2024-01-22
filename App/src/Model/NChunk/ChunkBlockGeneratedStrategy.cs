@@ -13,9 +13,6 @@ public class ChunkBlockGeneratedStrategy : ChunkStrategy
 
     private ChunkState minimumChunkStateOfNeighborsValue = ChunkState.EMPTY;
     public override ChunkState MinimumChunkStateOfNeighbors() => minimumChunkStateOfNeighborsValue;
-    public override void SetBlock(int x, int y, int z, string name) {
-        chunk.chunkData.SetBlock(x, y, z,Chunk.blockFactory!.GetBlockData(name));
-    }
     public ChunkBlockGeneratedStrategy(Chunk chunk) : base(chunk) { }
 
     public override void Init() {
@@ -30,6 +27,7 @@ public class ChunkBlockGeneratedStrategy : ChunkStrategy
     }
 
     public override void Finish() {
+        UpdateChunkFaces();
         minimumChunkStateOfNeighborsValue = ChunkState.EMPTY;
         chunk.chunkState = ChunkState.BLOCKGENERATED;
     }

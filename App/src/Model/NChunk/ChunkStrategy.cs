@@ -55,7 +55,13 @@ public abstract class ChunkStrategy
     public virtual void Draw(GL gl, double deltaTime) {
     }
 
-    public abstract void SetBlock(int x, int y, int z, string name);
+    public virtual void SetBlock(int x, int y, int z, string name) {
+        chunk.chunkData.SetBlock(x, y, z,Chunk.blockFactory!.GetBlockData(name));
+        UpdateChunkFaces();
+        OnBlockSet(x, y, z);
+    }
+
+    public virtual void OnBlockSet(int x, int y, int z){}
 
     public virtual Block GetBlock(int x, int y, int z) {
         var blockData = GetBlockData(new Vector3D<int>(x, y, z));
@@ -120,6 +126,11 @@ public abstract class ChunkStrategy
             };
             chunk.debugRay = new Line(vertices, LineType.STRIP);
         }
+    }
+
+
+    public void UpdateChunkFaces() {
+        chunk.chunkFace = ChunkFaceUtils.GetChunkFaceFlags(Chunk.blockFactory!, chunk.chunkData);
     }
 
     public virtual void Init() {

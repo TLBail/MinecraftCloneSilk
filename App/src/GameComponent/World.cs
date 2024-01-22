@@ -202,8 +202,16 @@ public class World : GameObject
                     int.Parse(commandParams[1]),
                     int.Parse(commandParams[2])
                 );
-                console.Log("chunk at " + position + " is \n" + GetChunk(position).ToString()
+                console.Log("chunk at " + position + " is \n" + GetChunk(position).ToString());
+            } else {
+                //print the chunk where the player is 
+                Vector3D<int> position = new Vector3D<int>(
+                    (int)player.position.X,
+                    (int)player.position.Y,
+                    (int)player.position.Z
                 );
+                console.Log("chunk at " + position + " is \n" + GetChunk(position).ToString());
+
             }
         });
         console.AddCommand("/blockLine", (commandParams) =>

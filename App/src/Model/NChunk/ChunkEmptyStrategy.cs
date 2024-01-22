@@ -15,7 +15,7 @@ public class ChunkEmptyStrategy : ChunkStrategy
     }
 
     public override void SetBlock(int x, int y, int z, string name) {
-        chunk.chunkData.SetBlock(x, y, z,Chunk.blockFactory!.GetBlockData(name));
+        throw new Exception("try to access to block data but the chunk is empty");
     }
 
     public override Block GetBlock(int x, int y, int z) {

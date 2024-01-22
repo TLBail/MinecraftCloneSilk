@@ -1,24 +1,25 @@
-﻿using MinecraftCloneSilk.Model.NChunk;
+﻿using System.Diagnostics;
+using System.Text;
+using MinecraftCloneSilk.Model.NChunk;
 
 namespace MinecraftCloneSilk.Model;
 
 [Flags]
 public enum ChunkFace
 {
-	EMPTY = 0,
-	TOPOPAQUE = 1,
-	TOPTRANSPARENT = 2,
-	BOTTOMOPAQUE = 4,
-	BOTTOMTRANSPARENT = 8,
-	LEFTOPAQUE = 16,
-	LEFTTRANSPARENT = 32,
-	RIGHTOPAQUE = 64,
-	RIGHTTRANSPARENT = 128,
-	FRONTOPAQUE = 256,
-	FRONTTRANSPARENT = 512,
-	BACKOPAQUE = 1024,
-	BACKTRANSPARENT = 2048,
-	EMPTYCHUNK = 4096
+    TOPOPAQUE = 1,
+    TOPTRANSPARENT = 2,
+    BOTTOMOPAQUE = 4,
+    BOTTOMTRANSPARENT = 8,
+    LEFTOPAQUE = 16,
+    LEFTTRANSPARENT = 32,
+    RIGHTOPAQUE = 64,
+    RIGHTTRANSPARENT = 128,
+    FRONTOPAQUE = 256,
+    FRONTTRANSPARENT = 512,
+    BACKOPAQUE = 1024,
+    BACKTRANSPARENT = 2048,
+    EMPTYCHUNK = 4096
 }
 
 
@@ -44,122 +45,119 @@ public static class ChunkFaceUtils
         }
         return GetChunkFaceFlags(blockFactory, chunkData.GetBlocks());
     }
+
+    public static string toString(ChunkFace chunkFace) {
+        //get all the flags of the chunkFace
+        StringBuilder stringBuilder = new StringBuilder();
+        foreach (ChunkFace chf in Enum.GetValues(typeof(ChunkFace))) {
+            if ((chunkFace & chf) == chf) {
+                stringBuilder.Append(chf.ToString());
+                stringBuilder.Append(" ");
+            }
+        }
+        return stringBuilder.ToString();
+    }
+    
+    
     public static ChunkFace GetChunkFaceFlags(BlockFactory blockFactory, BlockData[,,] blocks) {
-        ChunkFace faceFlag = ChunkFace.EMPTYCHUNK |
-                             ChunkFace.TOPOPAQUE | ChunkFace.TOPTRANSPARENT |
+        ChunkFace faceFlag = ChunkFace.TOPOPAQUE | ChunkFace.TOPTRANSPARENT |
                              ChunkFace.BOTTOMOPAQUE | ChunkFace.BOTTOMTRANSPARENT |
                              ChunkFace.LEFTOPAQUE | ChunkFace.LEFTTRANSPARENT |
                              ChunkFace.RIGHTOPAQUE | ChunkFace.RIGHTTRANSPARENT |
                              ChunkFace.FRONTOPAQUE | ChunkFace.FRONTTRANSPARENT | 
                              ChunkFace.BACKOPAQUE | ChunkFace.BACKTRANSPARENT
             ;
-		
-        // Verify if the chunk is empty or not
-        bool isEmpty = true;
-        for (int x = 0; x < Chunk.CHUNK_SIZE; x++) {
-            for (int y = 0; y < Chunk.CHUNK_SIZE; y++) {
-                for (int z = 0; z < Chunk.CHUNK_SIZE; z++) {
-                    if (blocks[x, y, z].id != 0) {
-                        isEmpty = false;
-                        break;
-                    }
-                }
-                if (!isEmpty) break;
-            }
-            if (!isEmpty) break;
-        }
-
-        if (isEmpty) {
-            return faceFlag;
-        } else {
-            faceFlag ^= ChunkFace.EMPTYCHUNK;
-        }
-
         // Check each face
         for (int i = 0; i < Chunk.CHUNK_SIZE; i++) {
             for (int j = 0; j < Chunk.CHUNK_SIZE; j++) {
                 // Top
                 BlockData block = blocks[i, Chunk.CHUNK_SIZE - 1, j];
                 if (block.id != 0) {
-                    if (blockFactory.IsBlockTransparent(block)) {
-                        if ((faceFlag & ChunkFace.TOPOPAQUE) > 0) {
-                            faceFlag ^= ChunkFace.TOPOPAQUE;
-                        }
-                    } else {
-                        if ((faceFlag & ChunkFace.TOPTRANSPARENT) > 0) {
+                    if (!blockFactory.IsBlockTransparent(block)) {
+                        if((ChunkFace.TOPTRANSPARENT & faceFlag) != 0)
                             faceFlag ^= ChunkFace.TOPTRANSPARENT;
-                        }
+                    } else {
+                        if((ChunkFace.TOPOPAQUE & faceFlag) != 0)
+                            faceFlag ^= ChunkFace.TOPOPAQUE;
                     }
+                }else {
+                    if((ChunkFace.TOPOPAQUE & faceFlag) != 0)
+                        faceFlag ^= ChunkFace.TOPOPAQUE;
                 }
 
                 // Bottom
                 block = blocks[i, 0, j];
                 if (block.id != 0) {
-                    if (blockFactory.IsBlockTransparent(block)) {
-                        if ((faceFlag & ChunkFace.BOTTOMOPAQUE) > 0) {
+                    if (!blockFactory.IsBlockTransparent(block)) {
+                        if((ChunkFace.BOTTOMTRANSPARENT & faceFlag) != 0)
+                             faceFlag ^= ChunkFace.BOTTOMTRANSPARENT;
+                    }else{
+                        if((ChunkFace.BOTTOMOPAQUE & faceFlag) != 0)
                             faceFlag ^= ChunkFace.BOTTOMOPAQUE;
-                        }
-                    } else {
-                        if ((faceFlag & ChunkFace.BOTTOMTRANSPARENT) > 0) {
-                            faceFlag ^= ChunkFace.BOTTOMTRANSPARENT;
-                        }
                     }
+                }else{
+                    if((ChunkFace.BOTTOMOPAQUE & faceFlag) != 0)
+                        faceFlag ^= ChunkFace.BOTTOMOPAQUE;
                 }
 
                 // Left
                 block = blocks[0, i, j];
                 if (block.id != 0) {
-                    if (blockFactory.IsBlockTransparent(block)) {
-                        if ((faceFlag & ChunkFace.LEFTOPAQUE) > 0) {
+                    if (!blockFactory.IsBlockTransparent(block)) {
+                        if((ChunkFace.LEFTTRANSPARENT & faceFlag) != 0)
+                             faceFlag ^= ChunkFace.LEFTTRANSPARENT;
+                    }else{
+                        if((ChunkFace.LEFTOPAQUE & faceFlag) != 0)
                             faceFlag ^= ChunkFace.LEFTOPAQUE;
-                        }
-                    } else {
-                        if ((faceFlag & ChunkFace.LEFTTRANSPARENT) > 0) {
-                            faceFlag ^= ChunkFace.LEFTTRANSPARENT;
-                        }
                     }
+                }else{
+                    if((ChunkFace.LEFTOPAQUE & faceFlag) != 0)
+                        faceFlag ^= ChunkFace.LEFTOPAQUE;
                 }
 
                 // Right
                 block = blocks[Chunk.CHUNK_SIZE - 1, i, j];
                 if (block.id != 0) {
-                    if (blockFactory.IsBlockTransparent(block)) {
-                        if ((faceFlag & ChunkFace.RIGHTOPAQUE) > 0) {
+                    if (!blockFactory.IsBlockTransparent(block)) {
+                        if((ChunkFace.RIGHTTRANSPARENT & faceFlag) != 0)
+                             faceFlag ^= ChunkFace.RIGHTTRANSPARENT;
+                    }else{
+                        if((ChunkFace.RIGHTOPAQUE & faceFlag) != 0)
                             faceFlag ^= ChunkFace.RIGHTOPAQUE;
-                        }
-                    } else {
-                        if ((faceFlag & ChunkFace.RIGHTTRANSPARENT) > 0) {
-                            faceFlag ^= ChunkFace.RIGHTTRANSPARENT;
-                        }
                     }
+                }else{
+                    if((ChunkFace.RIGHTOPAQUE & faceFlag) != 0)
+                        faceFlag ^= ChunkFace.RIGHTOPAQUE;
                 }
 
                 // Front
                 block = blocks[i, j, 0];
                 if (block.id != 0) {
-                    if (blockFactory.IsBlockTransparent(block)) {
-                        if ((faceFlag & ChunkFace.FRONTOPAQUE) > 0) {
+                    if (!blockFactory.IsBlockTransparent(block)) {
+                        if((ChunkFace.FRONTTRANSPARENT & faceFlag) != 0)
+                             faceFlag ^= ChunkFace.FRONTTRANSPARENT;
+                    }else{
+                        if((ChunkFace.FRONTOPAQUE & faceFlag) != 0)
                             faceFlag ^= ChunkFace.FRONTOPAQUE;
-                        }
-                    } else {
-                        if ((faceFlag & ChunkFace.FRONTTRANSPARENT) > 0) {
-                            faceFlag ^= ChunkFace.FRONTTRANSPARENT;
-                        }
                     }
+                }else{
+                    if((ChunkFace.FRONTOPAQUE & faceFlag) != 0)
+                        faceFlag ^= ChunkFace.FRONTOPAQUE;
                 }
 
                 // Back
                 block = blocks[i, j, Chunk.CHUNK_SIZE - 1];
                 if (block.id != 0) {
-                    if (blockFactory.IsBlockTransparent(block)) {
-                        if ((faceFlag & ChunkFace.BACKOPAQUE) > 0) {
+                    if (!blockFactory.IsBlockTransparent(block)) {
+                        if((ChunkFace.BACKTRANSPARENT & faceFlag) != 0)
+                             faceFlag ^= ChunkFace.BACKTRANSPARENT;
+                    }else{
+                        if((ChunkFace.BACKOPAQUE & faceFlag) != 0)
                             faceFlag ^= ChunkFace.BACKOPAQUE;
-                        }
-                    } else {
-                        if ((faceFlag & ChunkFace.BACKTRANSPARENT) > 0) {
-                            faceFlag ^= ChunkFace.BACKTRANSPARENT;
-                        }
                     }
+                }else{
+                    if((ChunkFace.BACKOPAQUE & faceFlag) != 0)
+                        faceFlag ^= ChunkFace.BACKOPAQUE;
                 }
             }
         }

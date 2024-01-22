@@ -18,7 +18,6 @@ public class ChunkDrawableStrategy : ChunkStrategy
 
     private static ChunkBufferObjectManager? chunkBufferObjectManager;
 
-    private ChunkFace? chunkFace;
     private bool IsUpdating = false;
     
     public static void InitStaticMembers( ChunkBufferObjectManager chunkBufferObjectManager) {
@@ -62,7 +61,6 @@ public class ChunkDrawableStrategy : ChunkStrategy
     }
 
     public override void UpdateChunkVertex() {
-        chunkFace = ChunkFaceUtils.GetChunkFaceFlags(Chunk.blockFactory!, chunk.chunkData);
         UpdateVerticesNextFrame();
     }
 
@@ -84,8 +82,7 @@ public class ChunkDrawableStrategy : ChunkStrategy
     }
 
 
-    public override void SetBlock(int x, int y, int z, string name) {
-        chunk.chunkData.SetBlock(x, y, z,Chunk.blockFactory!.GetBlockData(name));
+    public override void OnBlockSet(int x, int y, int z) {
         UpdateLight(x, y, z);
         UpdateBlocksAround(x, y, z);
         UpdateChunkVertex();
@@ -93,7 +90,9 @@ public class ChunkDrawableStrategy : ChunkStrategy
 
     private void UpdateLight(int x, int y, int z) {
         if (chunk.chunkData.IsOnlyOneBlock()) {
-            //Todo unfuck this
+            BlockData block = chunk.chunkData.GetBlock();
+            block.data1 = 15;
+            chunk.chunkData.SetBlock(block);
         } else {
             chunk.chunkData.GetBlocks()[x, y, z].data1 = 15;
         }
@@ -101,7 +100,6 @@ public class ChunkDrawableStrategy : ChunkStrategy
 
 
     private void InitChunkFaces() {
-        chunkFace = ChunkFaceUtils.GetChunkFaceFlags(Chunk.blockFactory!, chunk.chunkData);
         if (IsChunkVisible()) {
             return;
         }
@@ -167,5 +165,21 @@ public class ChunkDrawableStrategy : ChunkStrategy
         chunkBufferObjectManager!.RemoveChunk(chunk);
     }
 
-    private bool IsChunkVisible() => (chunkFace! & ChunkFace.EMPTYCHUNK) == ChunkFace.EMPTYCHUNK; // Todo check if the chunk is fully opaque
+    private bool IsChunkVisible() {
+        return ((chunk.chunkFace & ChunkFace.EMPTYCHUNK) == ChunkFace.EMPTYCHUNK) ||
+               (ChunkFaceUtils.IsOpaque((ChunkFace)(chunk.chunkFace)) && IsNeiborsFacesOpaque());   
+    }
+
+    private bool IsNeiborsFacesOpaque() {
+        ChunkFace chunkFace = (ChunkFace)chunk.chunksNeighbors[((int)FaceExtended.TOP)].chunkFace;
+        chunk.chunkStrategy.UpdateChunkFaces();
+        System.Diagnostics.Debug.Assert(chunkFace == chunk.chunksNeighbors[((int)FaceExtended.TOP)].chunkFace);
+        return (chunk.chunksNeighbors[((int)FaceExtended.TOP)].chunkFace & ChunkFace.BOTTOMOPAQUE) != 0 &&
+               (chunk.chunksNeighbors[((int)FaceExtended.BOTTOM)].chunkFace & ChunkFace.TOPOPAQUE) != 0 &&
+               (chunk.chunksNeighbors[((int)FaceExtended.LEFT)].chunkFace & ChunkFace.RIGHTOPAQUE) != 0 &&
+               (chunk.chunksNeighbors[((int)FaceExtended.RIGHT)].chunkFace & ChunkFace.LEFTOPAQUE) != 0 &&
+               (chunk.chunksNeighbors[((int)FaceExtended.FRONT)].chunkFace & ChunkFace.BACKOPAQUE) != 0 &&
+               (chunk.chunksNeighbors[((int)FaceExtended.BACK)].chunkFace & ChunkFace.FRONTOPAQUE) != 0;
+    }
+
 }

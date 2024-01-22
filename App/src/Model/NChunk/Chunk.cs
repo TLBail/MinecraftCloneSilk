@@ -27,6 +27,8 @@ public class Chunk
     internal bool debugMode = false;
 
     public Chunk[]? chunksNeighbors;
+    
+    internal ChunkFace? chunkFace;
 
     public ChunkState chunkState { get; internal set; }
     public ChunkState chunkStateInStorage { get; internal set; } = ChunkState.EMPTY;
@@ -194,12 +196,15 @@ public class Chunk
         chunkState = DEFAULTSTARTINGCHUNKSTATE;
         this.chunkStrategy = new ChunkEmptyStrategy(this);
         blockModified = false;
+        chunkFace = null;
         chunkData.Reset();
     }
     
 
     public override string ToString() {
-        return $"Chunk {position.X} {position.Y} {position.Z} chunkState: {chunkState} \n";
+        string chunkFaceString = this.chunkFace is not null ? ChunkFaceUtils.toString((ChunkFace)this.chunkFace!) : "";
+        return $"Chunk {position.X} {position.Y} {position.Z} chunkState: {chunkState} \n" +
+               $"faces {chunkFaceString}";
     }
 
     public override int GetHashCode() {

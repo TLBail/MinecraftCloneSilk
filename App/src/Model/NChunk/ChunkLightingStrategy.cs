@@ -9,15 +9,13 @@ public class ChunkLightingStrategy : ChunkStrategy
     }
 
     public override ChunkState GetChunkStateOfStrategy() => ChunkState.LIGHTING;
-    public override void SetBlock(int x, int y, int z, string name) {
-        chunk.chunkData.SetBlock(x, y, z,Chunk.blockFactory!.GetBlockData(name));
-    }
 
     public override void Init() {
         chunk.chunkState = ChunkState.LIGHTLOADING;
     }
 
     public override void Load() {
+        if(chunk.chunkFace is null) UpdateChunkFaces();
         if(chunk.chunkData.IsOnlyOneBlock()) {
             BlockData block = chunk.chunkData.GetBlock();
             block.data1 = 15;

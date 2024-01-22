@@ -25,12 +25,6 @@ public class ChunkTerrainGeneratedStrategy : ChunkStrategy
     
     public override ChunkState GetChunkStateOfStrategy() => ChunkState.GENERATEDTERRAIN;
     
-    public override void SetBlock(int x, int y, int z, string name) {
-        chunk.chunkData.SetBlock(x, y, z,Chunk.blockFactory!.GetBlockData(name));
-    }
-    
-    
-
     public override Block GetBlock(int x, int y, int z) {
         throw new Exception("try to get Block of a terrain generated only chunk");
     }
