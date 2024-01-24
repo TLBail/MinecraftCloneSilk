@@ -42,11 +42,10 @@ public class Line : IDisposable
     public Line(Vector3D<float> start, Vector3D<float> end, Vector3D<float> color, LineType lineType = LineType.LINE)
     : this(start, end, color, color, lineType) {    }
 
-    public Line(Vector3D<float> start, Vector3D<float> end, Vector3D<float> startColor, Vector3D<float> endColor, LineType lineType = LineType.LINE) : this(new[]
-        {
+    public Line(Vector3D<float> start, Vector3D<float> end, Vector3D<float> startColor, Vector3D<float> endColor, LineType lineType = LineType.LINE) : this([
             new LineVertex(start, startColor),
             new LineVertex(end, endColor),
-        }, lineType) { }
+        ], lineType) { }
 
     public Line(LineVertex[] vertices, LineType lineType = LineType.LINE) {
         game = Game.GetInstance();
@@ -70,6 +69,7 @@ public class Line : IDisposable
 
 
     public Line(Vector3D<float> start, Vector3D<float> end) : this(start,  end, DefaultColor){}
+    public Line(Vector3 start, Vector3 end) : this(new Vector3D<float>(start.X, start.Y, start.Z), new Vector3D<float>(end.X, end.Y, end.Z)){}
 
     public void Dispose()
     {

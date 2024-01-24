@@ -53,7 +53,7 @@ public class ChunkFaceTest
 
         // Assert
         Assert.True(ChunkFaceUtils.IsTransparent(result));
-        Assert.True((result & ChunkFace.EMPTYCHUNK) > 0);
+        Assert.True((result & ChunkFace.EMPTYCHUNK) == 0);
     }
 
 

@@ -8,15 +8,16 @@ namespace UnitTest;
 public class FrustrumTest
 {
 
+    //by default the camera is at 0,0,0 and looking at 0,0,1
     [Test]
     public void testFrustrum() {
         Camera cam = new Camera();
         Frustrum frustrum = new Frustrum(cam);
         
-        AABBCube cube = new AABBCube(new Vector3(0, 0, 0), new Vector3(1, 1, 1));
+        AABBCube cube = new AABBCube(new Vector3(0, 0, 10), new Vector3(1, 1, 11));
         Assert.True(cube.IsInFrustrum(frustrum));
         
-        AABBCube cube2 = new AABBCube(new Vector3(-2, -2, -2), new Vector3(-1, -1, -1));
+        AABBCube cube2 = new AABBCube(new Vector3(2, 2, -2), new Vector3(3, 3, -3));
         Assert.False(cube2.IsInFrustrum(frustrum));
     }
 

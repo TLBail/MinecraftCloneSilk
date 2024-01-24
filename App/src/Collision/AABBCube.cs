@@ -32,10 +32,9 @@ public class AABBCube : Volume
     private bool IsOnOrForwardPlane(Plane plane)
     {
         // Compute the projection interval radius of b onto L(t) = b.c + t * p.n
-        float r = extents.X * MathF.Abs(plane.planeNormal.X) + extents.Y * MathF.Abs(plane.planeNormal.Y) +
-                        extents.Z * MathF.Abs(plane.planeNormal.Z);
-
-        return -r <= plane.GetSignedDistanceToPlane(center);
+        float r = Vector3.Dot(extents, Vector3.Abs(plane.planeNormal));
+        float s = plane.GetSignedDistanceToPlane(center);
+        return -r <= s ;
     }
 
 

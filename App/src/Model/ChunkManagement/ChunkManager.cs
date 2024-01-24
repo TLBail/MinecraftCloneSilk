@@ -127,6 +127,7 @@ public class ChunkManager : IChunkManager
     public bool TryToUnloadChunk(Vector3D<int> position) => chunkUnloader.TryToUnloadChunk(position);
 
     public void ToImGui() {
+        ImGui.Text("Chunk Manager: ");
         ImGui.Text($"number of chunkTasks {chunkLoader.chunkTasks.Count}");
         
         
@@ -148,6 +149,8 @@ public class ChunkManager : IChunkManager
 
             ImGui.EndChild();
         }
+        
+        
     }
 
 

@@ -1,5 +1,7 @@
 ﻿using System.Numerics;
 using ImGuiNET;
+using MinecraftCloneSilk.Collision;
+using MinecraftCloneSilk.Core;
 using MinecraftCloneSilk.GameComponent;
 using MinecraftCloneSilk.Model;
 using MinecraftCloneSilk.Model.NChunk;
@@ -78,10 +80,46 @@ public class PlayerUi
         }
 
         SwitchDebugChunkHovered();
+        
+        ImGui.Separator();
+
+        SwitchFrustrumCulling();
 
     }
 
-  
+    private void SwitchFrustrumCulling() {
+        Camera camera = player.camera;
+        if (!camera.frustrumUpdate)
+        {
+
+            ImGui.PushID("enable player frustrum culling");
+            ImGui.PushStyleColor(ImGuiCol.Button, new Vector4(i/7.0f, b, b, 1.0f));
+            ImGui.PushStyleColor(ImGuiCol.ButtonHovered, new Vector4(i/7.0f, b, b, 1.0f));
+            ImGui.PushStyleColor(ImGuiCol.ButtonActive, new Vector4(i/7.0f, c, c, 1.0f));
+            ImGui.Button("enable player frustrum culling");
+            if (ImGui.IsItemClicked(0))
+            {
+                camera.frustrumUpdate = true;
+            }
+            ImGui.PopStyleColor(3);
+            ImGui.PopID();
+        }
+        else
+        {
+            if (ImGui.Button("disable player frustrum culling")) {
+                camera.frustrumUpdate = false;
+            }
+        }
+
+        if(ImGui.Button("display frustrum")) {
+            camera.DisplayFrustrum();
+
+
+
+        }
+    }
+
+
     private void SwitchDebugChunkHovered()
     {
 

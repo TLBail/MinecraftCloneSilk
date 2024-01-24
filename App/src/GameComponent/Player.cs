@@ -11,7 +11,7 @@ namespace MinecraftCloneSilk.GameComponent
 {
     public class Player : GameObject
     {
-        private Camera camera;
+        public Camera camera;
         private IKeyboard primaryKeyboard;
         private float moveSpeed = 5.0f;
         private const float SPRINT_SPEED = 50.0f;
@@ -112,6 +112,18 @@ namespace MinecraftCloneSilk.GameComponent
                 position = newPosition;
 
             });
+            
+            console.AddCommand("/displayFrustrum", (commandParams) => camera.DisplayFrustrum());
+            
+            console.AddCommand("/setFrustrumCullingActivated", (commandParams) =>
+            {
+                try {
+                    camera.frustrumUpdate= bool.Parse(commandParams[0]);
+                }
+                catch (Exception e) {
+                    console.Log("Invalid parameters specify true or false", Console.LogType.ERROR);
+                }
+            } );
         }
 
         private void MovePlayer(double deltaTime)
@@ -119,7 +131,13 @@ namespace MinecraftCloneSilk.GameComponent
             var speed = moveSpeed * (float)deltaTime;
 
 
-            if (primaryKeyboard.IsKeyPressed(Key.ShiftLeft)) speed = SPRINT_SPEED * (float)deltaTime;
+            if (primaryKeyboard.IsKeyPressed(Key.ShiftLeft)) {
+                speed = SPRINT_SPEED * (float)deltaTime;
+                camera.zoom = MathF.Min(70f, (float)(camera.zoom + (100f * deltaTime)));
+            } else {
+                camera.zoom = MathF.Max(60f, (float)(camera.zoom - (100f * deltaTime)));
+
+            }
 
                 
             if (primaryKeyboard.IsKeyPressed(Key.W))

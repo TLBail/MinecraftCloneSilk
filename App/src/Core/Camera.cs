@@ -15,25 +15,27 @@ namespace MinecraftCloneSilk.Core
         public Vector3 Front { get; set; }
 
         public Vector3 up { get; private set; }
-        public Vector3 Right => Vector3.Normalize(Vector3.Cross(Front, up));
+        public readonly Vector3 WorldUp = Vector3.UnitY;
+        public Vector3 Right { get; private set; }
         public float aspectRatio { get; set; }
 
         public float yaw { get; set; } = -90f;
         public float pitch { get; set; }
         
-        public float nearPlane { get; set; } = 0.1f;
-        public float farPlane { get; set; } = 1000f;
+        public float nearDistance { get; set; } = 0.1f;
+        public float farDistance { get; set; } = 1000f;
 
-        public float zoom { get; private set; } = 45f;
+        public float zoom { get; set; } = 60f;
         private Vector2 lastMousePosition;
         private bool isZoomActive = false;
         private IMouse? mouse;
+        public bool frustrumUpdate = true;
         
         private Frustrum frustrum;
         
         public Camera(IWindow? window = null, IMouse? mouse = null) 
         {
-            Setup(Vector3.Zero, Vector3.UnitZ * 1, Vector3.UnitY, 800f / 600f);
+            Setup(Vector3.Zero, Vector3.UnitZ * 1, WorldUp, 800f / 600f);
             this.frustrum = new Frustrum(this);
             
             if(window is null) return;
@@ -59,6 +61,7 @@ namespace MinecraftCloneSilk.Core
             this.aspectRatio = aspectRatio;
             Front = front;
             this.up = up;
+            this.Right = Vector3.Normalize(Vector3.Cross(Front, up));
         }
 
         public Frustrum GetFrustrum() {
@@ -67,7 +70,7 @@ namespace MinecraftCloneSilk.Core
         }
         
         public void UpdateFrustrum() {
-            frustrum.Update(this);
+            if(frustrumUpdate) frustrum.Update(this);
         }
         
         
@@ -91,6 +94,9 @@ namespace MinecraftCloneSilk.Core
             cameraDirection.Z = MathF.Sin(MathHelper.DegreesToRadians(yaw)) * MathF.Cos(MathHelper.DegreesToRadians(pitch));
 
             Front = Vector3.Normalize(cameraDirection);
+            
+            Right = Vector3.Normalize(Vector3.Cross(Front, WorldUp));
+            up = Vector3.Normalize(Vector3.Cross(Right, Front));
         }
 
         public Matrix4x4 GetViewMatrix()
@@ -100,7 +106,7 @@ namespace MinecraftCloneSilk.Core
 
         public Matrix4x4 GetProjectionMatrix()
         {
-            return Matrix4x4.CreatePerspectiveFieldOfView(MathHelper.DegreesToRadians(zoom), aspectRatio, nearPlane, farPlane);
+            return Matrix4x4.CreatePerspectiveFieldOfView(MathHelper.DegreesToRadians(zoom), aspectRatio, nearDistance, farDistance);
         }
 
         private void OnMouseMove(IMouse mouse, Vector2 position)
@@ -127,5 +133,60 @@ namespace MinecraftCloneSilk.Core
             aspectRatio = (float)size.X / (float)size.Y;
         }
 
+        public void DisplayFrustrum() {
+            float halfVSide = farDistance * MathF.Tan(MathHelper.DegreesToRadians(zoom) / 2);
+            float halfHSide = halfVSide * aspectRatio;
+            new Line(
+                position,
+                position + (
+                    Front * farDistance) +
+                (up * halfVSide) +
+                (Right * halfHSide)
+            );
+            new Line(
+                position,
+                position + (
+                    Front * farDistance) +
+                (up * halfVSide) +
+                (-Right * halfHSide)
+            );
+            
+            new Line(
+                position,
+                position + (
+                    Front * farDistance) +
+                (-up * halfVSide) +
+                (Right * halfHSide)
+            );
+            new Line(
+                position,
+                position + (
+                    Front * farDistance) +
+                (-up * halfVSide) +
+                (-Right * halfHSide)
+            );
+
+
+            new Line(
+                position + (
+                    Front * farDistance) +
+                (up * halfVSide) +
+                (Right * halfHSide),
+                position + (
+                    Front * farDistance) +
+                (up * halfVSide) +
+                -(Right * halfHSide)
+            );
+            new Line(
+                position + (
+                    Front * farDistance) +
+                -(up * halfVSide) +
+                (Right * halfHSide),
+                position + (
+                    Front * farDistance) +
+                -(up * halfVSide) +
+                -(Right * halfHSide)
+            );
+        }
     }
 }

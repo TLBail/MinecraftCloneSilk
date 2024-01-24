@@ -38,6 +38,10 @@ public class WorldUi
     
     
     public void DrawUi() {
+        if (ImGui.DragInt("chunk render distance", ref chunkRenderDistance, 1, 1, 30)) {
+            world.radius = chunkRenderDistance;
+        }
+        ImGui.Separator();
         BlockManagementUi();
         ImGui.Separator();
         WorldGenerationUi();
@@ -55,10 +59,7 @@ public class WorldUi
     
     
     private void BlockManagementUi() {
-        if (ImGui.DragInt("chunk render distance", ref chunkRenderDistance, 1, 1, 30)) {
-            world.radius = chunkRenderDistance;
-        }
-        
+        ImGui.Text("Block management");
         ImGui.Text("add block");
 
         if(ImGui.BeginCombo("blockname",newBlockName )) {

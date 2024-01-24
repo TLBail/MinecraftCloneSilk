@@ -184,9 +184,6 @@ public class RegionBuffer : IDisposable
     }
 
     private bool RegionInCameraView(Camera cam) {
-        //Todo make a better frustrum culling
-        return true;
-        
         Frustrum frustrum = cam.GetFrustrum();
         for (int i = 0; i < chunkCount; i++) {
             Chunk chunk = chunks[i]!;
