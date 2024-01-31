@@ -36,7 +36,7 @@ public class GeneralInfo : UiWindow
             windowFlags |= ImGuiWindowFlags.NoMove;
         }
         ImGui.SetNextWindowBgAlpha(0.35f); // Transparent background
-        if (ImGui.Begin("Example: Simple overlay", windowFlags))
+        if (ImGui.Begin("FPS", windowFlags))
         {
             ImGui.Text( (1000.0f / ImGui.GetIO().Framerate).ToString("F") +  " ms/frame ( "+ ImGui.GetIO().Framerate.ToString("F1") + " FPS)" );
             if (ImGui.BeginPopupContextWindow())

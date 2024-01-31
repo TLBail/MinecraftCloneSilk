@@ -46,12 +46,4 @@ public class ChunkPool
     private Chunk BuildChunk(Vector3D<int> position) {
         return new Chunk(position, chunkManager, worldGenerator, chunkStorage);
     }
-
-
-
-    public void ReturnChunks(List<Chunk> chunksToReturn) {
-        foreach (Chunk chunk in chunksToReturn) {
-            ReturnChunk(chunk);
-        }
-    }
 }

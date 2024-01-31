@@ -28,16 +28,31 @@ public class World : GameObject
     public ChunkManager chunkManager;
     private IChunkStorage chunkStorage;
     public Lighting lighting { get; private set; }
+    private List<string> commandKeys = new();
     
-    public World(Game game) : this(game, WorldMode.EMPTY) { }
-    public World(Game game, WorldMode worldMode) : this(game, worldMode, null) { }
-    public World(Game game, WorldMode worldMode, string? saveLocation) : base(game) {
+    public World(Game game, WorldMode worldMode) : this(game, null, worldMode, null){} 
+    public World(Game game, IWorldGenerator worldGeneration) : this(game, worldGeneration, WorldMode.EMPTY){}
+    public World(Game game, WorldMode worldMode, string? saveLocation) : this(game, null, worldMode, saveLocation){}
+    public World(Game game, IWorldGenerator worldGeneration, WorldMode worldMode) : this(game, worldGeneration, worldMode, null){}
+
+    public World(Game game, IWorldGenerator? worldGenerator = null, WorldMode worldMode = WorldMode.EMPTY, string? saveLocation = null) : base(game) {
         this.worldMode = worldMode;
         this.lighting = new Lighting();
         worldUi = new WorldUi(this, lighting);
-        worldGeneration = new WorldNaturalGeneration();
+        worldGeneration = worldGenerator ?? new WorldNaturalGeneration();
         chunkStorage = saveLocation is not null ? new RegionStorage(saveLocation) : new NullChunkStorage();
         chunkManager = new ChunkManager(radius, worldGeneration, chunkStorage);
+    } 
+    
+    public void Reset(IWorldGenerator? worldGenerator = null,  WorldMode worldMode = WorldMode.EMPTY, string? saveLocation = null) {
+        this.worldGeneration = worldGenerator ?? new WorldNaturalGeneration();
+        chunkManager.Clear();
+        chunkStorage.Dispose();
+        
+        worldGeneration = worldGenerator ?? new WorldNaturalGeneration();
+        chunkStorage = saveLocation is not null ? new RegionStorage(saveLocation) : new NullChunkStorage();
+        chunkManager = new ChunkManager(radius, worldGeneration, chunkStorage);
+        SetWorldMode(worldMode);
     }
 
     protected override void Start() {
@@ -57,7 +72,9 @@ public class World : GameObject
         chunkManager.Update(deltaTime);
     }
 
-    protected override void Stop() {
+    public override void Destroy() {
+        base.Destroy();
+        foreach(string key in commandKeys) console.RemoveCommand(key);
         chunkStorage.Dispose();
     }
 
@@ -138,7 +155,7 @@ public class World : GameObject
     }
 
     private void AddCommand() {
-        Console console = (Console)game.gameObjects[typeof(Console).FullName!];
+        commandKeys.Add("/addChunk");
         console.AddCommand("/addChunk", (commandParams) =>
         {
             if (commandParams.Length >= 3) {
@@ -153,6 +170,7 @@ public class World : GameObject
             }
         });
 
+        commandKeys.Add("/rmChunk");
         console.AddCommand("/rmChunk", (commandParams) =>
         {
             if (commandParams.Length >= 3) {
@@ -167,6 +185,7 @@ public class World : GameObject
             }
         });
 
+        commandKeys.Add("/setBlock");
         console.AddCommand("/setBlock", (commandParams) =>
         {
             if (commandParams.Length >= 4) {
@@ -181,6 +200,7 @@ public class World : GameObject
             }
         });
 
+        commandKeys.Add("/getBlock");
         console.AddCommand("/getBlock", (commandParams) =>
         {
             if (commandParams.Length >= 3) {
@@ -194,6 +214,7 @@ public class World : GameObject
             }
         });
 
+        commandKeys.Add("/getChunk");
         console.AddCommand("/getChunk", (commandParams) =>
         {
             if (commandParams.Length >= 3) {
@@ -214,6 +235,8 @@ public class World : GameObject
 
             }
         });
+        
+        commandKeys.Add("/blockLine");
         console.AddCommand("/blockLine", (commandParams) =>
         {
             if (commandParams.Length == 2) {
@@ -225,18 +248,21 @@ public class World : GameObject
                 console.Log("require the number of block and the block name");
             }
         });
+        
+        commandKeys.Add("/bomb");
         console.AddCommand("/bomb", (commandParams) =>
         {
             int size = 10;
             if (commandParams.Length >= 1) size = int.Parse(commandParams[0]);
             Brush.Bomb(this,
                 new Vector3D<int>(
-                (int)player.position.X,
-                (int)player.position.Y,
-                (int)player.position.Z
-            ), size);
+                    (int)player.position.X,
+                    (int)player.position.Y,
+                    (int)player.position.Z
+                ), size);
         });
         
+        commandKeys.Add("/wall");
         console.AddCommand("/wall", (commandParams) =>
         {
             if (commandParams.Length == 2) {
@@ -251,6 +277,7 @@ public class World : GameObject
             }
         });
         
+        commandKeys.Add("/spiral");
         console.AddCommand("/spiral", (commandParams) =>
         {
             if (commandParams.Length == 3)
@@ -271,6 +298,7 @@ public class World : GameObject
         });
 
         
+        commandKeys.Add("/sierpinski");
         console.AddCommand("/sierpinski", (commandParams) =>
         {
             if (commandParams.Length == 3)
@@ -286,6 +314,7 @@ public class World : GameObject
             }
         });
         
+        commandKeys.Add("/mengerSponge");
         console.AddCommand("/mengerSponge", (commandParams) =>
         {
             if (commandParams.Length == 3)
@@ -310,17 +339,9 @@ public class World : GameObject
         Vector3D<int>[] postions =
         {
             Vector3D<int>.Zero,
-            // new Vector3D<int>(Chunk.CHUNK_SIZE, 0, 0),
-            
-            //new Vector3D<int>(-(int)Chunk.CHUNK_SIZE, 0, (int)Chunk.CHUNK_SIZE),
-            //new Vector3D<int>(-(int)Chunk.CHUNK_SIZE, 0, -(int)Chunk.CHUNK_SIZE),
-            //new Vector3D<int>(-(int)Chunk.CHUNK_SIZE, 0, 0),
-            //new Vector3D<int>(0, 0, -(int)Chunk.CHUNK_SIZE),
-            //new Vector3D<int>((int)Chunk.CHUNK_SIZE, 0, (int)Chunk.CHUNK_SIZE),
-            //new Vector3D<int>((int)Chunk.CHUNK_SIZE, 0, -(int)Chunk.CHUNK_SIZE),
-            //new Vector3D<int>(-(int)Chunk.CHUNK_SIZE, 0, 0),
-            //new Vector3D<int>(-(int)Chunk.CHUNK_SIZE, 0, (int)Chunk.CHUNK_SIZE),
-            //new Vector3D<int>(-(int)Chunk.CHUNK_SIZE, 0, -(int)Chunk.CHUNK_SIZE)
+            new Vector3D<int>(Chunk.CHUNK_SIZE, 0, -Chunk.CHUNK_SIZE * 3),
+            new Vector3D<int>(-(int)Chunk.CHUNK_SIZE, 0, -Chunk.CHUNK_SIZE * 2),
+            new Vector3D<int>(-(int)Chunk.CHUNK_SIZE, 0, -Chunk.CHUNK_SIZE),
         };
         chunkManager.AddChunksToLoad(postions.ToList());
     }

@@ -36,26 +36,21 @@ public sealed class Game
     public Draw? drawables;
     public DrawUi? uiDrawables;
     public Startable? startables;
-    public Action? stopable;
 
     public Camera? mainCamera { get; set; }
 
     private Scene scene;
 
     private TextureManager? textureManager;
-        
-        
-    //game element
+
     public Dictionary<string, GameObject> gameObjects = new Dictionary<string, GameObject>();
-    private Console? console;
+    public Console console;
         
-    //frame count
-    private TaskCompletionSource frameCountTaskSource = new TaskCompletionSource();
+    private TaskCompletionSource frameCountTaskSource = new TaskCompletionSource(); //use to wait for a frame to complete
     private int frameCount;
         
     //ChunkRenderer
     public ChunkBufferObjectManager? chunkBufferObjectManager;
-    
         
         
     private Game(Scene scene, bool start = true) {
@@ -63,7 +58,8 @@ public sealed class Game
         ChromeTrace.Init();
 #endif
         this.scene = scene;
-        openGl = new OpenGl(this);
+        openGl = new OpenGl(this, scene.openGlConfig);
+        console = new Console(this);
     }
         
 
@@ -73,7 +69,7 @@ public sealed class Game
     }
 
     public void Stop() {
-        stopable?.Invoke();
+        foreach(GameObject gameObject in gameObjects.Values) gameObject.Destroy();
         openGl.Stop();
 #if DEBUG
         ChromeTrace.Dispose();
@@ -82,14 +78,9 @@ public sealed class Game
     }
 
     [Logger.Timer]
-    public void Awake()
-    {
+    public void Awake() {
         foreach (InitGameData data in scene.gameObjects) {
-            Object[] param = new []{this}.Concat(data.pars).ToArray();
-            GameObject gameObject = (GameObject)Activator.CreateInstance(
-                Type.GetType(data.typeName) ?? throw new InvalidOperationException("Impossible de trouver la class " + data.typeName),
-                param)!;
-            gameObjects.Add(data.typeName, gameObject); 
+            AddGameObject(data);
         }
     }
 
@@ -101,16 +92,15 @@ public sealed class Game
         textureManager = TextureManager.GetInstance();
         textureManager.Load(gl);
         
-        chunkBufferObjectManager = new ChunkBufferObjectManager(TextureManager.GetInstance().textures["spriteSheet.png"], this);
+        chunkBufferObjectManager = new ChunkBufferObjectManager(this,TextureManager.GetInstance().textures["spriteSheet.png"]);
         ChunkDrawableStrategy.InitStaticMembers(chunkBufferObjectManager);
 
         // init shaders 
         InitShaders(gl);
         Awake();
             
-        if (gameObjects.ContainsKey(typeof(Console).FullName!))
-            console = (Console)gameObjects[typeof(Console).FullName!];
         startables?.Invoke();
+        startables = null;
     }
 
     private void InitShaders(GL gl) {
@@ -125,7 +115,12 @@ public sealed class Game
     [Logger.Timer]
     public void Update(double deltaTime)
     {
+        
         try {
+            if (startables is not null) {
+                startables.Invoke();
+                startables = null;
+            }
             updatables?.Invoke( deltaTime);
         }
         catch (GameException gameException) {
@@ -209,11 +204,26 @@ public sealed class Game
             {
                 if (instance == null)
                 {
-                    instance = new Game(scene ?? new Scene(new List<InitGameData>()), true);
+                    instance = new Game(scene ?? new Scene(new List<InitGameData>(), new OpenGlConfig()), true);
                 }
             }
         }
         return instance;
     }
 
+    public void AddGameObject(InitGameData data) {
+        Object[] param = new []{this}.Concat(data.pars).ToArray();
+        GameObject gameObject = (GameObject)Activator.CreateInstance(
+            Type.GetType(data.typeName) ?? throw new InvalidOperationException("Impossible de trouver la class " + data.typeName),
+            param)!;
+        gameObjects.Add(data.typeName, gameObject); 
+    }
+    
+    public void AddGameObject(GameObject gameObject) {
+        gameObjects.Add(gameObject.GetType().FullName!, gameObject); 
+    }
+
+    public T FindGameObject<T>() where T : GameObject {
+        return (T)gameObjects[typeof(T).FullName!];
+    }
 }

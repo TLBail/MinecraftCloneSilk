@@ -22,9 +22,8 @@ public class ChunkGenerationTest
         Scene scene = new Scene(new List<InitGameData>()
             {
                 new (typeof(Player).FullName!),
-                new (typeof(World).FullName!, new object[]{WorldMode.EMPTY, "Worlds/testWorld"}),
-                new (typeof(Console).FullName!)
-            }
+            new (typeof(World).FullName!, new object[]{WorldMode.EMPTY, "Worlds/testWorld"}),
+            }, new OpenGlConfig(true)
         );
         game = Game.GetInstance(scene, false);
         gameThread = new Thread(() => {

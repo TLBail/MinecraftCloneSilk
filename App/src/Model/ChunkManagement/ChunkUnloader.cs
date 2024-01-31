@@ -81,7 +81,6 @@ public class ChunkUnloader
     }
 
     internal void ForceUnloadChunk(Chunk chunkToUnload) {
-        Console.WriteLine("force unload chunk" + chunkToUnload.position + " " + chunkToUnload.chunkState);
         if(chunkToUnload.IsRequiredByChunkLoader() || chunkToUnload.IsRequiredByChunkSaver()) throw new Exception("chunk required by chunkLoader or chunkSaver");
         
         
@@ -102,7 +101,6 @@ public class ChunkUnloader
             }
         }
         
-        Console.WriteLine(chunkToUnload.position);
         if (chunkManager.chunks.TryRemove(new KeyValuePair<Vector3D<int>, Chunk>(chunkToUnload.position, chunkToUnload))) {
             chunkPool.ReturnChunk(chunkToUnload);
         } 

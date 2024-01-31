@@ -15,13 +15,15 @@ public struct InitGameData
 }
 
 
+
 public class Scene
 {
-    
+    public OpenGlConfig  openGlConfig;
     public List<InitGameData> gameObjects { get; init; }
 
-    public Scene(List<InitGameData> gameObjects) {
+    public Scene(List<InitGameData> gameObjects, OpenGlConfig config) {
         this.gameObjects = gameObjects;
+        this.openGlConfig = config;
     }
     
     

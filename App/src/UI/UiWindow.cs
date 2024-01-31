@@ -18,14 +18,27 @@ public abstract class UiWindow : GameObject
     protected bool needMouse = true;
     public static bool keyboardUseInConsole = false;
     
+    
     public UiWindow(Game game, Key? key) : base(game) {
         this.key = key;
         visible = (key == null);
-        openGl = game.openGl;
-        game.uiDrawables += UiPipeline;
+    }
+
+    protected override void mStart() {
         if (key.HasValue) {
             keyboard = game.GetKeyboard();
             keyboard.KeyDown += SetVisible;
+        }
+        openGl = game.openGl;
+        game.uiDrawables += UiPipeline;
+        base.mStart();
+    }
+
+    public override void Destroy() {
+        base.Destroy();
+        game.uiDrawables -= UiPipeline;
+        if (key.HasValue) {
+            keyboard!.KeyDown -= SetVisible;
         }
     }
 

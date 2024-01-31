@@ -21,7 +21,6 @@ namespace MinecraftCloneSilk.GameComponent
         private World world = null!;
 
         private PlayerInteractionToWorld playerInteractionToWorld = null!;
-        private Console console = null!;
         
         
         public Inventaire inventaire;
@@ -37,7 +36,8 @@ namespace MinecraftCloneSilk.GameComponent
             }
         }
         
-        public Player(Game game) : base(game)
+        public Player(Game game) :this(game, Vector3.Zero){}
+        public Player(Game game, Vector3 position) : base(game)
         {
             //Start a camera at position 3 on the Z axis, looking at position -1 on the Z axis
             camera = new Camera(game.GetWindow(), game.GetMouse());
@@ -47,6 +47,7 @@ namespace MinecraftCloneSilk.GameComponent
             this.playerUi = new PlayerUi(this);
             mouse.MouseDown += OnMouseClick;
             inventaire = new Inventaire(this);
+            this.position = position;
         }
 
         public Vector3 GetDirection3D() {
@@ -94,7 +95,6 @@ namespace MinecraftCloneSilk.GameComponent
             world = (World)game.gameObjects[typeof(World).FullName!];
             this.playerInteractionToWorld = new PlayerInteractionToWorld(world, this);
             playerUi.Start(playerInteractionToWorld);
-            console = (Console)game.gameObjects[typeof(Console).FullName!];
             console.AddCommand("/tp", (commandParams) =>
             {
                 Vector3 newPosition = Vector3.Zero;

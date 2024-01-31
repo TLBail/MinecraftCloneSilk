@@ -5,6 +5,7 @@ using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using ImGuiNET;
 using MinecraftCloneSilk.GameComponent;
 using Silk.NET.Core;
 using Silk.NET.GLFW;
@@ -23,6 +24,16 @@ using Image = SixLabors.ImageSharp.Image;
 
 namespace MinecraftCloneSilk.Core
 {
+    public struct OpenGlConfig
+    {
+        public bool EnableVSync = false;
+
+        public OpenGlConfig(bool enableVSync = false)
+        {
+            EnableVSync = enableVSync;
+        }
+    }
+    
     public class OpenGl
     {
         public IWindow window { get; private set; }
@@ -44,7 +55,7 @@ namespace MinecraftCloneSilk.Core
         private bool running = true;
         private const string PATHICON = "Assets/minecraftLogo.png";
         
-        public OpenGl(Game game)
+        public OpenGl(Game game, OpenGlConfig? config = null!)
         {
             this.game = game;
 
@@ -53,6 +64,7 @@ namespace MinecraftCloneSilk.Core
             options.Size = new Vector2D<int>(1920, 1080);
             options.Title = "MinecraftCloneSilk";
             options.Samples = 4; //Anti-aliasing
+            if(config is not null ) options.VSync = config.Value.EnableVSync;
             options.API = new GraphicsAPI(ContextAPI.OpenGL, new APIVersion(4, 3));
             window = Window.Create(options);
 
@@ -93,7 +105,7 @@ namespace MinecraftCloneSilk.Core
             Console.WriteLine("Vendor : " + Encoding.ASCII.GetString(vendor.ToArray()) );
             LoadIcon();
             
-            imGuiController = new ImGuiController(Gl, window, input);
+            imGuiController = new ImGuiController(Gl, window, input, Fonts.DEFAULT_FONT_CONFIG, () => Fonts.LoadFonts());
             
             primaryKeyboard = input.Keyboards.FirstOrDefault()!;
             primaryMouse = input.Mice.FirstOrDefault()!;

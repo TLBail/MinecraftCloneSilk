@@ -5,7 +5,7 @@ using Silk.NET.Maths;
 
 namespace MinecraftCloneSilk.Model.Storage;
 
-class NullChunkStorage : IChunkStorage
+public class NullChunkStorage : IChunkStorage
 {
     public ChunkState GetChunkStateInStorage(Vector3D<int> position) => ChunkState.EMPTY;
     

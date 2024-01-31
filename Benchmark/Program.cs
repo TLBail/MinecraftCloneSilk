@@ -5,17 +5,7 @@ using BenchmarkDotNet.Running;
 class Program
 {
     static void Main(string[] args) {
-        BenchmarkRunner.Run<TryToUnloadChunkBenchmark>();
-        
+        BenchmarkRunner.Run<ChunkLoadingBenchmark>();
     }
 
-
-    public static void runChunkIOBenchmark() {
-        BenchmarkRunner.Run<ChunkIOBenchmark>();
-    }
-    
-    public static void runBenchmark() { 
-        //BenchmarkRunner.Run<ChunkGenerationBenchmark>();
-        BenchmarkRunner.Run<WorldNaturalGenerationBenchMark>();
-    }
 }

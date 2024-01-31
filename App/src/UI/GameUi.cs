@@ -1,4 +1,5 @@
-﻿using System.Numerics;
+﻿using System.Diagnostics;
+using System.Numerics;
 using ImGuiNET;
 using MinecraftCloneSilk.Core;
 using MinecraftCloneSilk.GameComponent;
@@ -8,6 +9,7 @@ namespace MinecraftCloneSilk.UI;
 
 public class GameUi : UiWindow
 {
+    
     private ImGuiWindowFlags windowFlags;
     
     public GameUi(Game game, Key? key) : base(game, key) {
@@ -16,7 +18,6 @@ public class GameUi : UiWindow
     public GameUi(Game game) : this(game, null) {}
 
     protected override void  DrawUi() {
-
         const float pad = 0.0f;
         ImGuiViewportPtr viewport = ImGui.GetMainViewport();
         Vector2 workPos = viewport.WorkPos; // Use work area to avoid menu-bar/task-bar, if any!
@@ -36,7 +37,6 @@ public class GameUi : UiWindow
             if (!(gameObject is UiWindow) && ImGui.CollapsingHeader("gameObject : " + gameObject.GetType().Name)) {
                 gameObject.ToImGui();
                 ImGui.Separator();
-                
             }
         }
         

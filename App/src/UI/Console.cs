@@ -10,9 +10,7 @@ namespace MinecraftCloneSilk.UI;
 public class Console : UiWindow
 {
     private Dictionary<string, Action<string[]>> commands;
-
     private List<LogRecord> logs;
-
     public record LogRecord(string text, LogType logType, DateTime dateTime);
 
     public enum LogType
@@ -27,28 +25,43 @@ public class Console : UiWindow
     private readonly ImGuiWindowFlags windowFlags;
     private bool scrollToBottom;
     private IKeyboard keyboard;
+    public bool isUiActive { get; private set; }
 
     public Console(Game game) : base(game, null) {
+        base.console = this;
         needMouse = false;
         commands = new Dictionary<string, Action<string[]>>();
-        keyboard = game.GetKeyboard();
         windowFlags = ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.AlwaysAutoResize |
                       ImGuiWindowFlags.NoSavedSettings | ImGuiWindowFlags.NoNav | ImGuiWindowFlags.NoMove;
-
         logs = new List<LogRecord>();
         commands.Add("/help", (commandParams) =>
         {
-            logs.Add(new LogRecord("commands : ", LogType.NULL, DateTime.Now));
+            Log("commands : ");
             foreach (var key in commands.Keys) logs.Add(new LogRecord("- " + key, LogType.NULL, DateTime.Now));
         });
         commands.Add("/clear", (commandParams) => { logs.Clear(); });
-
+        commands.Add("/gameObjects", (commandParams) =>
+        {
+            Log("gameobjects  : ");
+            foreach (var pair in game.gameObjects) {
+                Log(@"- " + pair.Key + " : " + pair.Value);
+            }
+        });
     }
-
     public void AddCommand(string key, Action<string[]> action) => commands.Add(key, action);
     public void Log(string text, LogType logType = LogType.NULL) => logs.Add(new LogRecord(text, logType, DateTime.Now));
-    
     protected override unsafe void DrawUi() {
+        if(isUiActive) ConsoleUi();
+    }
+
+    public void SetUiActive(bool active) {
+        if (active) {
+            keyboard = game.GetKeyboard();
+        }
+        isUiActive = active;
+    }
+
+    private unsafe void ConsoleUi() {
         const float padx = 10.0f;
         const float pady = 200.0f;
         var viewport = ImGui.GetMainViewport();
@@ -156,5 +169,9 @@ public class Console : UiWindow
 
         ImGui.Text(logRecord.dateTime.ToLongTimeString() + " : " + logRecord.text);
         ImGui.PopStyleColor();
+    }
+
+    public void RemoveCommand(string s) {
+        commands.Remove(s);
     }
 }

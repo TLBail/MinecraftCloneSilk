@@ -20,8 +20,7 @@ public class PlayerTest
             {
                 new (typeof(Player).FullName!),
                 new (typeof(World).FullName!, new object[]{WorldMode.EMPTY}),
-                new (typeof(Console).FullName!),
-            }
+            }, new OpenGlConfig(true)
         );
         game = Game.GetInstance(scene, false);
         gameThread = new Thread(() => {

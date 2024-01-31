@@ -60,9 +60,8 @@ public class InventaireUi : UiWindow
         
         ImGui.SameLine();
         
-        ImGui.BeginGroup();
         //image
-        
+        ImGui.BeginGroup();
         if (blockName.Length > 0) {
             if(inventaire.inventoryBlocks[index]!.block.fullTexture != null)
                 ImGui.ImageButton((IntPtr)inventaire.inventoryBlocks[index]!.block.fullTexture!.handle,

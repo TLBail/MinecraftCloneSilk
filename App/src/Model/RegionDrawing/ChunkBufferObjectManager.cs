@@ -7,7 +7,7 @@ using Texture = MinecraftCloneSilk.Core.Texture;
 
 namespace MinecraftCloneSilk.Model.RegionDrawing;
 
-public class ChunkBufferObjectManager 
+public class ChunkBufferObjectManager : GameObject
 {
     private GL gl;
 
@@ -22,18 +22,15 @@ public class ChunkBufferObjectManager
     private Game game;
     private Lighting lighting;
     
-    public ChunkBufferObjectManager(Texture cubeTexture, Game game) {
+    public ChunkBufferObjectManager(Game game, Texture cubeTexture) : base(game) {
         this.cubeTexture = cubeTexture;
         this.game = game;
-        game.drawables += Drawables;
-        game.startables += Start;
-        game.updatables += Update;
-        game.stopable += Stop;
+        game.drawables += Draw;
         gl = game.GetGl();
     }
 
 
-    private void Start() {
+    protected override void Start() {
         cam = game.mainCamera;
         lighting = (game.gameObjects[typeof(World).FullName!] as World)!.lighting;
     }
@@ -65,7 +62,7 @@ public class ChunkBufferObjectManager
         regionBufferByChunk.Remove(chunk);
     }
 
-    private void Drawables(GL gl, double deltatime) {
+    private void Draw(GL gl, double deltatime) {
         foreach (RegionBuffer region in regions) {
             region.Draw(cam!, lighting);
         }
@@ -75,7 +72,7 @@ public class ChunkBufferObjectManager
     }
 
     [Logger.Timer]
-    private void Update(double deltatime) {
+    protected override void Update(double deltatime) {
         Stopwatch stopwatch = new Stopwatch();
         stopwatch.Start();
         while(regionsToUpdate.Count > 0 && stopwatch.ElapsedMilliseconds < 10) {
@@ -92,7 +89,8 @@ public class ChunkBufferObjectManager
     }
 
 
-    private void Stop() {
+    public override void Destroy() {
+        base.Destroy();
         cubeTexture.Dispose();
         foreach (RegionBuffer region in regions) {
             region.Dispose();
