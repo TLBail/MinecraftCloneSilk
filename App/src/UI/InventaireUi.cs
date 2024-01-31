@@ -25,7 +25,7 @@ public class InventaireUi : UiWindow
     }
 
     protected override void Start() {
-        inventaire = ((Player)game.gameObjects[typeof(Player).FullName!]).inventaire;
+        inventaire = game.FindGameObject<Player>().inventaire;
     }
 
     protected override void DrawUi() {

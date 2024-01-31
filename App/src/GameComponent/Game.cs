@@ -91,6 +91,7 @@ public sealed class Game
         //load textures
         textureManager = TextureManager.GetInstance();
         textureManager.Load(gl);
+        BlockFactory.GetInstance().UpdateTextures();
         
         chunkBufferObjectManager = new ChunkBufferObjectManager(this,TextureManager.GetInstance().textures["spriteSheet.png"]);
         ChunkDrawableStrategy.InitStaticMembers(chunkBufferObjectManager);

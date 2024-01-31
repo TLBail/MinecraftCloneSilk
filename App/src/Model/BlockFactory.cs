@@ -103,4 +103,8 @@ public class BlockFactory
             transparentBlockId.Add(block.blockData.id);
         }
     }
+
+    public void UpdateTextures() {
+        foreach (Block block in blocks.Values) block.UpdateFullTexture();
+    }
 }
