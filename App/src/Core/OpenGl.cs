@@ -215,12 +215,6 @@ namespace MinecraftCloneSilk.Core
 
         private void KeyDown(IKeyboard keyboard, Key key, int arg3)
         {
-            if (key == Key.Escape)
-            {
-                game.Stop();
-                return;
-            }
-
             if (key == Key.F1)
             {
                 unsafe

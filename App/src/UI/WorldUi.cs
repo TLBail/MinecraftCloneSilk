@@ -101,8 +101,6 @@ public class WorldUi
 
     private void WorldGenerationUi() {
         if (ImGui.CollapsingHeader("World generation", ImGuiTreeNodeFlags.Bullet) ){
-        
-            ImGui.InputInt("seed", ref WorldNaturalGeneration.seed);
             for (int i = 0; i < WorldNaturalGeneration.generationParameters.Count; i++) {
                 parameter = WorldNaturalGeneration.generationParameters[i];
                 ImGui.InputFloat("freq" + i, ref parameter.freq);

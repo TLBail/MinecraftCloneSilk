@@ -7,7 +7,7 @@ namespace MinecraftCloneSilk.Model.WorldGen;
 public class WorldNaturalGeneration : IWorldGenerator
 {
     private FastNoiseLite noiseGenerator;
-    public static int seed = 1234;
+    public int seed;
     private static BlockFactory? blockFactory;
     private BlockData water;
     private BlockData sand;
@@ -24,8 +24,8 @@ public class WorldNaturalGeneration : IWorldGenerator
     private FastNoiseLite diamondNoiseGenerator;
     
 
-    public WorldNaturalGeneration()
-    {
+    public WorldNaturalGeneration(int seed = 1234) {
+        this.seed = seed;
         noiseGenerator = new FastNoiseLite(seed);
         noiseGenerator.SetNoiseType(FastNoiseLite.NoiseType.Perlin);
         noiseGenerator.SetFractalType(FastNoiseLite.FractalType.FBm);

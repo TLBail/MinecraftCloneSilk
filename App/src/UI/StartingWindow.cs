@@ -19,7 +19,7 @@ public class StartingWindow : UiWindow
 
     protected override void  DrawUi() {
       bool use_work_area = true;
-        ImGuiWindowFlags flags = ImGuiWindowFlags.NoBackground | ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoSavedSettings;
+        ImGuiWindowFlags flags = ImGuiWindowFlags.NoBackground | ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoSavedSettings | ImGuiWindowFlags.NoBringToFrontOnFocus | ImGuiWindowFlags.NoFocusOnAppearing;
 
         ImGuiViewportPtr viewport = ImGui.GetMainViewport();
         Vector2 buttonSize = new Vector2(viewport.WorkSize.X * 0.3f, 50);
@@ -33,11 +33,9 @@ public class StartingWindow : UiWindow
         ImGui.PushStyleColor(ImGuiCol.ButtonActive, new Vector4(0.1f, 0.1f, 0.1f, 1.0f)); // Encore plus foncé lors du clic
         ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(1.0f, 1.0f, 1.0f, 1.0f)); // Texte blanc
         
-        ImGui.PushFont(Fonts.fonts["cousine"]);
- 
-
-        ImGui.Begin("Example: Fullscreen window", flags);
-        // Créer le bouton "Jouer"
+        ImGui.Begin("StartingWindow", flags);
+        
+        
         ImGui.SetCursorPosX(viewport.WorkSize.X / 3);
         ImGui.SetCursorPosY(viewport.WorkSize.Y / 2);
         if (ImGui.Button("Jouer", buttonSize)) Play();
@@ -49,22 +47,13 @@ public class StartingWindow : UiWindow
             // Logique du bouton "Options"
         }
 
-        // Ajouter un espace vertical entre les boutons
-        ImGui.Spacing();
-
-        // Créer le bouton "Quitter"
         ImGui.SetCursorPosX(viewport.WorkSize.X / 3);
         ImGui.SetCursorPosY(viewport.WorkSize.Y  * 0.83f);
-        if (ImGui.Button("Quitter", buttonSize))
-        {
-            // Logique du bouton "Quitter"
-        } 
-        
+        if (ImGui.Button("Quitter", buttonSize)) game.Stop();
         
         ImGui.End();
         // Restaurer le style
         ImGui.PopStyleColor(4);
-        ImGui.PopFont();
     }
 
     private void Play() {
@@ -77,8 +66,9 @@ public class StartingWindow : UiWindow
         game.AddGameObject(new InventaireUi(game));
         game.AddGameObject(new ItemBarUi(game));
         game.AddGameObject(new GameUi(game));
+        game.AddGameObject(new PauseMenu(game));
 
-        game.FindGameObject<World>().Reset(new WorldNaturalGeneration(), WorldMode.DYNAMIC, "Worlds/newWorld");
+        game.FindGameObject<World>().Reset(new WorldNaturalGeneration(1234), WorldMode.DYNAMIC, "Worlds/newWorld");
 
         this.Destroy();
     }

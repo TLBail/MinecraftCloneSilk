@@ -45,7 +45,6 @@ public class World : GameObject
     } 
     
     public void Reset(IWorldGenerator? worldGenerator = null,  WorldMode worldMode = WorldMode.EMPTY, string? saveLocation = null) {
-        this.worldGeneration = worldGenerator ?? new WorldNaturalGeneration();
         chunkManager.Clear();
         chunkStorage.Dispose();
         
@@ -60,7 +59,6 @@ public class World : GameObject
         if (worldMode == WorldMode.SIMPLE) {
             AddExempleChunk();
         }
-
         AddCommand();
     }
 
