@@ -19,6 +19,7 @@
     <PackageReference Include="MethodBoundaryAspect.Fody" Version="2.0.149" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.3.2" />
     <PackageReference Include="NUnit" Version="3.13.3" />
+    <PackageReference Include="NVorbis" Version="0.10.5" />
     <PackageReference Include="Silk.NET" Version="2.17.1" />
     <PackageReference Include="Silk.NET.Core" Version="2.17.1" />
     <PackageReference Include="Silk.NET.OpenGL.Extensions.ImGui" Version="2.17.1" />

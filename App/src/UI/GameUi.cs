@@ -29,16 +29,18 @@ public class GameUi : UiWindow
         windowPosPivot.Y = 0.0f;
         ImGui.SetNextWindowPos(windowPos, ImGuiCond.Always, windowPosPivot);
         windowFlags |= ImGuiWindowFlags.NoMove;
-        
-        ImGui.Begin("Game", windowFlags);
+
+        if (ImGui.Begin("Game", windowFlags)) {
+            foreach (GameObject gameObject in game.gameObjects.Values) {
+                if (!(gameObject is UiWindow) && ImGui.CollapsingHeader("gameObject : " + gameObject.GetType().Name)) {
+                    gameObject.ToImGui();
+                    ImGui.Separator();
+                }
+            }
+            
+        }
         
 
-        foreach (GameObject gameObject in game.gameObjects.Values) {
-            if (!(gameObject is UiWindow) && ImGui.CollapsingHeader("gameObject : " + gameObject.GetType().Name)) {
-                gameObject.ToImGui();
-                ImGui.Separator();
-            }
-        }
         
         ImGui.End();
     }

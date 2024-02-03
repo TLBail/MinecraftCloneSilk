@@ -16,7 +16,6 @@ public abstract class UiWindow : GameObject
     protected Key? key;
     protected bool visible;
     protected bool needMouse = true;
-    public static bool keyboardUseInConsole = false;
     
     
     public UiWindow(Game game, Key? key) : base(game) {
@@ -43,12 +42,9 @@ public abstract class UiWindow : GameObject
     }
 
     protected virtual void SetVisible(IKeyboard keyboard, Key key, int a) {
-        if(keyboardUseInConsole) return;
+        if(ImGui.GetIO().WantTextInput) return;
         if (key == this.key) visible = !visible;
     }
-
-    public UiWindow() : this(Game.GetInstance(), DEFAULT_KEY) {    }
-
     public void UiPipeline() {
         if(!visible) return;
         

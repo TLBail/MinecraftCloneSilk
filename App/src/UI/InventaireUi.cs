@@ -39,14 +39,16 @@ public class InventaireUi : UiWindow
         windowPos.Y = workPos.Y + (workSize.Y / 2) - (sizeY / 2);
         ImGui.SetNextWindowPos(windowPos, ImGuiCond.Always);
         ImGui.SetNextWindowSize(new Vector2(sizeX,sizeY));
-        ImGui.Begin("Inventaire", FLAGS);
-        ImGui.Text("inventaire");
-        var footerHeigthToReserve = ImGui.GetStyle().ItemSpacing.Y + ImGui.GetFrameHeightWithSpacing();
-        if (ImGui.BeginChild("inventoryblocks", new Vector2(0, -footerHeigthToReserve), false)) {
-            for (int x = 0; x < Inventaire.INVENTORYSIZE; x++) {
-                if(x > 0 && x % 8== 0)ImGui.NewLine();
-                ItemUi(x);
+        if (ImGui.Begin("Inventaire", FLAGS)) {
+            ImGui.Text("inventaire");
+            var footerHeigthToReserve = ImGui.GetStyle().ItemSpacing.Y + ImGui.GetFrameHeightWithSpacing();
+            if (ImGui.BeginChild("inventoryblocks", new Vector2(0, -footerHeigthToReserve), false)) {
+                for (int x = 0; x < Inventaire.INVENTORYSIZE; x++) {
+                    if(x > 0 && x % 8== 0)ImGui.NewLine();
+                    ItemUi(x);
+                }
             }
+            
         }
         ImGui.End();
     }
@@ -65,7 +67,7 @@ public class InventaireUi : UiWindow
         if (blockName.Length > 0) {
             if(inventaire.inventoryBlocks[index]!.block.fullTexture != null)
                 ImGui.ImageButton((IntPtr)inventaire.inventoryBlocks[index]!.block.fullTexture!.handle,
-                new Vector2(100, 100));
+                    new Vector2(100, 100));
         } else {
             ImGui.Button(blockName, new Vector2(100, 100));
         }

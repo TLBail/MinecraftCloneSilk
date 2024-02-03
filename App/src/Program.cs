@@ -11,7 +11,6 @@ namespace MinecraftCloneSilk
     {
 
         public static void Main(string[] args) {
-
             List<InitGameData> gameObjectNames = new List<InitGameData>()
             {
                 new (typeof(Player).FullName!, new object[]{new Vector3(0.0f, 10f, 0.0f)}),
@@ -20,7 +19,7 @@ namespace MinecraftCloneSilk
                 new (typeof(GeneralInfo).FullName!),
                 new (typeof(DemoWindow).FullName!),
             };
-            Scene scene = new Scene(gameObjectNames, new OpenGlConfig(false));
+            Scene scene = new Scene(gameObjectNames, new OpenGlConfig(true));
             Game game = Game.GetInstance(scene);
             game.Run();
         }

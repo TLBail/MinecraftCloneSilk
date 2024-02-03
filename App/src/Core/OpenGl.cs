@@ -1,11 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading.Tasks;
-using ImGuiNET;
 using MinecraftCloneSilk.GameComponent;
 using Silk.NET.Core;
 using Silk.NET.GLFW;
@@ -14,13 +8,14 @@ using Silk.NET.Maths;
 using Silk.NET.OpenGL;
 using Silk.NET.Windowing;
 using Silk.NET.OpenGL.Extensions.ImGui;
+using Silk.NET.Windowing.Glfw;
 using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
-using SixLabors.ImageSharp.Processing;
 using Color = System.Drawing.Color;
 using Glfw = Silk.NET.GLFW.Glfw;
 using Image = SixLabors.ImageSharp.Image;
+using Monitor = Silk.NET.Windowing.Monitor;
+using VideoMode = Silk.NET.Windowing.VideoMode;
 
 namespace MinecraftCloneSilk.Core
 {
@@ -61,9 +56,20 @@ namespace MinecraftCloneSilk.Core
 
             //Create a window.
             var options = WindowOptions.Default;
-            options.Size = new Vector2D<int>(1920, 1080);
+            
+            
+            IMonitor mainMonitor = Monitor.GetMainMonitor(null);
+            if (mainMonitor.VideoMode.Resolution is null) {
+                options.Size = new Vector2D<int>(800, 600);
+                options.WindowState = WindowState.Normal;
+            } else {
+                options.VideoMode = mainMonitor.VideoMode;
+                options.Size = mainMonitor.VideoMode.Resolution.Value;
+                options.WindowState = WindowState.Fullscreen;
+            }
             options.Title = "MinecraftCloneSilk";
             options.Samples = 4; //Anti-aliasing
+            
             if(config is not null ) options.VSync = config.Value.EnableVSync;
             options.API = new GraphicsAPI(ContextAPI.OpenGL, new APIVersion(4, 3));
             window = Window.Create(options);

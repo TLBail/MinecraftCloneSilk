@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MinecraftCloneSilk.Audio;
 using Silk.NET.OpenGL;
 using MinecraftCloneSilk.GameComponent;
 using MinecraftCloneSilk.Core;
@@ -40,8 +41,8 @@ public sealed class Game
     public Camera? mainCamera { get; set; }
 
     private Scene scene;
-
     private TextureManager? textureManager;
+    private AudioMaster audioMaster;
 
     public Dictionary<string, GameObject> gameObjects = new Dictionary<string, GameObject>();
     public Console console;
@@ -53,13 +54,14 @@ public sealed class Game
     public ChunkBufferObjectManager? chunkBufferObjectManager;
         
         
-    private Game(Scene scene, bool start = true) {
+    private Game(Scene scene) {
 #if DEBUG
         ChromeTrace.Init();
 #endif
         this.scene = scene;
         openGl = new OpenGl(this, scene.openGlConfig);
         console = new Console(this);
+        audioMaster = AudioMaster.GetInstance();
     }
         
 
@@ -71,6 +73,7 @@ public sealed class Game
     public void Stop() {
         foreach(GameObject gameObject in gameObjects.Values) gameObject.Destroy();
         openGl.Stop();
+        audioMaster.Dispose();
 #if DEBUG
         ChromeTrace.Dispose();
 #endif
@@ -205,7 +208,7 @@ public sealed class Game
             {
                 if (instance == null)
                 {
-                    instance = new Game(scene ?? new Scene(new List<InitGameData>(), new OpenGlConfig()), true);
+                    instance = new Game(scene ?? new Scene(new List<InitGameData>(), new OpenGlConfig()));
                 }
             }
         }
