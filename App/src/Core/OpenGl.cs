@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.Numerics;
+using System.Runtime.InteropServices;
 using System.Text;
 using MinecraftCloneSilk.GameComponent;
 using Silk.NET.Core;
@@ -19,13 +20,17 @@ using VideoMode = Silk.NET.Windowing.VideoMode;
 
 namespace MinecraftCloneSilk.Core
 {
-    public struct OpenGlConfig
+    public class OpenGlConfig
     {
-        public bool EnableVSync = false;
+        public bool enableVSync = false;
+        public bool fullScreen = false;
+        public Vector2D<int> windowSize = new Vector2D<int>(1920, 1080);
 
-        public OpenGlConfig(bool enableVSync = false)
+        public OpenGlConfig(bool enableVSync = false, bool fullScreen = false, Vector2D<int>? windowSize = null)
         {
-            EnableVSync = enableVSync;
+            this.enableVSync = enableVSync;
+            this.fullScreen = fullScreen;
+            if(windowSize is not null) this.windowSize = windowSize.Value;
         }
     }
     
@@ -56,21 +61,27 @@ namespace MinecraftCloneSilk.Core
 
             //Create a window.
             var options = WindowOptions.Default;
-            
-            
-            IMonitor mainMonitor = Monitor.GetMainMonitor(null);
-            if (mainMonitor.VideoMode.Resolution is null) {
-                options.Size = new Vector2D<int>(800, 600);
-                options.WindowState = WindowState.Normal;
-            } else {
-                options.VideoMode = mainMonitor.VideoMode;
-                options.Size = mainMonitor.VideoMode.Resolution.Value;
-                options.WindowState = WindowState.Fullscreen;
-            }
+
+
+            if (config is not null) {
+                if (config.fullScreen) {
+                    IMonitor mainMonitor = Monitor.GetMainMonitor(null);
+                    if (mainMonitor.VideoMode.Resolution is null) {
+                        options.Size = config.windowSize;
+                        options.WindowState = WindowState.Normal;
+                    } else {
+                        options.VideoMode = mainMonitor.VideoMode;
+                        options.Size = mainMonitor.VideoMode.Resolution.Value;
+                        options.WindowState = WindowState.Fullscreen;
+                    }
+                } else {
+                    options.Size = config.windowSize;
+                }
+            } 
             options.Title = "MinecraftCloneSilk";
             options.Samples = 4; //Anti-aliasing
             
-            if(config is not null ) options.VSync = config.Value.EnableVSync;
+            if(config is not null ) options.VSync = config.enableVSync;
             options.API = new GraphicsAPI(ContextAPI.OpenGL, new APIVersion(4, 3));
             window = Window.Create(options);
 

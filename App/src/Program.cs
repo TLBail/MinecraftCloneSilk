@@ -19,7 +19,7 @@ namespace MinecraftCloneSilk
                 new (typeof(GeneralInfo).FullName!),
                 new (typeof(DemoWindow).FullName!),
             };
-            Scene scene = new Scene(gameObjectNames, new OpenGlConfig(true));
+            Scene scene = new Scene(gameObjectNames, new OpenGlConfig(true, false));
             Game game = Game.GetInstance(scene);
             game.Run();
         }
