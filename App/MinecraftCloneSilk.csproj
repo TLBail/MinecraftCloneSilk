@@ -11,8 +11,19 @@
     <ApplicationIcon>..\Assets\icons8_minecraft_logo.ico</ApplicationIcon>
     <IsOriginalProject>true</IsOriginalProject>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
     <DisableFody Condition="'$(IsOriginalProject)'=='true' AND '$(Configuration)'!='Debug'">true</DisableFody>
   </PropertyGroup>
+
+  <ItemGroup>
+    <AdditionalFiles Include="..\Assets\**\*.*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\RessourceGenerator\RessourceGenerator.csproj"
+                      OutputItemType="Analyzer"
+                      ReferenceOutputAssembly="false" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="LightningDB" Version="0.15.0" />

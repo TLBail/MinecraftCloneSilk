@@ -62,7 +62,6 @@ namespace MinecraftCloneSilk.Core
             //Create a window.
             var options = WindowOptions.Default;
 
-
             if (config is not null) {
                 if (config.fullScreen) {
                     IMonitor mainMonitor = Monitor.GetMainMonitor(null);
