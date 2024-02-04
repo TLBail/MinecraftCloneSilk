@@ -11,7 +11,6 @@ public abstract class UiWindow : GameObject
     public const Key DEFAULT_KEY = Key.F2;
     
     private OpenGl openGl;
-    protected bool disableInteractionIfCursorIsNotAvailable = true;
     private IKeyboard? keyboard;
     protected Key? key;
     protected bool visible;
@@ -49,11 +48,12 @@ public abstract class UiWindow : GameObject
         if(!visible) return;
         
         
-        if (needMouse && openGl.CursorIsNotAvailable()) {
+        bool disableInteraction = needMouse && openGl.CursorIsNotAvailable();
+        if (disableInteraction) {
             ImGui.BeginDisabled();
         }
         DrawUi();
-        if (needMouse && openGl.CursorIsNotAvailable()) {
+        if (disableInteraction) {
             ImGui.EndDisabled();
         }
     }

@@ -15,6 +15,7 @@ vous avez besoin de rajouter les fichiers et dossiers suivants :
 - le Dossier Assets
 - le Dossier Shader
 - glfw3.dll ou SDL2.dll (fichiers trouvables dans les dossier de l'export)
+- il faut aussi d'autres .dll qui sont dans le dossier de l'export
 - deux dossier Worlds/newWorld
 
 
@@ -42,6 +43,10 @@ et **NOUVEAU** les chunks sont regroupés dans un seul fichier grâce à LMDB !
 Lightning Memory-Mapped Database est une base de données clé-valeur qui permet de stocker des données de manière très efficace.
 ## Commandes
 Pour accéder à la liste complète des commandes disponibles, tapez /help dans le chat du jeu.
+
+# Son
+Les sons sont joués grâce à OpenAl et sont stockés dans le dossier "dossierCourant/Assets/Sounds"
+L'application prend en charge uniquement les fichiers .ogg grâce à la bibliothèque NVorbis.
 
 
 # Profiling
