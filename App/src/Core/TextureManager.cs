@@ -34,7 +34,6 @@ public class TextureManager
         }
     }
     
-    public const string PATH_TO_TEXTURES_JSON = "./Assets/textures.json";
     public Dictionary<string, Texture> textures { get; private set; }
     
     
@@ -44,7 +43,7 @@ public class TextureManager
     
     public void Load(GL gl) {
         textures.Clear();
-        string jsonString = File.ReadAllText(PATH_TO_TEXTURES_JSON);
+        string jsonString = File.ReadAllText(Generated.FilePathConstants.Assets.textures_json);
         TexturesJson? textJson = JsonSerializer.Deserialize<TexturesJson>(jsonString);
         if (textJson == null) {
             throw new Exception("failed to load textures.json");

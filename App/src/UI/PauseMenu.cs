@@ -21,8 +21,8 @@ public class PauseMenu : UiWindow
     
     public PauseMenu(Game game) : base(game, Key.Escape) {
         flags = ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoSavedSettings ;
-        selectionEffect = new AudioEffect(Generated.FilePathConstants.AudioSelection_ogg);
-        hoverEffect = new AudioEffect(Generated.FilePathConstants.AudioHover_ogg);
+        selectionEffect = new AudioEffect(Generated.FilePathConstants.Audio.selection_ogg);
+        hoverEffect = new AudioEffect(Generated.FilePathConstants.Audio.hover_ogg);
         Button.ButtonStyle buttonStyle = new(
             new Vector4(0.2f, 0.2f, 0.2f, 1.0f), // Fond foncé
             new Vector4(0.3f, 0.3f, 0.3f, 1.0f), // Plus clair au survol

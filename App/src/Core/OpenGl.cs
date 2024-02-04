@@ -53,7 +53,6 @@ namespace MinecraftCloneSilk.Core
         private Glfw glfw;
 
         private bool running = true;
-        private const string PATHICON = "Assets/minecraftLogo.png";
         
         public OpenGl(Game game, OpenGlConfig? config = null!)
         {
@@ -139,7 +138,7 @@ namespace MinecraftCloneSilk.Core
         private void LoadIcon() {
             Configuration configuration = Configuration.Default;
             configuration.PreferContiguousImageBuffers = true;
-            using (var img = Image.Load<Rgba32>(configuration, PATHICON))
+            using (var img = Image.Load<Rgba32>(configuration, Generated.FilePathConstants.Sprite.minecraftLogo_png))
             {
                 img.DangerousTryGetSinglePixelMemory(out var imageSpan);
                 var imageBytes = MemoryMarshal.AsBytes(imageSpan.Span).ToArray();
