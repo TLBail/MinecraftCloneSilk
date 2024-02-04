@@ -6,8 +6,7 @@
 Ce projet vise à recréer le célèbre jeu Minecraft en utilisant Silk.Net, une bibliothèque C# qui fait la liaison avec OpenGl et ImGui pour l'interface utilisateur. Le monde est généré de manière procédurale grâce à l'algorithme de Perlin Noise, offrant des paysages variés et uniques. Le jeu dispose également de nombreux menus de débogage pour faciliter le développement et la résolution des problèmes.
 
 # Build 
-Pour compiler le projet, il dotnet 7.0
-utilisez la commande suivantes :
+Pour compiler le projet utilisez la commande suivantes :
 ```bash
 dotnet publish -r win-x64 /p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true
 ```
