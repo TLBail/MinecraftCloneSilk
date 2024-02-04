@@ -1,3 +1,5 @@
+[![wakatime](https://wakatime.com/badge/user/a781c5dc-d785-4d84-a638-12a7757527a5/project/f78a81ec-ab2b-4ad8-be58-19602e133ca7.svg)](https://wakatime.com/badge/user/a781c5dc-d785-4d84-a638-12a7757527a5/project/f78a81ec-ab2b-4ad8-be58-19602e133ca7)
+
 # MinecraftCloneSilk
 
 
