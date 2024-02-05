@@ -17,7 +17,7 @@ public static class Brush
     }
 
     public static void Bomb(World world, Vector3D<int> origin, int size) {
-        for (int x = -size; x < size; x++) {
+        Parallel.For(-size, size, x => {
             for (int y = -size; y < size; y++) {
                 for (int z = -size; z < size; z++) {
                     Vector3D<int> positionS = origin + new Vector3D<int>(x, y, z);
@@ -25,7 +25,7 @@ public static class Brush
                         world.SetBlock("air", positionS);
                 }
             }
-        }
+        });
     }
 
 

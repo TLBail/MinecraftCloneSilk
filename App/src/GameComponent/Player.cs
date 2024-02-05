@@ -133,7 +133,7 @@ namespace MinecraftCloneSilk.GameComponent
 
             if (primaryKeyboard.IsKeyPressed(Key.ShiftLeft)) {
                 speed = SPRINT_SPEED * (float)deltaTime;
-                camera.zoom = MathF.Min(70f, (float)(camera.zoom + (100f * deltaTime)));
+                camera.zoom = MathF.Min(65f, (float)(camera.zoom + (10f * deltaTime)));
             } else {
                 camera.zoom = MathF.Max(60f, (float)(camera.zoom - (100f * deltaTime)));
 
