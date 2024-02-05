@@ -1,11 +1,12 @@
+[![wakatime](https://wakatime.com/badge/user/a781c5dc-d785-4d84-a638-12a7757527a5/project/f78a81ec-ab2b-4ad8-be58-19602e133ca7.svg)](https://wakatime.com/badge/user/a781c5dc-d785-4d84-a638-12a7757527a5/project/f78a81ec-ab2b-4ad8-be58-19602e133ca7)
+
 # MinecraftCloneSilk
 
 
 Ce projet vise à recréer le célèbre jeu Minecraft en utilisant Silk.Net, une bibliothèque C# qui fait la liaison avec OpenGl et ImGui pour l'interface utilisateur. Le monde est généré de manière procédurale grâce à l'algorithme de Perlin Noise, offrant des paysages variés et uniques. Le jeu dispose également de nombreux menus de débogage pour faciliter le développement et la résolution des problèmes.
 
 # Build 
-Pour compiler le projet, il dotnet 7.0
-utilisez la commande suivantes :
+Pour compiler le projet utilisez la commande suivantes :
 ```bash
 dotnet publish -r win-x64 /p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true
 ```
