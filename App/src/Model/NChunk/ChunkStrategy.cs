@@ -10,44 +10,75 @@ public abstract class ChunkStrategy
 {
     
     protected readonly Chunk chunk;
-
     protected ChunkStrategy(Chunk chunk) {
         this.chunk = chunk;
     }
-    
     public abstract ChunkState GetChunkStateOfStrategy();
     public virtual ChunkState MinimumChunkStateOfNeighbors() => ChunkState.EMPTY;
 
-    public virtual BlockData GetBlockData(Vector3D<int> localPosition) {
-        if (localPosition.Y < 0) {
-            return chunk.chunksNeighbors![(int)Face.BOTTOM]!
-                .GetBlockData(new Vector3D<int>(localPosition.X, localPosition.Y + (int)Chunk.CHUNK_SIZE,
-                    localPosition.Z));
-        } else if (localPosition.Y >= Chunk.CHUNK_SIZE) {
-            return chunk.chunksNeighbors![(int)Face.TOP]!
-                .GetBlockData(new Vector3D<int>(localPosition.X, localPosition.Y - (int)Chunk.CHUNK_SIZE,
-                    localPosition.Z));
-        } else if (localPosition.X < 0) {
-            return chunk.chunksNeighbors![(int)Face.LEFT]!
-                .GetBlockData(new Vector3D<int>(localPosition.X + (int)Chunk.CHUNK_SIZE, localPosition.Y,
-                    localPosition.Z));
-        } else if (localPosition.X >= Chunk.CHUNK_SIZE) {
-            return chunk.chunksNeighbors![(int)Face.RIGHT]!
-                .GetBlockData(new Vector3D<int>(localPosition.X - (int)Chunk.CHUNK_SIZE, localPosition.Y,
-                    localPosition.Z));
-        } else if (localPosition.Z < 0) {
-            return chunk.chunksNeighbors![(int)Face.BACK]!
-                .GetBlockData(new Vector3D<int>(localPosition.X, localPosition.Y,
-                    localPosition.Z + (int)Chunk.CHUNK_SIZE));
-        } else if (localPosition.Z >= Chunk.CHUNK_SIZE) {
-            return chunk.chunksNeighbors![(int)Face.FRONT]!
-                .GetBlockData(new Vector3D<int>(localPosition.X, localPosition.Y,
-                    localPosition.Z - (int)Chunk.CHUNK_SIZE));
+    public virtual BlockData GetBlockData(Vector3D<int> position) {
+        FaceFlag faceFlag = FaceFlag.EMPTY;
+        if (position.Y < 0) {
+            faceFlag |= FaceFlag.BOTTOM;
+            position.Y += (int)Chunk.CHUNK_SIZE;
+        } else if (position.Y >= Chunk.CHUNK_SIZE) {
+            faceFlag |= FaceFlag.TOP;
+            position.Y -= (int)Chunk.CHUNK_SIZE;
+        }
+        if (position.X < 0) {
+            faceFlag |= FaceFlag.LEFT;
+            position.X += (int)Chunk.CHUNK_SIZE;
+        } else if (position.X >= Chunk.CHUNK_SIZE) {
+            faceFlag |= FaceFlag.RIGHT;
+            position.X -= (int)Chunk.CHUNK_SIZE;
+        }
+        if (position.Z < 0) {
+            faceFlag |= FaceFlag.BACK;
+            position.Z += (int)Chunk.CHUNK_SIZE;
+        } else if (position.Z >= Chunk.CHUNK_SIZE) {
+            faceFlag |= FaceFlag.FRONT;
+            position.Z -= (int)Chunk.CHUNK_SIZE;
+        }
+
+        FaceExtended? faceExtended = FaceFlagUtils.GetFaceExtended(faceFlag);
+        if (faceExtended is not null) {
+            return chunk.chunksNeighbors![(int)faceExtended].GetBlockData(position);
         } else {
-            return chunk.chunkData.GetBlock(localPosition.X, localPosition.Y, localPosition.Z);
+            return chunk.chunkData.GetBlock(position.X, position.Y, position.Z);
         }
     }
+    public void SetBlockData(int x, int y, int z, BlockData blockData) {
+        if(chunk.chunksNeighbors is null) throw new Exception("chunk neighbors not setup");
+        FaceFlag faceFlag = FaceFlag.EMPTY;
+        if (y < 0) {
+            faceFlag |= FaceFlag.BOTTOM;
+            y += (int)Chunk.CHUNK_SIZE;
+        } else if (y >= Chunk.CHUNK_SIZE) {
+            faceFlag |= FaceFlag.TOP;
+            y -= (int)Chunk.CHUNK_SIZE;
+        }
+        if (x < 0) {
+            faceFlag |= FaceFlag.LEFT;
+            x += (int)Chunk.CHUNK_SIZE;
+        } else if (x >= Chunk.CHUNK_SIZE) {
+            faceFlag |= FaceFlag.RIGHT;
+            x -= (int)Chunk.CHUNK_SIZE;
+        }
+        if (z < 0) {
+            faceFlag |= FaceFlag.BACK;
+            z += (int)Chunk.CHUNK_SIZE;
+        } else if (z >= Chunk.CHUNK_SIZE) {
+            faceFlag |= FaceFlag.FRONT;
+            z -= (int)Chunk.CHUNK_SIZE;
+        }
 
+        FaceExtended? faceExtended = FaceFlagUtils.GetFaceExtended(faceFlag);
+        if (faceExtended is not null) {
+            chunk.chunksNeighbors![(int)faceExtended].chunkData.SetBlock(blockData, x, y, z);
+        } else {
+            chunk.chunkData.SetBlock(blockData,x, y, z);
+        }
+    }
 
     public virtual void UpdateChunkVertex() {
     }
@@ -56,7 +87,7 @@ public abstract class ChunkStrategy
     }
 
     public virtual void SetBlock(int x, int y, int z, string name) {
-        chunk.chunkData.SetBlock(x, y, z,Chunk.blockFactory!.GetBlockData(name));
+        chunk.chunkData.SetBlock(Chunk.blockFactory!.GetBlockData(name),x, y, z);
         UpdateChunkFaces();
         OnBlockSet(x, y, z);
     }
@@ -67,7 +98,6 @@ public abstract class ChunkStrategy
         var blockData = GetBlockData(new Vector3D<int>(x, y, z));
         return Chunk.blockFactory!.BuildFromBlockData(new Vector3D<int>(x, y, z), blockData);
     }
-
 
     public virtual void Update(double deltaTime) {
     }

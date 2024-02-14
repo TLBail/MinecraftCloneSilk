@@ -13,22 +13,22 @@ public class TestOffsetField
         var offset = new IntPtr(&vertex) - new IntPtr(&vertex.position);
         Assert.IsTrue(offset == 0);
 
-        offset = new IntPtr(&vertex.ambientOcclusion) - new IntPtr(&vertex);
-        Assert.That(Marshal.OffsetOf(vertex.GetType(), "ambientOcclusion"), Is.EqualTo(offset));
+        offset = new IntPtr(&vertex.data) - new IntPtr(&vertex);
+        Assert.That(Marshal.OffsetOf(vertex.GetType(), "data"), Is.EqualTo(offset));
 
         int offset2 = Unsafe.ByteOffset(ref Unsafe.As<CubeVertex, byte>(ref vertex),
-            ref Unsafe.As<int, byte>(ref vertex.ambientOcclusion)).ToInt32();
+            ref Unsafe.As<int, byte>(ref vertex.data)).ToInt32();
         Console.WriteLine("byteoffset" + offset2);
         Assert.That((int)offset, Is.EqualTo(offset2));
 
-        int offset3 = GetOffset(ref vertex, ref vertex.ambientOcclusion);
+        int offset3 = GetOffset(ref vertex, ref vertex.data);
         Console.WriteLine("byteoffset" + offset3);
 
         int offset4 = GetOffset(ref vertex, ref vertex.position);
         Assert.That(offset4, Is.EqualTo(0));
         
         int offset5 = GetOffset(ref vertex, ref vertex.texCoords);
-        Assert.That(offset5, Is.EqualTo(16));
+        Assert.That(offset5, Is.EqualTo(8));
     }
 
 

@@ -10,7 +10,7 @@ public class testSuperChunk
     [Test]
     public unsafe void testSuperChunkMethod() {
         BlockData[,,] blocks = new BlockData[Chunk.CHUNK_SIZE,Chunk.CHUNK_SIZE,Chunk.CHUNK_SIZE];
-        int index = 0;
+        short index = 0;
         for (int i = 0; i < Chunk.CHUNK_SIZE; i++) {
             for (int j = 0; j < Chunk.CHUNK_SIZE; j++) {
                 for (int k = 0; k < Chunk.CHUNK_SIZE; k++) {
@@ -40,7 +40,7 @@ public class testSuperChunk
     [Test]
     public unsafe void testSuperChunkMethodFor() {
         BlockData[,,] blocks = new BlockData[Chunk.CHUNK_SIZE,Chunk.CHUNK_SIZE,Chunk.CHUNK_SIZE];
-        int index = 0;
+        short index = 0;
         for (int i = 0; i < Chunk.CHUNK_SIZE; i++) {
             for (int j = 0; j < Chunk.CHUNK_SIZE; j++) {
                 for (int k = 0; k < Chunk.CHUNK_SIZE; k++) {

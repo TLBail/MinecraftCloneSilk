@@ -27,7 +27,7 @@ public class ItemBarUi : UiWindow
     
 
     protected override void Start() {
-        var dic = BlockFactory.GetInstance().blocksReadOnly;
+        var dic = BlockFactory.GetInstance().blocks;
         texture = new Texture(game.GetGl(), "./Assets/blocks/stone.png");
         textures = new Texture[dic.Count - 1];
         int index = 0;

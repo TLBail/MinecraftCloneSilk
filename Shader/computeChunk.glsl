@@ -2,10 +2,9 @@
 layout (local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
 
 struct Vertex {
-    vec4 position;
+    int position;
+    int data;
     vec2 coords;
-    int ambientOcclusion;
-    int lightLevel;
 };
 
 struct TextureCoordsFace{
@@ -24,8 +23,7 @@ layout(std430, binding = 7) buffer waterOutputBuffer {
 };
 
 struct BlockData{
-    int id;
-    int data1;
+    int data;
 };
 
 layout(std430, binding = 2) buffer chunkBlocks {
@@ -53,10 +51,6 @@ layout(std430, binding = 5) buffer countBuffer{
 };
 
 
-layout(std140, binding = 6) uniform chunkCoord{
-    vec4 chunkCoords[16];
-};
-
 const uint EMPTY = 0;
 const uint TOP = 1;
 const uint BOTTOM = 2;
@@ -75,6 +69,18 @@ int vertexAO(bool side1, bool side2, bool corner) {
   return 3 - ((side1 ? 1 : 0)+ (side2 ? 1 : 0) + (corner ? 1 : 0));
 }
 
+int getIdOfBlockData(BlockData block){
+    return block.data & 0xFFFF;
+}
+
+int getSkyLightOfBlockData(BlockData block){
+    return ((block.data >> 16) & 0xF0) >> 4;
+}
+
+int getBlockLightOfBlockData(BlockData block){
+    return (block.data >> 16) & 0xF;
+}
+
 
 const int chunkSize = 18;
 const int nbBlockPerChunk = chunkSize * chunkSize * chunkSize;
@@ -86,8 +92,8 @@ uint getIndex(uint chunkIndex, uint x, uint y, uint z){
         (z + 1);
 }
 // same function but different output buffer
-void processWater(uint chunkIndex, uint x, uint y, uint z, uint index);
-void processBlock(uint chunkIndex, uint x, uint y, uint z, uint index);
+void processWater(uint chunkIndex, int x, int y, int z, uint index);
+void processBlock(uint chunkIndex, int x, int y, int z, uint index);
 
 void main(){
     uint chunkIndex = uint(floor(gl_WorkGroupID.x / 4));
@@ -100,419 +106,424 @@ void main(){
     uint z = (gl_WorkGroupID.z * 4) + gl_LocalInvocationID.z;
     uint index = getIndex(chunkIndex, x, y, z);
     
-    if(blocks[index].id == 0){
+    if(getIdOfBlockData(blocks[index]) == 0){
         return;
     }
     
-    if(blocks[index].id == 10){
-        processWater(chunkIndex, x, y, z, index);
+    if(getIdOfBlockData(blocks[index]) == 10){
+        processWater(chunkIndex, int(x), int(y), int(z), index);
     }else{
-        processBlock(chunkIndex, x, y, z, index);
+        processBlock(chunkIndex, int(x), int(y), int(z), index);
     }
     
 }
 
-void processWater(uint chunkIndex, uint x, uint y, uint z, uint index){
+void processWater(uint chunkIndex, int x, int y, int z, uint index){
     //calculate nb faces
     uint facesFlag = 0;
     uint nbFaces = 0;
      
     
     //top
-    if(isTransparent(blocks[getIndex(chunkIndex, x, y + 1, z)].id) && blocks[getIndex(chunkIndex, x, y + 1, z)].id != 10){
+    if(isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x, y + 1, z)])) && getIdOfBlockData(blocks[getIndex(chunkIndex, x, y + 1, z)]) != 10){
         facesFlag = facesFlag | TOP;
         nbFaces++;
     }
     //bottom
-    if(isTransparent(blocks[getIndex(chunkIndex, x, y - 1, z)].id) && blocks[getIndex(chunkIndex, x, y - 1, z)].id != 10){
+    if(isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x, y - 1, z)])) && getIdOfBlockData(blocks[getIndex(chunkIndex, x, y - 1, z)]) != 10){
         facesFlag = facesFlag | BOTTOM;
         nbFaces++;
     }
     //left
-    if(isTransparent(blocks[getIndex(chunkIndex,x + 1, y, z)].id) && blocks[getIndex(chunkIndex,x + 1, y, z)].id != 10){
+    if(isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex,x + 1, y, z)])) && getIdOfBlockData(blocks[getIndex(chunkIndex,x + 1, y, z)]) != 10){
         facesFlag = facesFlag | LEFT;
         nbFaces++;
     }
     //right
-    if(isTransparent(blocks[getIndex(chunkIndex,x - 1, y, z)].id) && blocks[getIndex(chunkIndex,x - 1, y, z)].id != 10){
+    if(isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex,x - 1, y, z)])) && getIdOfBlockData(blocks[getIndex(chunkIndex,x - 1, y, z)]) != 10){
         facesFlag = facesFlag | RIGHT;
         nbFaces++;
     }
     //front
-    if(isTransparent(blocks[getIndex(chunkIndex,x, y, z + 1)].id) && blocks[getIndex(chunkIndex,x, y, z + 1)].id != 10){
+    if(isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex,x, y, z + 1)])) && getIdOfBlockData(blocks[getIndex(chunkIndex,x, y, z + 1)]) != 10){
         facesFlag = facesFlag | FRONT;
         nbFaces++;
     }
     //back
-    if(isTransparent(blocks[getIndex(chunkIndex,x, y, z - 1)].id) && blocks[getIndex(chunkIndex,x, y, z - 1)].id != 10){
+    if(isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex,x, y, z - 1)])) && getIdOfBlockData(blocks[getIndex(chunkIndex,x, y, z - 1)]) != 10){
         facesFlag = facesFlag | BACK;
         nbFaces++;
     }
     
-    vec4 chunkCoord = chunkCoords[chunkIndex];
-    vec4 position = vec4(chunkCoord.x + x, chunkCoord.y + y,chunkCoord.z + z, 1.0f);
+    int position = x + (y << 4) + (z << 8) + (int(chunkIndex) << 12);
     
     
     uint vertexIndex = atomicAdd(count.waterVertexCount, nbFaces * 6);
     
+    int skyLight = (blocks[index].data & 0xF00000) >> 4;
+    int blockLight = blocks[index].data & 0xF0000;
+    int lightLevel = max(skyLight, blockLight) << 2;
+
+    
    
     //back
     if((facesFlag & BACK) != 0){
-        int indexFace = (blocks[index].id * 6)  + 5;
-        waterVertices[vertexIndex].position =  vec4(-0.5f, -0.5f, -0.5f, 0.0f) + position;
+        int indexFace = (getIdOfBlockData(blocks[index]) * 6)  + 5;
+        waterVertices[vertexIndex].position = position + (30 << 16);
         waterVertices[vertexIndex].coords = texCoords[indexFace].bottomLeft;
-        waterVertices[vertexIndex].ambientOcclusion = vertexAO(
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y, z - 1)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x, y - 1, z - 1)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y - 1, z - 1)].id) 
+        waterVertices[vertexIndex].data = vertexAO(
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y, z - 1)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x, y - 1, z - 1)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y - 1, z - 1)])) 
         );
-        waterVertices[vertexIndex].lightLevel = blocks[index].data1 & 0x0F;
+        waterVertices[vertexIndex].data += lightLevel;
         vertexIndex++;
-        waterVertices[vertexIndex].position = vec4(0.5f, 0.5f, -0.5f, 0.0f) + position;
+        waterVertices[vertexIndex].position = position + (31 << 16);
         waterVertices[vertexIndex].coords = texCoords[indexFace].topRight;
-        waterVertices[vertexIndex].ambientOcclusion = vertexAO(
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y, z - 1)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x, y + 1, z - 1)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y + 1, z - 1)].id) 
+        waterVertices[vertexIndex].data = vertexAO(
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y, z - 1)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x, y + 1, z - 1)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y + 1, z - 1)])) 
         );
-        waterVertices[vertexIndex].lightLevel = blocks[index].data1 & 0x0F;
+        waterVertices[vertexIndex].data += lightLevel;
         vertexIndex++;
-        waterVertices[vertexIndex].position = vec4(0.5f, -0.5f, -0.5f, 0.0f) + position;
+        waterVertices[vertexIndex].position = position + (32 << 16);
         waterVertices[vertexIndex].coords = texCoords[indexFace].bottomRight;
-        waterVertices[vertexIndex].ambientOcclusion = vertexAO(
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y, z - 1)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x, y - 1, z - 1)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y - 1, z - 1)].id) 
+        waterVertices[vertexIndex].data = vertexAO(
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y, z - 1)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x, y - 1, z - 1)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y - 1, z - 1)])) 
         );
-        waterVertices[vertexIndex].lightLevel = blocks[index].data1 & 0x0F;
+        waterVertices[vertexIndex].data += lightLevel;
         vertexIndex++;
-        waterVertices[vertexIndex].position = vec4(0.5f, 0.5f, -0.5f, 0.0f) + position; 
+        waterVertices[vertexIndex].position = position + (33 << 16); 
         waterVertices[vertexIndex].coords = texCoords[indexFace].topRight;
-        waterVertices[vertexIndex].ambientOcclusion = vertexAO(
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y, z - 1)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x, y + 1, z - 1)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y + 1, z - 1)].id) 
+        waterVertices[vertexIndex].data = vertexAO(
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y, z - 1)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x, y + 1, z - 1)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y + 1, z - 1)])) 
         );
-        waterVertices[vertexIndex].lightLevel = blocks[index].data1 & 0x0F;
+        waterVertices[vertexIndex].data += lightLevel;
         vertexIndex++;
-        waterVertices[vertexIndex].position = vec4(-0.5f, -0.5f, -0.5f, 0.0f) + position; 
+        waterVertices[vertexIndex].position = position + (34 << 16); 
         waterVertices[vertexIndex].coords = texCoords[indexFace].bottomLeft;
-        waterVertices[vertexIndex].ambientOcclusion = vertexAO(
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y, z - 1)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x, y - 1, z - 1)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y - 1, z - 1)].id) 
+        waterVertices[vertexIndex].data = vertexAO(
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y, z - 1)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x, y - 1, z - 1)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y - 1, z - 1)])) 
         );
-        waterVertices[vertexIndex].lightLevel = blocks[index].data1 & 0x0F;
+        waterVertices[vertexIndex].data += lightLevel;
         vertexIndex++;
-        waterVertices[vertexIndex].position = vec4(-0.5f, 0.5f, -0.5f, 0.0f) + position; 
+        waterVertices[vertexIndex].position = position + (35 << 16); 
         waterVertices[vertexIndex].coords = texCoords[indexFace].topLeft;
-        waterVertices[vertexIndex].ambientOcclusion = vertexAO(
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y, z - 1)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x, y + 1, z - 1)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y + 1, z - 1)].id) 
+        waterVertices[vertexIndex].data = vertexAO(
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y, z - 1)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x, y + 1, z - 1)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y + 1, z - 1)])) 
         );
-        waterVertices[vertexIndex].lightLevel = blocks[index].data1 & 0x0F;
+        waterVertices[vertexIndex].data += lightLevel;
         vertexIndex++;
     }
     
     // front
     if((facesFlag & FRONT) != 0){
-        int indexFace = (blocks[index].id * 6)  + 4;
-        waterVertices[vertexIndex].position =  vec4(-0.5f, -0.5f, 0.5f, 0.0f) + position;
+        int indexFace = (getIdOfBlockData(blocks[index]) * 6)  + 4;
+        waterVertices[vertexIndex].position = position + (24 << 16);
         waterVertices[vertexIndex].coords = texCoords[indexFace].bottomLeft;
-        waterVertices[vertexIndex].ambientOcclusion = vertexAO(
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y, z + 1)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x, y - 1, z + 1)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y - 1, z + 1)].id) 
+        waterVertices[vertexIndex].data = vertexAO(
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y, z + 1)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x, y - 1, z + 1)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y - 1, z + 1)])) 
         );
-        waterVertices[vertexIndex].lightLevel = blocks[index].data1 & 0x0F;
+        waterVertices[vertexIndex].data += lightLevel;
         vertexIndex++;
-        waterVertices[vertexIndex].position = vec4(0.5f, -0.5f, 0.5f, 0.0f) + position; 
+        waterVertices[vertexIndex].position = position + (25 << 16); 
         waterVertices[vertexIndex].coords = texCoords[indexFace].bottomRight;
-        waterVertices[vertexIndex].ambientOcclusion = vertexAO(
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y, z + 1)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x, y - 1, z + 1)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y - 1, z + 1)].id) 
+        waterVertices[vertexIndex].data = vertexAO(
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y, z + 1)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x, y - 1, z + 1)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y - 1, z + 1)])) 
         );
-        waterVertices[vertexIndex].lightLevel = blocks[index].data1 & 0x0F;
+        waterVertices[vertexIndex].data += lightLevel;
         vertexIndex++;
-        waterVertices[vertexIndex].position = vec4(0.5f, 0.5f, 0.5f, 0.0f) + position; 
+        waterVertices[vertexIndex].position = position + (26 << 16); 
         waterVertices[vertexIndex].coords = texCoords[indexFace].topRight;
-        waterVertices[vertexIndex].ambientOcclusion = vertexAO(
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y, z + 1)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x, y + 1, z + 1)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y + 1, z + 1)].id) 
+        waterVertices[vertexIndex].data = vertexAO(
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y, z + 1)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x, y + 1, z + 1)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y + 1, z + 1)])) 
         );
-        waterVertices[vertexIndex].lightLevel = blocks[index].data1 & 0x0F;
+        waterVertices[vertexIndex].data += lightLevel;
         vertexIndex++;
-        waterVertices[vertexIndex].position = vec4(0.5f, 0.5f, 0.5f, 0.0f) + position; 
+        waterVertices[vertexIndex].position = position + (27 << 16); 
         waterVertices[vertexIndex].coords = texCoords[indexFace].topRight;
-        waterVertices[vertexIndex].ambientOcclusion = vertexAO(
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y, z + 1)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x, y + 1, z + 1)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y + 1, z + 1)].id) 
+        waterVertices[vertexIndex].data = vertexAO(
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y, z + 1)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x, y + 1, z + 1)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y + 1, z + 1)])) 
         );
-        waterVertices[vertexIndex].lightLevel = blocks[index].data1 & 0x0F;
+        waterVertices[vertexIndex].data += lightLevel;
         vertexIndex++;
-        waterVertices[vertexIndex].position = vec4(-0.5f, 0.5f, 0.5f, 0.0f) + position; 
+        waterVertices[vertexIndex].position = position + (28 << 16); 
         waterVertices[vertexIndex].coords = texCoords[indexFace].topLeft;
-        waterVertices[vertexIndex].ambientOcclusion = vertexAO(
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y, z + 1)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x, y + 1, z + 1)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y + 1, z + 1)].id) 
+        waterVertices[vertexIndex].data = vertexAO(
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y, z + 1)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x, y + 1, z + 1)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y + 1, z + 1)])) 
         );
-        waterVertices[vertexIndex].lightLevel = blocks[index].data1 & 0x0F;
+        waterVertices[vertexIndex].data += lightLevel;
         vertexIndex++;
-        waterVertices[vertexIndex].position = vec4(-0.5f, -0.5f, 0.5f, 0.0f) + position; 
+        waterVertices[vertexIndex].position = position + (29 << 16); 
         waterVertices[vertexIndex].coords = texCoords[indexFace].bottomLeft;
-        waterVertices[vertexIndex].ambientOcclusion = vertexAO(
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y, z + 1)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x, y - 1, z + 1)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y - 1, z + 1)].id) 
+        waterVertices[vertexIndex].data = vertexAO(
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y, z + 1)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x, y - 1, z + 1)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y - 1, z + 1)])) 
         );
-        waterVertices[vertexIndex].lightLevel = blocks[index].data1 & 0x0F;
+        waterVertices[vertexIndex].data += lightLevel;
         vertexIndex++;
     }
     
     //right
     
     if((facesFlag & RIGHT) != 0){
-        int indexFace = (blocks[index].id * 6)  + 3;
-        waterVertices[vertexIndex].position =  vec4(-0.5f, 0.5f, 0.5f, 0.0f) + position;
+        int indexFace = (getIdOfBlockData(blocks[index]) * 6)  + 3;
+        waterVertices[vertexIndex].position = position + (18 << 16);
         waterVertices[vertexIndex].coords = texCoords[indexFace].topRight;
-        waterVertices[vertexIndex].ambientOcclusion = vertexAO(
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y, z + 1)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y + 1, z)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y + 1, z + 1)].id) 
+        waterVertices[vertexIndex].data = vertexAO(
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y, z + 1)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y + 1, z)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y + 1, z + 1)])) 
         );
-        waterVertices[vertexIndex].lightLevel = blocks[index].data1 & 0x0F;
+        waterVertices[vertexIndex].data += lightLevel;
         vertexIndex++;
-        waterVertices[vertexIndex].position = vec4(-0.5f, 0.5f, -0.5f, 0.0f) + position; 
+        waterVertices[vertexIndex].position = position + (19 << 16); 
         waterVertices[vertexIndex].coords = texCoords[indexFace].topLeft;
-        waterVertices[vertexIndex].ambientOcclusion = vertexAO(
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y, z - 1)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y + 1, z)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y + 1, z - 1)].id) 
+        waterVertices[vertexIndex].data = vertexAO(
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y, z - 1)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y + 1, z)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y + 1, z - 1)])) 
         );
-        waterVertices[vertexIndex].lightLevel = blocks[index].data1 & 0x0F;
+        waterVertices[vertexIndex].data += lightLevel;
         vertexIndex++;
-        waterVertices[vertexIndex].position = vec4(-0.5f, -0.5f, -0.5f, 0.0f) + position; 
+        waterVertices[vertexIndex].position = position + (20 << 16); 
         waterVertices[vertexIndex].coords = texCoords[indexFace].bottomLeft;
-        waterVertices[vertexIndex].ambientOcclusion = vertexAO(
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y, z - 1)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y - 1, z)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y - 1, z - 1)].id) 
+        waterVertices[vertexIndex].data = vertexAO(
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y, z - 1)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y - 1, z)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y - 1, z - 1)])) 
         );
-        waterVertices[vertexIndex].lightLevel = blocks[index].data1 & 0x0F;
+        waterVertices[vertexIndex].data += lightLevel;
         vertexIndex++;
-        waterVertices[vertexIndex].position = vec4(-0.5f, -0.5f, -0.5f, 0.0f) + position; 
+        waterVertices[vertexIndex].position = position + (21 << 16); 
         waterVertices[vertexIndex].coords = texCoords[indexFace].bottomLeft;
-        waterVertices[vertexIndex].ambientOcclusion = vertexAO(
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y, z - 1)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y - 1, z)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y - 1, z - 1)].id) 
+        waterVertices[vertexIndex].data = vertexAO(
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y, z - 1)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y - 1, z)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y - 1, z - 1)])) 
         );
-        waterVertices[vertexIndex].lightLevel = blocks[index].data1 & 0x0F;
+        waterVertices[vertexIndex].data += lightLevel;
         vertexIndex++;
-        waterVertices[vertexIndex].position = vec4(-0.5f, -0.5f, 0.5f, 0.0f) + position; 
+        waterVertices[vertexIndex].position = position + (22 << 16); 
         waterVertices[vertexIndex].coords = texCoords[indexFace].bottomRight;
-        waterVertices[vertexIndex].ambientOcclusion = vertexAO(
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y, z + 1)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y - 1, z)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y - 1, z + 1)].id) 
+        waterVertices[vertexIndex].data = vertexAO(
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y, z + 1)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y - 1, z)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y - 1, z + 1)])) 
         );
-        waterVertices[vertexIndex].lightLevel = blocks[index].data1 & 0x0F;
+        waterVertices[vertexIndex].data += lightLevel;
         vertexIndex++;
-        waterVertices[vertexIndex].position = vec4(-0.5f, 0.5f, 0.5f, 0.0f) + position; 
+        waterVertices[vertexIndex].position = position + (23 << 16); 
         waterVertices[vertexIndex].coords = texCoords[indexFace].topRight;   
-        waterVertices[vertexIndex].ambientOcclusion = vertexAO(
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y, z + 1)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y + 1, z)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y + 1, z + 1)].id) 
+        waterVertices[vertexIndex].data = vertexAO(
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y, z + 1)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y + 1, z)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y + 1, z + 1)])) 
         );
-        waterVertices[vertexIndex].lightLevel = blocks[index].data1 & 0x0F;
+        waterVertices[vertexIndex].data += lightLevel;
         vertexIndex++;    
     }
    
     //left   
     if((facesFlag & LEFT) != 0){
-        int indexFace = (blocks[index].id * 6)  + 2;
-        waterVertices[vertexIndex].position =  vec4(0.5f, 0.5f, 0.5f, 0.0f) + position; 
+        int indexFace = (getIdOfBlockData(blocks[index]) * 6)  + 2;
+        waterVertices[vertexIndex].position = position + (12 << 16); 
         waterVertices[vertexIndex].coords = texCoords[indexFace].topLeft;                   
-        waterVertices[vertexIndex].ambientOcclusion = vertexAO(
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y, z + 1)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y + 1, z)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y + 1, z + 1)].id) 
+        waterVertices[vertexIndex].data = vertexAO(
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y, z + 1)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y + 1, z)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y + 1, z + 1)])) 
         );
-        waterVertices[vertexIndex].lightLevel = blocks[index].data1 & 0x0F;
+        waterVertices[vertexIndex].data += lightLevel;
         vertexIndex++;
-        waterVertices[vertexIndex].position = vec4(0.5f, -0.5f, -0.5f, 0.0f) + position; 
+        waterVertices[vertexIndex].position = position + (13 << 16); 
         waterVertices[vertexIndex].coords = texCoords[indexFace].bottomRight;
-        waterVertices[vertexIndex].ambientOcclusion = vertexAO(
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y, z - 1)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y - 1, z)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y - 1, z - 1)].id) 
+        waterVertices[vertexIndex].data = vertexAO(
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y, z - 1)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y - 1, z)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y - 1, z - 1)])) 
         );
-        waterVertices[vertexIndex].lightLevel = blocks[index].data1 & 0x0F;
+        waterVertices[vertexIndex].data += lightLevel;
         vertexIndex++;
-        waterVertices[vertexIndex].position = vec4(0.5f, 0.5f, -0.5f, 0.0f) + position; 
+        waterVertices[vertexIndex].position = position + (14 << 16); 
         waterVertices[vertexIndex].coords = texCoords[indexFace].topRight;
-        waterVertices[vertexIndex].ambientOcclusion = vertexAO(
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y, z - 1)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y + 1, z)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y + 1, z - 1)].id) 
+        waterVertices[vertexIndex].data = vertexAO(
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y, z - 1)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y + 1, z)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y + 1, z - 1)])) 
         );
-        waterVertices[vertexIndex].lightLevel = blocks[index].data1 & 0x0F;
+        waterVertices[vertexIndex].data += lightLevel;
         vertexIndex++;
-        waterVertices[vertexIndex].position = vec4(0.5f, -0.5f, -0.5f, 0.0f) + position; 
+        waterVertices[vertexIndex].position = position + (15 << 16); 
         waterVertices[vertexIndex].coords = texCoords[indexFace].bottomRight;
-        waterVertices[vertexIndex].ambientOcclusion = vertexAO(
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y, z - 1)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y - 1, z)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y - 1, z - 1)].id) 
+        waterVertices[vertexIndex].data = vertexAO(
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y, z - 1)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y - 1, z)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y - 1, z - 1)])) 
         );
-        waterVertices[vertexIndex].lightLevel = blocks[index].data1 & 0x0F;
+        waterVertices[vertexIndex].data += lightLevel;
         vertexIndex++;
-        waterVertices[vertexIndex].position = vec4(0.5f, 0.5f, 0.5f, 0.0f) + position; 
+        waterVertices[vertexIndex].position = position + (16 << 16); 
         waterVertices[vertexIndex].coords = texCoords[indexFace].topLeft;
-        waterVertices[vertexIndex].ambientOcclusion = vertexAO(
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y, z + 1)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y + 1, z)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y + 1, z + 1)].id) 
+        waterVertices[vertexIndex].data = vertexAO(
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y, z + 1)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y + 1, z)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y + 1, z + 1)])) 
         );
-        waterVertices[vertexIndex].lightLevel = blocks[index].data1 & 0x0F;
+        waterVertices[vertexIndex].data += lightLevel;
         vertexIndex++;
-        waterVertices[vertexIndex].position = vec4(0.5f, -0.5f, 0.5f, 0.0f) + position; 
+        waterVertices[vertexIndex].position = position + (17 << 16); 
         waterVertices[vertexIndex].coords = texCoords[indexFace].bottomLeft;    
-        waterVertices[vertexIndex].ambientOcclusion = vertexAO(
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y, z + 1)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y - 1, z)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y - 1, z + 1)].id) 
+        waterVertices[vertexIndex].data = vertexAO(
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y, z + 1)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y - 1, z)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y - 1, z + 1)])) 
         );
-        waterVertices[vertexIndex].lightLevel = blocks[index].data1 & 0x0F;
+        waterVertices[vertexIndex].data += lightLevel;
         vertexIndex++;
     }          
                 
     //bottom
     if((facesFlag & BOTTOM) != 0){
-        int indexFace = (blocks[index].id * 6)  + 1;
-        waterVertices[vertexIndex].position =  vec4(-0.5f, -0.5f, -0.5f, 0.0f) + position;
+        int indexFace = (getIdOfBlockData(blocks[index]) * 6)  + 1;
+        waterVertices[vertexIndex].position = position + (6 << 16);
         waterVertices[vertexIndex].coords = texCoords[indexFace].topRight;        
-        waterVertices[vertexIndex].ambientOcclusion = vertexAO(
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y - 1, z)].id),
-            !isTransparent(blocks[getIndex(chunkIndex, x, y - 1, z - 1)].id),
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y - 1, z - 1)].id)
+        waterVertices[vertexIndex].data = vertexAO(
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y - 1, z)])),
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x, y - 1, z - 1)])),
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y - 1, z - 1)]))
         );
-        waterVertices[vertexIndex].lightLevel = blocks[index].data1 & 0x0F;
+        waterVertices[vertexIndex].data += lightLevel;
         vertexIndex++;
-        waterVertices[vertexIndex].position = vec4(0.5f, -0.5f, -0.5f, 0.0f) + position; 
+        waterVertices[vertexIndex].position = position + (7 << 16); 
         waterVertices[vertexIndex].coords = texCoords[indexFace].topLeft;
-        waterVertices[vertexIndex].ambientOcclusion = vertexAO(
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y - 1, z)].id),
-            !isTransparent(blocks[getIndex(chunkIndex, x, y - 1, z - 1)].id),
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y - 1, z - 1)].id)
+        waterVertices[vertexIndex].data = vertexAO(
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y - 1, z)])),
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x, y - 1, z - 1)])),
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y - 1, z - 1)]))
         );
-        waterVertices[vertexIndex].lightLevel = blocks[index].data1 & 0x0F;
+        waterVertices[vertexIndex].data += lightLevel;
         vertexIndex++;
-        waterVertices[vertexIndex].position = vec4(0.5f, -0.5f, 0.5f, 0.0f) + position; 
+        waterVertices[vertexIndex].position = position + (8 << 16); 
         waterVertices[vertexIndex].coords = texCoords[indexFace].bottomLeft;
-        waterVertices[vertexIndex].ambientOcclusion = vertexAO(
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y - 1, z)].id),
-            !isTransparent(blocks[getIndex(chunkIndex, x, y - 1, z + 1)].id),
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y - 1, z + 1)].id)
+        waterVertices[vertexIndex].data = vertexAO(
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y - 1, z)])),
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x, y - 1, z + 1)])),
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y - 1, z + 1)]))
         );
-        waterVertices[vertexIndex].lightLevel = blocks[index].data1 & 0x0F;
+        waterVertices[vertexIndex].data += lightLevel;
         vertexIndex++;
-        waterVertices[vertexIndex].position = vec4(0.5f, -0.5f, 0.5f, 0.0f) + position; 
+        waterVertices[vertexIndex].position = position + (9 << 16); 
         waterVertices[vertexIndex].coords = texCoords[indexFace].bottomLeft;
-        waterVertices[vertexIndex].ambientOcclusion = vertexAO(
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y - 1, z)].id),
-            !isTransparent(blocks[getIndex(chunkIndex, x, y - 1, z + 1)].id),
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y - 1, z + 1)].id)
+        waterVertices[vertexIndex].data = vertexAO(
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y - 1, z)])),
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x, y - 1, z + 1)])),
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y - 1, z + 1)]))
         );
-        waterVertices[vertexIndex].lightLevel = blocks[index].data1 & 0x0F;
+        waterVertices[vertexIndex].data += lightLevel;
         vertexIndex++;
-        waterVertices[vertexIndex].position = vec4(-0.5f, -0.5f, 0.5f, 0.0f) + position; 
+        waterVertices[vertexIndex].position = position + (10 << 16); 
         waterVertices[vertexIndex].coords = texCoords[indexFace].bottomRight;
-        waterVertices[vertexIndex].ambientOcclusion = vertexAO(
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y - 1, z)].id),
-            !isTransparent(blocks[getIndex(chunkIndex, x, y - 1, z + 1)].id),
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y - 1, z + 1)].id)
+        waterVertices[vertexIndex].data = vertexAO(
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y - 1, z)])),
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x, y - 1, z + 1)])),
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y - 1, z + 1)]))
         );
-        waterVertices[vertexIndex].lightLevel = blocks[index].data1 & 0x0F;
+        waterVertices[vertexIndex].data += lightLevel;
         vertexIndex++;
-        waterVertices[vertexIndex].position = vec4(-0.5f, -0.5f, -0.5f, 0.0f) + position; 
+        waterVertices[vertexIndex].position = position + (11 << 16); 
         waterVertices[vertexIndex].coords = texCoords[indexFace].topRight;
-        waterVertices[vertexIndex].ambientOcclusion = vertexAO(
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y - 1, z)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x, y - 1, z - 1)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y - 1, z - 1)].id) 
+        waterVertices[vertexIndex].data = vertexAO(
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y - 1, z)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x, y - 1, z - 1)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y - 1, z - 1)])) 
         );
-        waterVertices[vertexIndex].lightLevel = blocks[index].data1 & 0x0F;
+        waterVertices[vertexIndex].data += lightLevel;
         vertexIndex++;
     }
 
     //top
     if((facesFlag & TOP) != 0){
-        int indexFace = (blocks[index].id * 6);
-        waterVertices[vertexIndex].position =  vec4(-0.5f, 0.5f, -0.5f, 0.0f) + position; 
+        int indexFace = (getIdOfBlockData(blocks[index]) * 6);
+        waterVertices[vertexIndex].position = position + (0 << 16); 
         waterVertices[vertexIndex].coords = texCoords[indexFace].topLeft;
-        waterVertices[vertexIndex].ambientOcclusion = vertexAO(
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y + 1, z)].id), // block left top
-            !isTransparent(blocks[getIndex(chunkIndex, x, y + 1, z - 1)].id), // block top back
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y + 1, z - 1)].id) // block top left back
+        waterVertices[vertexIndex].data = vertexAO(
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y + 1, z)])), // block left top
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x, y + 1, z - 1)])), // block top back
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y + 1, z - 1)])) // block top left back
         );
-        waterVertices[vertexIndex].lightLevel = blocks[index].data1 & 0x0F;
+        waterVertices[vertexIndex].data += lightLevel;
         vertexIndex++;
-        waterVertices[vertexIndex].position = vec4(0.5f, 0.5f, 0.5f, 0.0f) + position; 
+        waterVertices[vertexIndex].position = position + (1 << 16); 
         waterVertices[vertexIndex].coords = texCoords[indexFace].bottomRight;
-        waterVertices[vertexIndex].ambientOcclusion = vertexAO(
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y + 1, z)].id), // block right top
-            !isTransparent(blocks[getIndex(chunkIndex, x, y + 1, z + 1)].id), // block top front
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y + 1, z + 1)].id) // block top right front
+        waterVertices[vertexIndex].data = vertexAO(
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y + 1, z)])), // block right top
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x, y + 1, z + 1)])), // block top front
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y + 1, z + 1)])) // block top right front
         );
-        waterVertices[vertexIndex].lightLevel = blocks[index].data1 & 0x0F;
+        waterVertices[vertexIndex].data += lightLevel;
         vertexIndex++;
-        waterVertices[vertexIndex].position = vec4(0.5f, 0.5f, -0.5f, 0.0f) + position; 
+        waterVertices[vertexIndex].position = position + (2 << 16); 
         waterVertices[vertexIndex].coords = texCoords[indexFace].topRight;
-        waterVertices[vertexIndex].ambientOcclusion = vertexAO(
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y + 1, z)].id), // block right top
-            !isTransparent(blocks[getIndex(chunkIndex, x, y + 1, z - 1)].id), // block top back
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y + 1, z - 1)].id) // block top right back
+        waterVertices[vertexIndex].data = vertexAO(
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y + 1, z)])), // block right top
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x, y + 1, z - 1)])), // block top back
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y + 1, z - 1)])) // block top right back
         );
-        waterVertices[vertexIndex].lightLevel = blocks[index].data1 & 0x0F;
+        waterVertices[vertexIndex].data += lightLevel;
         vertexIndex++;
-        waterVertices[vertexIndex].position = vec4(0.5f, 0.5f, 0.5f, 0.0f) + position; 
+        waterVertices[vertexIndex].position = position + (3 << 16); 
         waterVertices[vertexIndex].coords = texCoords[indexFace].bottomRight;
-        waterVertices[vertexIndex].ambientOcclusion = vertexAO(
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y + 1, z)].id), // block right top
-            !isTransparent(blocks[getIndex(chunkIndex, x, y + 1, z + 1)].id), // block top front
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y + 1, z + 1)].id) // block top right front
+        waterVertices[vertexIndex].data = vertexAO(
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y + 1, z)])), // block right top
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x, y + 1, z + 1)])), // block top front
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y + 1, z + 1)])) // block top right front
         );
-        waterVertices[vertexIndex].lightLevel = blocks[index].data1 & 0x0F;
+        waterVertices[vertexIndex].data += lightLevel;
         vertexIndex++;
-        waterVertices[vertexIndex].position = vec4(-0.5f, 0.5f, -0.5f, 0.0f) + position; 
+        waterVertices[vertexIndex].position = position + (4 << 16); 
         waterVertices[vertexIndex].coords = texCoords[indexFace].topLeft;
-        waterVertices[vertexIndex].ambientOcclusion = vertexAO(
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y + 1, z)].id), // block left top
-            !isTransparent(blocks[getIndex(chunkIndex, x, y + 1, z - 1)].id), // block top back
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y + 1, z - 1)].id) // block top left back
+        waterVertices[vertexIndex].data = vertexAO(
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y + 1, z)])), // block left top
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x, y + 1, z - 1)])), // block top back
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y + 1, z - 1)])) // block top left back
         );
-        waterVertices[vertexIndex].lightLevel = blocks[index].data1 & 0x0F;
+        waterVertices[vertexIndex].data += lightLevel;
         vertexIndex++;
-        waterVertices[vertexIndex].position = vec4(-0.5f, 0.5f, 0.5f, 0.0f) + position; 
+        waterVertices[vertexIndex].position = position + (5 << 16); 
         waterVertices[vertexIndex].coords = texCoords[indexFace].bottomLeft;
-        waterVertices[vertexIndex].ambientOcclusion = vertexAO(
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y + 1, z)].id), // block left top
-            !isTransparent(blocks[getIndex(chunkIndex, x, y + 1, z + 1)].id), // block top front
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y + 1, z + 1)].id) // block top left front
+        waterVertices[vertexIndex].data = vertexAO(
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y + 1, z)])), // block left top
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x, y + 1, z + 1)])), // block top front
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y + 1, z + 1)])) // block top left front
         );
-        waterVertices[vertexIndex].lightLevel = blocks[index].data1 & 0x0F;
+        waterVertices[vertexIndex].data += lightLevel;
+ 
     }
     
 }
 
-void processBlock(uint chunkIndex, uint x, uint y, uint z, uint index){
+void processBlock(uint chunkIndex, int x, int y, int z, uint index){
     
     //calculate nb faces
     uint facesFlag = 0;
@@ -520,395 +531,422 @@ void processBlock(uint chunkIndex, uint x, uint y, uint z, uint index){
      
     
     //top
-    if(isTransparent(blocks[getIndex(chunkIndex, x, y + 1, z)].id)){
+    if(isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x, y + 1, z)]))){
         facesFlag = facesFlag | TOP;
         nbFaces++;
     }
     //bottom
-    if(isTransparent(blocks[getIndex(chunkIndex, x, y - 1, z)].id)){
+    if(isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x, y - 1, z)]))){
         facesFlag = facesFlag | BOTTOM;
         nbFaces++;
     }
     //left
-    if(isTransparent(blocks[getIndex(chunkIndex,x + 1, y, z)].id)){
+    if(isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex,x + 1, y, z)]))){
         facesFlag = facesFlag | LEFT;
         nbFaces++;
     }
     //right
-    if(isTransparent(blocks[getIndex(chunkIndex,x - 1, y, z)].id)){
+    if(isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex,x - 1, y, z)]))){
         facesFlag = facesFlag | RIGHT;
         nbFaces++;
     }
     //front
-    if(isTransparent(blocks[getIndex(chunkIndex,x, y, z + 1)].id)){
+    if(isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex,x, y, z + 1)]))){
         facesFlag = facesFlag | FRONT;
         nbFaces++;
     }
     //back
-    if(isTransparent(blocks[getIndex(chunkIndex,x, y, z - 1)].id)){
+    if(isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex,x, y, z - 1)]))){
         facesFlag = facesFlag | BACK;
         nbFaces++;
     }
     
-    vec4 chunkCoord = chunkCoords[chunkIndex];
-    vec4 position = vec4(chunkCoord.x + x, chunkCoord.y + y,chunkCoord.z + z, 1.0f);
-    
+    int position = x + (y << 4) + (z << 8) + (int(chunkIndex) << 12);
     
     uint vertexIndex = atomicAdd(count.vertexCount, nbFaces * 6);
     
    
     //back
     if((facesFlag & BACK) != 0){
-        int indexFace = (blocks[index].id * 6)  + 5;
-        vertices[vertexIndex].position =  vec4(-0.5f, -0.5f, -0.5f, 0.0f) + position;
+        int skyLight = getSkyLightOfBlockData(blocks[getIndex(chunkIndex, x, y, z - 1)]);
+        int blockLight = getBlockLightOfBlockData(blocks[getIndex(chunkIndex, x, y, z - 1)]);
+        int lightLevel = max(skyLight, blockLight) << 2;
+    
+        int indexFace = (getIdOfBlockData(blocks[index]) * 6)  + 5;
+        vertices[vertexIndex].position = position + (30 << 16);
         vertices[vertexIndex].coords = texCoords[indexFace].bottomLeft;
-        vertices[vertexIndex].ambientOcclusion = vertexAO(
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y, z - 1)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x, y - 1, z - 1)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y - 1, z - 1)].id) 
+        vertices[vertexIndex].data = vertexAO(
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y, z - 1)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x, y - 1, z - 1)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y - 1, z - 1)])) 
         );
-        vertices[vertexIndex].lightLevel = blocks[index].data1 & 0x0F;
+        vertices[vertexIndex].data += lightLevel;
         vertexIndex++;
-        vertices[vertexIndex].position = vec4(0.5f, 0.5f, -0.5f, 0.0f) + position;
+        vertices[vertexIndex].position = position + (31 << 16);
         vertices[vertexIndex].coords = texCoords[indexFace].topRight;
-        vertices[vertexIndex].ambientOcclusion = vertexAO(
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y, z - 1)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x, y + 1, z - 1)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y + 1, z - 1)].id) 
+        vertices[vertexIndex].data = vertexAO(
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y, z - 1)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x, y + 1, z - 1)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y + 1, z - 1)])) 
         );
-        vertices[vertexIndex].lightLevel = blocks[index].data1 & 0x0F;
+        vertices[vertexIndex].data += lightLevel;
         vertexIndex++;
-        vertices[vertexIndex].position = vec4(0.5f, -0.5f, -0.5f, 0.0f) + position;
+        vertices[vertexIndex].position = position + (32 << 16);
         vertices[vertexIndex].coords = texCoords[indexFace].bottomRight;
-        vertices[vertexIndex].ambientOcclusion = vertexAO(
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y, z - 1)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x, y - 1, z - 1)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y - 1, z - 1)].id) 
+        vertices[vertexIndex].data = vertexAO(
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y, z - 1)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x, y - 1, z - 1)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y - 1, z - 1)])) 
         );
-        vertices[vertexIndex].lightLevel = blocks[index].data1 & 0x0F;
+        vertices[vertexIndex].data += lightLevel;
         vertexIndex++;
-        vertices[vertexIndex].position = vec4(0.5f, 0.5f, -0.5f, 0.0f) + position; 
+        vertices[vertexIndex].position = position + (33 << 16); 
         vertices[vertexIndex].coords = texCoords[indexFace].topRight;
-        vertices[vertexIndex].ambientOcclusion = vertexAO(
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y, z - 1)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x, y + 1, z - 1)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y + 1, z - 1)].id) 
+        vertices[vertexIndex].data = vertexAO(
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y, z - 1)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x, y + 1, z - 1)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y + 1, z - 1)])) 
         );
-        vertices[vertexIndex].lightLevel = blocks[index].data1 & 0x0F;
+        vertices[vertexIndex].data += lightLevel;
         vertexIndex++;
-        vertices[vertexIndex].position = vec4(-0.5f, -0.5f, -0.5f, 0.0f) + position; 
+        vertices[vertexIndex].position = position + (34 << 16); 
         vertices[vertexIndex].coords = texCoords[indexFace].bottomLeft;
-        vertices[vertexIndex].ambientOcclusion = vertexAO(
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y, z - 1)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x, y - 1, z - 1)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y - 1, z - 1)].id) 
+        vertices[vertexIndex].data = vertexAO(
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y, z - 1)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x, y - 1, z - 1)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y - 1, z - 1)])) 
         );
-        vertices[vertexIndex].lightLevel = blocks[index].data1 & 0x0F;
+        vertices[vertexIndex].data += lightLevel;
         vertexIndex++;
-        vertices[vertexIndex].position = vec4(-0.5f, 0.5f, -0.5f, 0.0f) + position; 
+        vertices[vertexIndex].position = position + (35 << 16); 
         vertices[vertexIndex].coords = texCoords[indexFace].topLeft;
-        vertices[vertexIndex].ambientOcclusion = vertexAO(
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y, z - 1)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x, y + 1, z - 1)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y + 1, z - 1)].id) 
+        vertices[vertexIndex].data = vertexAO(
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y, z - 1)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x, y + 1, z - 1)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y + 1, z - 1)])) 
         );
-        vertices[vertexIndex].lightLevel = blocks[index].data1 & 0x0F;
+        vertices[vertexIndex].data += lightLevel;
         vertexIndex++;
     }
     
     // front
     if((facesFlag & FRONT) != 0){
-        int indexFace = (blocks[index].id * 6)  + 4;
-        vertices[vertexIndex].position =  vec4(-0.5f, -0.5f, 0.5f, 0.0f) + position;
+        int skyLight = getSkyLightOfBlockData(blocks[getIndex(chunkIndex, x, y, z + 1)]);
+        int blockLight = getBlockLightOfBlockData(blocks[getIndex(chunkIndex, x, y, z + 1)]);
+        int lightLevel = max(skyLight, blockLight) << 2;
+
+    
+        int indexFace = (getIdOfBlockData(blocks[index]) * 6)  + 4;
+        vertices[vertexIndex].position = position + (24 << 16);
         vertices[vertexIndex].coords = texCoords[indexFace].bottomLeft;
-        vertices[vertexIndex].ambientOcclusion = vertexAO(
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y, z + 1)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x, y - 1, z + 1)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y - 1, z + 1)].id) 
+        vertices[vertexIndex].data = vertexAO(
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y, z + 1)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x, y - 1, z + 1)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y - 1, z + 1)])) 
         );
-        vertices[vertexIndex].lightLevel = blocks[index].data1 & 0x0F;
+        vertices[vertexIndex].data += lightLevel;
         vertexIndex++;
-        vertices[vertexIndex].position = vec4(0.5f, -0.5f, 0.5f, 0.0f) + position; 
+        vertices[vertexIndex].position = position + (25 << 16); 
         vertices[vertexIndex].coords = texCoords[indexFace].bottomRight;
-        vertices[vertexIndex].ambientOcclusion = vertexAO(
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y, z + 1)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x, y - 1, z + 1)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y - 1, z + 1)].id) 
+        vertices[vertexIndex].data = vertexAO(
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y, z + 1)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x, y - 1, z + 1)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y - 1, z + 1)])) 
         );
-        vertices[vertexIndex].lightLevel = blocks[index].data1 & 0x0F;
+        vertices[vertexIndex].data += lightLevel;
         vertexIndex++;
-        vertices[vertexIndex].position = vec4(0.5f, 0.5f, 0.5f, 0.0f) + position; 
+        vertices[vertexIndex].position = position + (26 << 16); 
         vertices[vertexIndex].coords = texCoords[indexFace].topRight;
-        vertices[vertexIndex].ambientOcclusion = vertexAO(
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y, z + 1)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x, y + 1, z + 1)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y + 1, z + 1)].id) 
+        vertices[vertexIndex].data = vertexAO(
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y, z + 1)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x, y + 1, z + 1)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y + 1, z + 1)])) 
         );
-        vertices[vertexIndex].lightLevel = blocks[index].data1 & 0x0F;
+        vertices[vertexIndex].data += lightLevel;
         vertexIndex++;
-        vertices[vertexIndex].position = vec4(0.5f, 0.5f, 0.5f, 0.0f) + position; 
+        vertices[vertexIndex].position = position + (27 << 16); 
         vertices[vertexIndex].coords = texCoords[indexFace].topRight;
-        vertices[vertexIndex].ambientOcclusion = vertexAO(
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y, z + 1)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x, y + 1, z + 1)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y + 1, z + 1)].id) 
+        vertices[vertexIndex].data = vertexAO(
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y, z + 1)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x, y + 1, z + 1)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y + 1, z + 1)])) 
         );
-        vertices[vertexIndex].lightLevel = blocks[index].data1 & 0x0F;
+        vertices[vertexIndex].data += lightLevel;
         vertexIndex++;
-        vertices[vertexIndex].position = vec4(-0.5f, 0.5f, 0.5f, 0.0f) + position; 
+        vertices[vertexIndex].position = position + (28 << 16); 
         vertices[vertexIndex].coords = texCoords[indexFace].topLeft;
-        vertices[vertexIndex].ambientOcclusion = vertexAO(
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y, z + 1)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x, y + 1, z + 1)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y + 1, z + 1)].id) 
+        vertices[vertexIndex].data = vertexAO(
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y, z + 1)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x, y + 1, z + 1)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y + 1, z + 1)])) 
         );
-        vertices[vertexIndex].lightLevel = blocks[index].data1 & 0x0F;
+        vertices[vertexIndex].data += lightLevel;
         vertexIndex++;
-        vertices[vertexIndex].position = vec4(-0.5f, -0.5f, 0.5f, 0.0f) + position; 
+        vertices[vertexIndex].position = position + (29 << 16); 
         vertices[vertexIndex].coords = texCoords[indexFace].bottomLeft;
-        vertices[vertexIndex].ambientOcclusion = vertexAO(
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y, z + 1)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x, y - 1, z + 1)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y - 1, z + 1)].id) 
+        vertices[vertexIndex].data = vertexAO(
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y, z + 1)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x, y - 1, z + 1)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y - 1, z + 1)])) 
         );
-        vertices[vertexIndex].lightLevel = blocks[index].data1 & 0x0F;
+        vertices[vertexIndex].data += lightLevel;
         vertexIndex++;
     }
     
     //right
     
     if((facesFlag & RIGHT) != 0){
-        int indexFace = (blocks[index].id * 6)  + 3;
-        vertices[vertexIndex].position =  vec4(-0.5f, 0.5f, 0.5f, 0.0f) + position;
+        int skyLight = getSkyLightOfBlockData(blocks[getIndex(chunkIndex, x - 1, y, z)]);
+        int blockLight = getBlockLightOfBlockData(blocks[getIndex(chunkIndex, x - 1, y, z)]);
+        int lightLevel = max(skyLight, blockLight) << 2;
+
+    
+        int indexFace = (getIdOfBlockData(blocks[index]) * 6)  + 3;
+        vertices[vertexIndex].position = position + (18 << 16);
         vertices[vertexIndex].coords = texCoords[indexFace].topRight;
-        vertices[vertexIndex].ambientOcclusion = vertexAO(
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y, z + 1)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y + 1, z)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y + 1, z + 1)].id) 
+        vertices[vertexIndex].data = vertexAO(
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y, z + 1)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y + 1, z)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y + 1, z + 1)])) 
         );
-        vertices[vertexIndex].lightLevel = blocks[index].data1 & 0x0F;
+        vertices[vertexIndex].data += lightLevel;
         vertexIndex++;
-        vertices[vertexIndex].position = vec4(-0.5f, 0.5f, -0.5f, 0.0f) + position; 
+        vertices[vertexIndex].position = position + (19 << 16); 
         vertices[vertexIndex].coords = texCoords[indexFace].topLeft;
-        vertices[vertexIndex].ambientOcclusion = vertexAO(
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y, z - 1)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y + 1, z)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y + 1, z - 1)].id) 
+        vertices[vertexIndex].data = vertexAO(
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y, z - 1)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y + 1, z)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y + 1, z - 1)])) 
         );
-        vertices[vertexIndex].lightLevel = blocks[index].data1 & 0x0F;
+        vertices[vertexIndex].data += lightLevel;
         vertexIndex++;
-        vertices[vertexIndex].position = vec4(-0.5f, -0.5f, -0.5f, 0.0f) + position; 
+        vertices[vertexIndex].position = position + (20 << 16); 
         vertices[vertexIndex].coords = texCoords[indexFace].bottomLeft;
-        vertices[vertexIndex].ambientOcclusion = vertexAO(
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y, z - 1)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y - 1, z)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y - 1, z - 1)].id) 
+        vertices[vertexIndex].data = vertexAO(
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y, z - 1)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y - 1, z)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y - 1, z - 1)])) 
         );
-        vertices[vertexIndex].lightLevel = blocks[index].data1 & 0x0F;
+        vertices[vertexIndex].data += lightLevel;
         vertexIndex++;
-        vertices[vertexIndex].position = vec4(-0.5f, -0.5f, -0.5f, 0.0f) + position; 
+        vertices[vertexIndex].position = position + (21 << 16); 
         vertices[vertexIndex].coords = texCoords[indexFace].bottomLeft;
-        vertices[vertexIndex].ambientOcclusion = vertexAO(
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y, z - 1)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y - 1, z)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y - 1, z - 1)].id) 
+        vertices[vertexIndex].data = vertexAO(
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y, z - 1)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y - 1, z)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y - 1, z - 1)])) 
         );
-        vertices[vertexIndex].lightLevel = blocks[index].data1 & 0x0F;
+        vertices[vertexIndex].data += lightLevel;
         vertexIndex++;
-        vertices[vertexIndex].position = vec4(-0.5f, -0.5f, 0.5f, 0.0f) + position; 
+        vertices[vertexIndex].position = position + (22 << 16); 
         vertices[vertexIndex].coords = texCoords[indexFace].bottomRight;
-        vertices[vertexIndex].ambientOcclusion = vertexAO(
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y, z + 1)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y - 1, z)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y - 1, z + 1)].id) 
+        vertices[vertexIndex].data = vertexAO(
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y, z + 1)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y - 1, z)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y - 1, z + 1)])) 
         );
-        vertices[vertexIndex].lightLevel = blocks[index].data1 & 0x0F;
+        vertices[vertexIndex].data += lightLevel;
         vertexIndex++;
-        vertices[vertexIndex].position = vec4(-0.5f, 0.5f, 0.5f, 0.0f) + position; 
+        vertices[vertexIndex].position = position + (23 << 16); 
         vertices[vertexIndex].coords = texCoords[indexFace].topRight;   
-        vertices[vertexIndex].ambientOcclusion = vertexAO(
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y, z + 1)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y + 1, z)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y + 1, z + 1)].id) 
+        vertices[vertexIndex].data = vertexAO(
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y, z + 1)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y + 1, z)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y + 1, z + 1)])) 
         );
-        vertices[vertexIndex].lightLevel = blocks[index].data1 & 0x0F;
+        vertices[vertexIndex].data += lightLevel;
         vertexIndex++;    
     }
    
     //left   
     if((facesFlag & LEFT) != 0){
-        int indexFace = (blocks[index].id * 6)  + 2;
-        vertices[vertexIndex].position =  vec4(0.5f, 0.5f, 0.5f, 0.0f) + position; 
+        int skyLight = getSkyLightOfBlockData(blocks[getIndex(chunkIndex, x + 1, y, z)]);
+        int blockLight = getBlockLightOfBlockData(blocks[getIndex(chunkIndex, x + 1, y, z)]);
+        int lightLevel = max(skyLight, blockLight) << 2;
+
+    
+        int indexFace = (getIdOfBlockData(blocks[index]) * 6)  + 2;
+        vertices[vertexIndex].position = position + (12 << 16); 
         vertices[vertexIndex].coords = texCoords[indexFace].topLeft;                   
-        vertices[vertexIndex].ambientOcclusion = vertexAO(
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y, z + 1)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y + 1, z)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y + 1, z + 1)].id) 
+        vertices[vertexIndex].data = vertexAO(
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y, z + 1)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y + 1, z)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y + 1, z + 1)])) 
         );
-        vertices[vertexIndex].lightLevel = blocks[index].data1 & 0x0F;
+        vertices[vertexIndex].data += lightLevel;
         vertexIndex++;
-        vertices[vertexIndex].position = vec4(0.5f, -0.5f, -0.5f, 0.0f) + position; 
+        vertices[vertexIndex].position = position + (13 << 16); 
         vertices[vertexIndex].coords = texCoords[indexFace].bottomRight;
-        vertices[vertexIndex].ambientOcclusion = vertexAO(
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y, z - 1)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y - 1, z)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y - 1, z - 1)].id) 
+        vertices[vertexIndex].data = vertexAO(
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y, z - 1)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y - 1, z)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y - 1, z - 1)])) 
         );
-        vertices[vertexIndex].lightLevel = blocks[index].data1 & 0x0F;
+        vertices[vertexIndex].data += lightLevel;
         vertexIndex++;
-        vertices[vertexIndex].position = vec4(0.5f, 0.5f, -0.5f, 0.0f) + position; 
+        vertices[vertexIndex].position = position + (14 << 16); 
         vertices[vertexIndex].coords = texCoords[indexFace].topRight;
-        vertices[vertexIndex].ambientOcclusion = vertexAO(
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y, z - 1)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y + 1, z)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y + 1, z - 1)].id) 
+        vertices[vertexIndex].data = vertexAO(
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y, z - 1)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y + 1, z)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y + 1, z - 1)])) 
         );
-        vertices[vertexIndex].lightLevel = blocks[index].data1 & 0x0F;
+        vertices[vertexIndex].data += lightLevel;
         vertexIndex++;
-        vertices[vertexIndex].position = vec4(0.5f, -0.5f, -0.5f, 0.0f) + position; 
+        vertices[vertexIndex].position = position + (15 << 16); 
         vertices[vertexIndex].coords = texCoords[indexFace].bottomRight;
-        vertices[vertexIndex].ambientOcclusion = vertexAO(
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y, z - 1)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y - 1, z)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y - 1, z - 1)].id) 
+        vertices[vertexIndex].data = vertexAO(
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y, z - 1)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y - 1, z)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y - 1, z - 1)])) 
         );
-        vertices[vertexIndex].lightLevel = blocks[index].data1 & 0x0F;
+        vertices[vertexIndex].data += lightLevel;
         vertexIndex++;
-        vertices[vertexIndex].position = vec4(0.5f, 0.5f, 0.5f, 0.0f) + position; 
+        vertices[vertexIndex].position = position + (16 << 16); 
         vertices[vertexIndex].coords = texCoords[indexFace].topLeft;
-        vertices[vertexIndex].ambientOcclusion = vertexAO(
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y, z + 1)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y + 1, z)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y + 1, z + 1)].id) 
+        vertices[vertexIndex].data = vertexAO(
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y, z + 1)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y + 1, z)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y + 1, z + 1)])) 
         );
-        vertices[vertexIndex].lightLevel = blocks[index].data1 & 0x0F;
+        vertices[vertexIndex].data += lightLevel;
         vertexIndex++;
-        vertices[vertexIndex].position = vec4(0.5f, -0.5f, 0.5f, 0.0f) + position; 
+        vertices[vertexIndex].position = position + (17 << 16); 
         vertices[vertexIndex].coords = texCoords[indexFace].bottomLeft;    
-        vertices[vertexIndex].ambientOcclusion = vertexAO(
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y, z + 1)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y - 1, z)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y - 1, z + 1)].id) 
+        vertices[vertexIndex].data = vertexAO(
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y, z + 1)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y - 1, z)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y - 1, z + 1)])) 
         );
-        vertices[vertexIndex].lightLevel = blocks[index].data1 & 0x0F;
+        vertices[vertexIndex].data += lightLevel;
         vertexIndex++;
     }          
                 
     //bottom
     if((facesFlag & BOTTOM) != 0){
-        int indexFace = (blocks[index].id * 6)  + 1;
-        vertices[vertexIndex].position =  vec4(-0.5f, -0.5f, -0.5f, 0.0f) + position;
+        int skyLight = getSkyLightOfBlockData(blocks[getIndex(chunkIndex, x, y - 1, z)]);
+        int blockLight = getBlockLightOfBlockData(blocks[getIndex(chunkIndex, x, y - 1, z)]);
+        int lightLevel = max(skyLight, blockLight) << 2;
+
+    
+        int indexFace = (getIdOfBlockData(blocks[index]) * 6)  + 1;
+        vertices[vertexIndex].position = position + (6 << 16);
         vertices[vertexIndex].coords = texCoords[indexFace].topRight;        
-        vertices[vertexIndex].ambientOcclusion = vertexAO(
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y - 1, z)].id),
-            !isTransparent(blocks[getIndex(chunkIndex, x, y - 1, z - 1)].id),
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y - 1, z - 1)].id)
+        vertices[vertexIndex].data = vertexAO(
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y - 1, z)])),
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x, y - 1, z - 1)])),
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y - 1, z - 1)]))
         );
-        vertices[vertexIndex].lightLevel = blocks[index].data1 & 0x0F;
+        vertices[vertexIndex].data += lightLevel;
         vertexIndex++;
-        vertices[vertexIndex].position = vec4(0.5f, -0.5f, -0.5f, 0.0f) + position; 
+        vertices[vertexIndex].position = position + (7 << 16); 
         vertices[vertexIndex].coords = texCoords[indexFace].topLeft;
-        vertices[vertexIndex].ambientOcclusion = vertexAO(
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y - 1, z)].id),
-            !isTransparent(blocks[getIndex(chunkIndex, x, y - 1, z - 1)].id),
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y - 1, z - 1)].id)
+        vertices[vertexIndex].data = vertexAO(
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y - 1, z)])),
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x, y - 1, z - 1)])),
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y - 1, z - 1)]))
         );
-        vertices[vertexIndex].lightLevel = blocks[index].data1 & 0x0F;
+        vertices[vertexIndex].data += lightLevel;
         vertexIndex++;
-        vertices[vertexIndex].position = vec4(0.5f, -0.5f, 0.5f, 0.0f) + position; 
+        vertices[vertexIndex].position = position + (8 << 16); 
         vertices[vertexIndex].coords = texCoords[indexFace].bottomLeft;
-        vertices[vertexIndex].ambientOcclusion = vertexAO(
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y - 1, z)].id),
-            !isTransparent(blocks[getIndex(chunkIndex, x, y - 1, z + 1)].id),
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y - 1, z + 1)].id)
+        vertices[vertexIndex].data = vertexAO(
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y - 1, z)])),
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x, y - 1, z + 1)])),
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y - 1, z + 1)]))
         );
-        vertices[vertexIndex].lightLevel = blocks[index].data1 & 0x0F;
+        vertices[vertexIndex].data += lightLevel;
         vertexIndex++;
-        vertices[vertexIndex].position = vec4(0.5f, -0.5f, 0.5f, 0.0f) + position; 
+        vertices[vertexIndex].position = position + (9 << 16); 
         vertices[vertexIndex].coords = texCoords[indexFace].bottomLeft;
-        vertices[vertexIndex].ambientOcclusion = vertexAO(
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y - 1, z)].id),
-            !isTransparent(blocks[getIndex(chunkIndex, x, y - 1, z + 1)].id),
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y - 1, z + 1)].id)
+        vertices[vertexIndex].data = vertexAO(
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y - 1, z)])),
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x, y - 1, z + 1)])),
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y - 1, z + 1)]))
         );
-        vertices[vertexIndex].lightLevel = blocks[index].data1 & 0x0F;
+        vertices[vertexIndex].data += lightLevel;
         vertexIndex++;
-        vertices[vertexIndex].position = vec4(-0.5f, -0.5f, 0.5f, 0.0f) + position; 
+        vertices[vertexIndex].position = position + (10 << 16); 
         vertices[vertexIndex].coords = texCoords[indexFace].bottomRight;
-        vertices[vertexIndex].ambientOcclusion = vertexAO(
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y - 1, z)].id),
-            !isTransparent(blocks[getIndex(chunkIndex, x, y - 1, z + 1)].id),
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y - 1, z + 1)].id)
+        vertices[vertexIndex].data = vertexAO(
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y - 1, z)])),
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x, y - 1, z + 1)])),
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y - 1, z + 1)]))
         );
-        vertices[vertexIndex].lightLevel = blocks[index].data1 & 0x0F;
+        vertices[vertexIndex].data += lightLevel;
         vertexIndex++;
-        vertices[vertexIndex].position = vec4(-0.5f, -0.5f, -0.5f, 0.0f) + position; 
+        vertices[vertexIndex].position = position + (11 << 16); 
         vertices[vertexIndex].coords = texCoords[indexFace].topRight;
-        vertices[vertexIndex].ambientOcclusion = vertexAO(
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y - 1, z)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x, y - 1, z - 1)].id), 
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y - 1, z - 1)].id) 
+        vertices[vertexIndex].data = vertexAO(
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y - 1, z)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x, y - 1, z - 1)])), 
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y - 1, z - 1)])) 
         );
-        vertices[vertexIndex].lightLevel = blocks[index].data1 & 0x0F;
+        vertices[vertexIndex].data += lightLevel;
         vertexIndex++;
     }
 
     //top
     if((facesFlag & TOP) != 0){
-        int indexFace = (blocks[index].id * 6);
-        vertices[vertexIndex].position =  vec4(-0.5f, 0.5f, -0.5f, 0.0f) + position; 
+        int skyLight = getSkyLightOfBlockData(blocks[getIndex(chunkIndex, x, y + 1, z)]);
+        int blockLight = getBlockLightOfBlockData(blocks[getIndex(chunkIndex, x, y + 1, z)]);
+        int lightLevel = max(skyLight, blockLight) << 2;
+
+    
+        int indexFace = (getIdOfBlockData(blocks[index]) * 6);
+        vertices[vertexIndex].position = position + (0 << 16); 
         vertices[vertexIndex].coords = texCoords[indexFace].topLeft;
-        vertices[vertexIndex].ambientOcclusion = vertexAO(
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y + 1, z)].id), // block left top
-            !isTransparent(blocks[getIndex(chunkIndex, x, y + 1, z - 1)].id), // block top back
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y + 1, z - 1)].id) // block top left back
+        vertices[vertexIndex].data = vertexAO(
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y + 1, z)])), // block left top
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x, y + 1, z - 1)])), // block top back
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y + 1, z - 1)])) // block top left back
         );
-        vertices[vertexIndex].lightLevel = blocks[index].data1 & 0x0F;
+        vertices[vertexIndex].data += lightLevel;
         vertexIndex++;
-        vertices[vertexIndex].position = vec4(0.5f, 0.5f, 0.5f, 0.0f) + position; 
+        vertices[vertexIndex].position = position + (1 << 16); 
         vertices[vertexIndex].coords = texCoords[indexFace].bottomRight;
-        vertices[vertexIndex].ambientOcclusion = vertexAO(
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y + 1, z)].id), // block right top
-            !isTransparent(blocks[getIndex(chunkIndex, x, y + 1, z + 1)].id), // block top front
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y + 1, z + 1)].id) // block top right front
+        vertices[vertexIndex].data = vertexAO(
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y + 1, z)])), // block right top
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x, y + 1, z + 1)])), // block top front
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y + 1, z + 1)])) // block top right front
         );
-        vertices[vertexIndex].lightLevel = blocks[index].data1 & 0x0F;
+        vertices[vertexIndex].data += lightLevel;
         vertexIndex++;
-        vertices[vertexIndex].position = vec4(0.5f, 0.5f, -0.5f, 0.0f) + position; 
+        vertices[vertexIndex].position = position + (2 << 16); 
         vertices[vertexIndex].coords = texCoords[indexFace].topRight;
-        vertices[vertexIndex].ambientOcclusion = vertexAO(
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y + 1, z)].id), // block right top
-            !isTransparent(blocks[getIndex(chunkIndex, x, y + 1, z - 1)].id), // block top back
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y + 1, z - 1)].id) // block top right back
+        vertices[vertexIndex].data = vertexAO(
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y + 1, z)])), // block right top
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x, y + 1, z - 1)])), // block top back
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y + 1, z - 1)])) // block top right back
         );
-        vertices[vertexIndex].lightLevel = blocks[index].data1 & 0x0F;
+        vertices[vertexIndex].data += lightLevel;
         vertexIndex++;
-        vertices[vertexIndex].position = vec4(0.5f, 0.5f, 0.5f, 0.0f) + position; 
+        vertices[vertexIndex].position = position + (3 << 16); 
         vertices[vertexIndex].coords = texCoords[indexFace].bottomRight;
-        vertices[vertexIndex].ambientOcclusion = vertexAO(
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y + 1, z)].id), // block right top
-            !isTransparent(blocks[getIndex(chunkIndex, x, y + 1, z + 1)].id), // block top front
-            !isTransparent(blocks[getIndex(chunkIndex, x + 1, y + 1, z + 1)].id) // block top right front
+        vertices[vertexIndex].data = vertexAO(
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y + 1, z)])), // block right top
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x, y + 1, z + 1)])), // block top front
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y + 1, z + 1)])) // block top right front
         );
-        vertices[vertexIndex].lightLevel = blocks[index].data1 & 0x0F;
+        vertices[vertexIndex].data += lightLevel;
         vertexIndex++;
-        vertices[vertexIndex].position = vec4(-0.5f, 0.5f, -0.5f, 0.0f) + position; 
+        vertices[vertexIndex].position = position + (4 << 16); 
         vertices[vertexIndex].coords = texCoords[indexFace].topLeft;
-        vertices[vertexIndex].ambientOcclusion = vertexAO(
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y + 1, z)].id), // block left top
-            !isTransparent(blocks[getIndex(chunkIndex, x, y + 1, z - 1)].id), // block top back
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y + 1, z - 1)].id) // block top left back
+        vertices[vertexIndex].data = vertexAO(
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y + 1, z)])), // block left top
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x, y + 1, z - 1)])), // block top back
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y + 1, z - 1)])) // block top left back
         );
-        vertices[vertexIndex].lightLevel = blocks[index].data1 & 0x0F;
+        vertices[vertexIndex].data += lightLevel;
         vertexIndex++;
-        vertices[vertexIndex].position = vec4(-0.5f, 0.5f, 0.5f, 0.0f) + position; 
+        vertices[vertexIndex].position = position + (5 << 16); 
         vertices[vertexIndex].coords = texCoords[indexFace].bottomLeft;
-        vertices[vertexIndex].ambientOcclusion = vertexAO(
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y + 1, z)].id), // block left top
-            !isTransparent(blocks[getIndex(chunkIndex, x, y + 1, z + 1)].id), // block top front
-            !isTransparent(blocks[getIndex(chunkIndex, x - 1, y + 1, z + 1)].id) // block top left front
+        vertices[vertexIndex].data = vertexAO(
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y + 1, z)])), // block left top
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x, y + 1, z + 1)])), // block top front
+            !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y + 1, z + 1)])) // block top left front
         );
-        vertices[vertexIndex].lightLevel = blocks[index].data1 & 0x0F;
+        vertices[vertexIndex].data += lightLevel;
     }
     
 }

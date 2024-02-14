@@ -337,9 +337,6 @@ public class World : GameObject
         Vector3D<int>[] postions =
         {
             Vector3D<int>.Zero,
-            new Vector3D<int>(Chunk.CHUNK_SIZE, 0, -Chunk.CHUNK_SIZE * 3),
-            new Vector3D<int>(-(int)Chunk.CHUNK_SIZE, 0, -Chunk.CHUNK_SIZE * 2),
-            new Vector3D<int>(-(int)Chunk.CHUNK_SIZE, 0, -Chunk.CHUNK_SIZE),
         };
         chunkManager.AddChunksToLoad(postions.ToList());
     }

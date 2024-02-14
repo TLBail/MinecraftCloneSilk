@@ -1,6 +1,7 @@
 {
     "name": "cobblestone",
     "transparent": false,
+    "lightEmitting": 0,
     "id": 14,
     "texture": {
         "TOP": [

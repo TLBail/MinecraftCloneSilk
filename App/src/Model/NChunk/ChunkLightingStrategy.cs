@@ -1,4 +1,6 @@
-﻿namespace MinecraftCloneSilk.Model.NChunk;
+﻿using Silk.NET.Maths;
+
+namespace MinecraftCloneSilk.Model.NChunk;
 
 public class ChunkLightingStrategy : ChunkStrategy
 {
@@ -7,29 +9,32 @@ public class ChunkLightingStrategy : ChunkStrategy
             throw new Exception("failed to init chunkDrawableStrategy because the chunk is not BLOCKGENERATED");
         }
     }
-
+    public override ChunkState MinimumChunkStateOfNeighbors() => ChunkState.BLOCKGENERATED;
     public override ChunkState GetChunkStateOfStrategy() => ChunkState.LIGHTING;
+    
+
 
     public override void Init() {
         chunk.chunkState = ChunkState.LIGHTLOADING;
+        SetupNeighbors();
+    }
+    protected virtual void SetupNeighbors() {
+        chunk.chunksNeighbors = new Chunk[26];
+        foreach (FaceExtended face in FaceExtendedConst.FACES) {
+            Vector3D<int> positionNeibor = chunk.position + (FaceExtendedOffset.GetOffsetOfFace(face) * Chunk.CHUNK_SIZE);
+            System.Diagnostics.Debug.Assert(chunk.chunkManager.ContainChunk(positionNeibor),
+                "chunk must be already generated");
+            Chunk newChunk = chunk.chunkManager.GetChunk(positionNeibor);
+            System.Diagnostics.Debug.Assert(newChunk.chunkState >= MinimumChunkStateOfNeighbors(), "try to setup a chunk with a lower state than the minimum"); 
+            chunk.chunksNeighbors[(int)face] = newChunk;
+        }
     }
 
     public override void Load() {
         if(chunk.chunkFace is null) UpdateChunkFaces();
-        if(chunk.chunkData.IsOnlyOneBlock()) {
-            BlockData block = chunk.chunkData.GetBlock();
-            block.data1 = 15;
-           chunk.chunkData.SetBlock(block); 
-        } else {
-            for (int x = 0; x < Chunk.CHUNK_SIZE; x++) {
-                for (int y = 0; y < Chunk.CHUNK_SIZE; y++) {
-                    for (int z = 0; z < Chunk.CHUNK_SIZE; z++) {
-                        chunk.chunkData.GetBlocks()[x, y, z].data1 = 15;
-                    }
-                }
-            }
-        }
+        Lighting.UpdateLighting(chunk);
     }
+
 
 
     public override void Finish() {

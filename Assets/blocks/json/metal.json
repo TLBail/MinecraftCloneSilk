@@ -1,6 +1,7 @@
 {
     "name": "metal",
     "transparent": false,
+    "lightEmitting": 15,
     "id": 5,
     "texture": {
         "TOP": [

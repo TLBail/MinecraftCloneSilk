@@ -1,6 +1,7 @@
 {
     "name": "foliage",
     "transparent": true,
+    "lightEmitting": 0,
     "id": 18,
     "texture": {
         "TOP": [

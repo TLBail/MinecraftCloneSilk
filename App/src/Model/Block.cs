@@ -11,22 +11,24 @@ namespace MinecraftCloneSilk.Model
         public string name = "air";
         public bool airBlock = true;
         public bool transparent = true;
+        public byte lightEmitting = 0;
         public BlockData blockData;
-        public TextureBlock? textureBlock;
+        public BlockJson? blockJson { get; private set; }
         public Texture? fullTexture { get; private set; }
 
 
-        public Block(BlockJson blockJson) : this(Vector3D<int>.Zero, blockJson.name,  blockJson.transparent, blockJson.id, new TextureBlock(blockJson)) {}
+        public Block(BlockJson blockJson) : this(Vector3D<int>.Zero, blockJson.name,  blockJson.transparent,blockJson.lightEmitting, blockJson.id, blockJson) {}
 
-        public Block(Vector3D<int> position, string name = BlockFactory.AIR_BLOCK, bool transparent = true,int id = 0, TextureBlock? textureBlock = null)
+        public Block(Vector3D<int> position, string name = BlockFactory.AIR_BLOCK, bool transparent = true,byte lightEmitting = 0, int id = 0, BlockJson? blockJson = null)
         {
             Debug.Assert((id == 0 && BlockFactory.AIR_BLOCK.Equals(name)) || (id != 0 && !BlockFactory.AIR_BLOCK.Equals(name)));
             airBlock = id == 0; 
             this.position = position;
             this.name = name;
             this.transparent = transparent;
+            this.lightEmitting = lightEmitting;
+            this.blockJson = blockJson;
             blockData = new BlockData(id);
-            this.textureBlock = textureBlock;
         }
 
         public void UpdateFullTexture() {
@@ -43,7 +45,7 @@ namespace MinecraftCloneSilk.Model
 
         public object Clone()
         {
-            Block block = new Block(position, this.name, this.transparent, blockData.id, this.textureBlock);
+            Block block = new Block(position, this.name, this.transparent,this.lightEmitting, blockData.id, this.blockJson);
             return block;
         }
     }

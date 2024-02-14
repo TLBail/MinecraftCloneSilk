@@ -8,20 +8,18 @@ public static class ChunkMesheur
     public static int GetVerticesCount(Chunk chunk) {
         Vector3D<float> positionFloat =
             new Vector3D<float>(chunk.position.X, chunk.position.Y, chunk.position.Z);
-        List<CubeVertex> vertices = new List<CubeVertex>();
+        int count = 0;
         for (int x = 0; x < Chunk.CHUNK_SIZE; x++) {
             for (int y = 0; y < Chunk.CHUNK_SIZE; y++) {
                 for (int z = 0; z < Chunk.CHUNK_SIZE; z++) {
                     BlockData block = chunk.chunkData.GetBlocks()[x, y, z];
                     if (block.id == 0) continue;
                     FaceFlag faces = GetFaces(chunk,x, y, z);
-                    if (faces > 0) {
-                        Chunk.blockFactory.blocksReadOnly[block.id].textureBlock!.AddCubeVerticesToList(vertices, faces, new Vector3D<float>(x, y, z), positionFloat);
-                    }
+                    count += FaceFlagUtils.GetFaces(faces).Count() * 6;
                 }
             }
         }
-        return vertices.Count;
+        return count;
     }
 
     private static FaceFlag GetFaces(Chunk chunk,  int x, int y, int z) {

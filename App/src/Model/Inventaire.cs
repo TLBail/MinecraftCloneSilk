@@ -20,7 +20,7 @@ public class Inventaire
         inventoryBlocks = new InventoryBlock[INVENTORYSIZE + ITEMBARSIZE];
         this.player = player;
         int x = 0;
-        foreach (var keyValuePair in BlockFactory.GetInstance().blocksReadOnly) {
+        foreach (var keyValuePair in BlockFactory.GetInstance().blocks) {
             inventoryBlocks[x] = new InventoryBlock(keyValuePair.Value, 1, new Vector2D<int>(x, x));
             x = (x + 1) % INVENTORYSIZE;
         }

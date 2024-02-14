@@ -1,6 +1,7 @@
 {
     "name": "oak",
     "transparent": false,
+    "lightEmitting": 0,
     "id": 12,
     "texture": {
         "TOP": [

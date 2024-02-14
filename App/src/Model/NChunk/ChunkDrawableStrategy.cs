@@ -34,7 +34,9 @@ public class ChunkDrawableStrategy : ChunkStrategy
     public override ChunkState GetChunkStateOfStrategy() => ChunkState.DRAWABLE;
     public override void Init() {
         chunk.chunkState = ChunkState.DRAWLOADING;
-        SetupNeighbors();
+#if DEBUG
+        VerifyNeighbors();
+#endif
     }
 
     public override void Load() {
@@ -48,7 +50,7 @@ public class ChunkDrawableStrategy : ChunkStrategy
     }
 
 
-    protected virtual void SetupNeighbors() {
+    protected virtual void VerifyNeighbors() {
         chunk.chunksNeighbors = new Chunk[26];
         foreach (FaceExtended face in FaceExtendedConst.FACES) {
             Vector3D<int> positionNeibor = chunk.position + (FaceExtendedOffset.GetOffsetOfFace(face) * Chunk.CHUNK_SIZE);
@@ -83,21 +85,10 @@ public class ChunkDrawableStrategy : ChunkStrategy
 
 
     public override void OnBlockSet(int x, int y, int z) {
-        UpdateLight(x, y, z);
+        Lighting.UpdateLighting(chunk);
         UpdateBlocksAround(x, y, z);
         UpdateChunkVertex();
     }
-
-    private void UpdateLight(int x, int y, int z) {
-        if (chunk.chunkData.IsOnlyOneBlock()) {
-            BlockData block = chunk.chunkData.GetBlock();
-            block.data1 = 15;
-            chunk.chunkData.SetBlock(block);
-        } else {
-            chunk.chunkData.GetBlocks()[x, y, z].data1 = 15;
-        }
-    }
-
 
     private void InitChunkFaces() {
         if (IsChunkVisible()) {

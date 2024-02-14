@@ -11,7 +11,7 @@ public class BlockFactory
     
     private static readonly Object Lock = new Object();
     
-    private Dictionary<int, Block> blocks = new Dictionary<int, Block>();
+    public Dictionary<int, Block> blocks = new Dictionary<int, Block>();
 
     private List<int> transparentBlockId = new List<int>();
 
@@ -22,7 +22,6 @@ public class BlockFactory
     public int GetBlockIdByName(string name) =>
         blockNameToBlockDictionary.TryGetValue(name, out Block? value) ? value.blockData.id : 0;
 
-    public ReadOnlyDictionary<int, Block> blocksReadOnly => new ReadOnlyDictionary<int, Block>(blocks);
 
     public static BlockFactory GetInstance()
     {
@@ -77,7 +76,7 @@ public class BlockFactory
         return blocks[AIR_BLOCK_ID].GetBlockData();
     }
 
-    public BlockData GetBlockData(int id) {
+    public BlockData GetBlockData(short id) {
         return blocks.TryGetValue(id, out Block? block) ? block.blockData : blocks[AIR_BLOCK_ID].blockData;
     }
 

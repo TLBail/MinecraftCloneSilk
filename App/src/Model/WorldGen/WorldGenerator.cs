@@ -5,6 +5,6 @@ namespace MinecraftCloneSilk.Model.WorldGen;
 
 public interface IWorldGenerator
 {
-    public void GenerateTerrain(Vector3D<int> chunkPosition, ChunkData chunkData);
+    public void GenerateTerrain(Vector3D<int> chunkPosition, IChunkData lazyChunkData);
     bool HaveTreeOnThisCoord(int positionX, int positionZ);
 }

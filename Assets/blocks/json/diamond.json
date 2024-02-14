@@ -1,6 +1,7 @@
 ﻿{
   "name": "diamond",
   "transparent": false,
+  "lightEmitting": 6,
   "id": 2,
   "texture": {
     "TOP": [

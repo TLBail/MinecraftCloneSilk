@@ -1,6 +1,7 @@
 {
     "name": "water",
     "transparent": true,
+    "lightEmitting": 0,
     "id": 10,
     "texture": {
         "TOP": [

@@ -37,13 +37,13 @@ public static class ChunkFaceUtils
 	}
 
 
-    public static ChunkFace GetChunkFaceFlags(BlockFactory blockFactory, ChunkData chunkData) {
-        if(chunkData.IsOnlyOneBlock() ) {
-            if (chunkData.GetBlock().id == 0) {
+    public static ChunkFace GetChunkFaceFlags(BlockFactory blockFactory, IChunkData lazyChunkData) {
+        if(lazyChunkData.IsOnlyOneBlock() ) {
+            if (lazyChunkData.GetBlock().id == 0) {
                 return ChunkFace.EMPTYCHUNK;
             }
         }
-        return GetChunkFaceFlags(blockFactory, chunkData.GetBlocks());
+        return GetChunkFaceFlags(blockFactory, lazyChunkData.GetBlocks());
     }
 
     public static string toString(ChunkFace chunkFace) {

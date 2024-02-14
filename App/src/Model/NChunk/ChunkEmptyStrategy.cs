@@ -10,7 +10,7 @@ public class ChunkEmptyStrategy : ChunkStrategy
     public override ChunkState GetChunkStateOfStrategy() => ChunkState.EMPTY;
 
 
-    public override BlockData GetBlockData(Vector3D<int> localPosition) {
+    public override BlockData GetBlockData(Vector3D<int> position) {
         throw new Exception("try to access to block data but the chunk is empty");
     }
 

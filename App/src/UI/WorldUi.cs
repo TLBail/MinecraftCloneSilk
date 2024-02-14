@@ -17,9 +17,9 @@ public class WorldUi
         this.lighting = lighting;
         chunkRenderDistance = this.world.radius;
         worldMode = world.worldMode.ToString();
-        blockNames = new string[BlockFactory.GetInstance().blocksReadOnly.Count];
+        blockNames = new string[BlockFactory.GetInstance().blocks.Count];
         int index = 0;
-        foreach (int id in BlockFactory.GetInstance().blocksReadOnly.Keys) {
+        foreach (short id in BlockFactory.GetInstance().blocks.Keys) {
             blockNames[index] = BlockFactory.GetInstance().GetBlockNameById(id);
             index++;
         }

@@ -29,7 +29,7 @@ public class ChunkFaceTest
         for (int x = 0; x < Chunk.CHUNK_SIZE; x++) {
             for (int y = 0; y < Chunk.CHUNK_SIZE; y++) {
                 for (int z = 0; z < Chunk.CHUNK_SIZE; z++) {
-                    blocks[x, y, z] = new BlockData { id = 1 }; // suppose que id=1 est opaque
+                    blocks[x, y, z] = new BlockData (1 ); // suppose que id=1 est opaque
                 }
             }
         }
@@ -62,7 +62,7 @@ public class ChunkFaceTest
         
         // Arrange
         BlockData[,,] blocks = new BlockData[Chunk.CHUNK_SIZE, Chunk.CHUNK_SIZE, Chunk.CHUNK_SIZE];
-        blocks[0, 0, 0] = new BlockData { id = blockFactory.GetBlockIdByName("foliage") }; // suppose que id=1 est opaque
+        blocks[0, 0, 0] = new BlockData ( blockFactory.GetBlockIdByName("foliage") ); // suppose que id=1 est opaque
         // Act
         ChunkFace result = ChunkFaceUtils.GetChunkFaceFlags(blockFactory, blocks);
 

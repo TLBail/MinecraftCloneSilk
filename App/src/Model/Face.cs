@@ -27,6 +27,8 @@ namespace MinecraftCloneSilk.Model
 
 	public static class FaceFlagUtils
 	{
+		public static readonly Face[] FACES = [Face.TOP, Face.BOTTOM, Face.LEFT, Face.RIGHT, Face.FRONT, Face.BACK];
+		
 		public static int NbFaces(FaceFlag facesFlag) {
 			int total = 0;
 			if ((facesFlag & FaceFlag.TOP) == FaceFlag.TOP) {
@@ -69,6 +71,74 @@ namespace MinecraftCloneSilk.Model
 			if ((facesFlag & FaceFlag.BACK) == FaceFlag.BACK) {
 				yield return Face.BACK;
 			}
+		}
+
+		public static FaceExtended? GetFaceExtended(FaceFlag faceFlag) {
+			switch (faceFlag) {
+				case FaceFlag.EMPTY:
+					return null;
+				case FaceFlag.TOP:
+					return FaceExtended.TOP;
+				case FaceFlag.BOTTOM:
+					return FaceExtended.BOTTOM;
+				case FaceFlag.BACK:
+					return FaceExtended.BACK;
+				case FaceFlag.FRONT:
+					return FaceExtended.FRONT;
+				case FaceFlag.LEFT:
+					return FaceExtended.LEFT;
+				case FaceFlag.RIGHT:
+					return FaceExtended.RIGHT;
+				
+				case FaceFlag.TOP | FaceFlag.LEFT:
+					return FaceExtended.LEFTTOP;
+				case FaceFlag.TOP | FaceFlag.RIGHT:
+					return FaceExtended.RIGHTTOP;
+				case FaceFlag.TOP | FaceFlag.FRONT:
+					return FaceExtended.TOPFRONT;
+				case FaceFlag.TOP | FaceFlag.BACK:
+					return FaceExtended.TOPBACK;
+				
+				case FaceFlag.BOTTOM | FaceFlag.LEFT:
+					return FaceExtended.LEFTBOTTOM;
+				case FaceFlag.BOTTOM | FaceFlag.RIGHT:
+					return FaceExtended.RIGHTBOTTOM;
+				case FaceFlag.BOTTOM | FaceFlag.FRONT:
+					return FaceExtended.BOTTOMFRONT;
+				case FaceFlag.BOTTOM | FaceFlag.BACK:
+					return FaceExtended.BOTTOMBACK;
+				
+				case FaceFlag.LEFT | FaceFlag.TOP | FaceFlag.FRONT:
+					return FaceExtended.LEFTTOPFRONT;
+				case FaceFlag.RIGHT | FaceFlag.TOP | FaceFlag.FRONT:
+					return FaceExtended.RIGHTTOPFRONT;
+				case FaceFlag.LEFT | FaceFlag.TOP | FaceFlag.BACK:
+					return FaceExtended.LEFTTOPBACK;
+				case FaceFlag.RIGHT | FaceFlag.TOP | FaceFlag.BACK:
+					return FaceExtended.RIGHTTOPBACK;
+				
+				case FaceFlag.LEFT | FaceFlag.BOTTOM | FaceFlag.FRONT:
+					return FaceExtended.LEFTBOTTOMFRONT;
+				case FaceFlag.RIGHT | FaceFlag.BOTTOM | FaceFlag.FRONT:
+					return FaceExtended.RIGHTBOTTOMFRONT;
+				case FaceFlag.LEFT | FaceFlag.BOTTOM | FaceFlag.BACK:
+					return FaceExtended.LEFTBOTTOMBACK;
+				case FaceFlag.RIGHT | FaceFlag.BOTTOM | FaceFlag.BACK:
+					return FaceExtended.RIGHTBOTTOMBACK;
+
+				case FaceFlag.LEFT | FaceFlag.FRONT:
+					return FaceExtended.LEFTFRONT;
+				case FaceFlag.RIGHT | FaceFlag.FRONT:
+					return FaceExtended.RIGHTFRONT;
+				case FaceFlag.LEFT | FaceFlag.BACK:
+					return FaceExtended.LEFTBACK;
+				case FaceFlag.RIGHT | FaceFlag.BACK:
+					return FaceExtended.RIGHTBACK;
+				default:
+					throw new Exception("FaceFlag not found");
+
+			}
+			
 		}
 	}
 	
