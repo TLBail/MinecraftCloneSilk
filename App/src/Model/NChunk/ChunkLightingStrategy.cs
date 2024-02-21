@@ -17,6 +17,7 @@ public class ChunkLightingStrategy : ChunkStrategy
     public override void Init() {
         chunk.chunkState = ChunkState.LIGHTLOADING;
         SetupNeighbors();
+        Lighting.LightChunk(chunk);
     }
     protected virtual void SetupNeighbors() {
         chunk.chunksNeighbors = new Chunk[26];
@@ -32,7 +33,6 @@ public class ChunkLightingStrategy : ChunkStrategy
 
     public override void Load() {
         if(chunk.chunkFace is null) UpdateChunkFaces();
-        Lighting.UpdateLighting(chunk);
     }
 
 

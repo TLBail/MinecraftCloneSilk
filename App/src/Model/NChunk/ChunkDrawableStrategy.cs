@@ -76,6 +76,7 @@ public class ChunkDrawableStrategy : ChunkStrategy
     }
 
     private void UpdateVerticesNextFrame() {
+        if(chunk.chunkState != ChunkState.DRAWABLE) return;
         needToUpdateChunkBuffer = true;
         if (!IsUpdating) {
             chunk.chunkManager.AddChunkToUpdate(chunk);
@@ -84,11 +85,12 @@ public class ChunkDrawableStrategy : ChunkStrategy
     }
 
 
-    public override void OnBlockSet(int x, int y, int z) {
-        Lighting.UpdateLighting(chunk);
+    public override void OnBlockSet(int x, int y, int z, BlockData oldBlockData, BlockData newBlockData) {
+        Lighting.OnBlockSet(chunk, new(x,y,z), oldBlockData, newBlockData);
         UpdateBlocksAround(x, y, z);
         UpdateChunkVertex();
     }
+
 
     private void InitChunkFaces() {
         if (IsChunkVisible()) {

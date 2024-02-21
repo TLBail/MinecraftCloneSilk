@@ -1,4 +1,6 @@
-﻿namespace MinecraftCloneSilk.Model;
+﻿using System.Diagnostics;
+
+namespace MinecraftCloneSilk.Model;
 
 public struct BlockData
 {
@@ -8,7 +10,7 @@ public struct BlockData
     public readonly int id => data & 0xFFFF;
 
     public BlockData(ReadOnlySpan<byte> buffer) {
-        this.data = BitConverter.ToInt16(buffer);
+        this.data = BitConverter.ToInt32(buffer);
     }
     
     public BlockData(int id)
@@ -17,7 +19,7 @@ public struct BlockData
     }
 
     public BlockData(BinaryReader br) {
-        this.data = br.ReadInt16();
+        this.data = br.ReadInt32();
     }
     
     public byte GetLightLevel() {
@@ -25,6 +27,7 @@ public struct BlockData
     }
     
     public void SetLightLevel(byte lightLevel) {
+        Debug.Assert(lightLevel < 16);
         data = (data & ~(0xF << 16)) | (lightLevel << 16);
     }
     
@@ -36,11 +39,11 @@ public struct BlockData
         data = (data & ~(0xF0 << 16)) | (lightLevel << (4 + 16));
     }
 
-    public byte[] Tobyte() {
-        return BitConverter.GetBytes((short)data);
+    public const int SIZEOF_SERIALIZE_DATA = 4;
+    
+    public void WriteToStream(BinaryWriter bw) {
+        bw.Write(data);
     }
-
-    public const int SIZEOF_SERIALIZE_DATA = 2;
 
     public override bool Equals(object? obj) {
         return obj is BlockData block && this.data == block.data;

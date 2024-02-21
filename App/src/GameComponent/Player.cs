@@ -164,7 +164,7 @@ namespace MinecraftCloneSilk.GameComponent
             if (primaryKeyboard.IsKeyPressed(Key.Space))
             {
                 //move up
-                camera.position += camera.up * speed;
+                camera.position += camera.WorldUp * speed;
             }
             if (primaryKeyboard.IsKeyPressed(Key.Q))
             {

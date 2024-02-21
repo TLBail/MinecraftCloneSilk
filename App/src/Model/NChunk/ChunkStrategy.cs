@@ -39,6 +39,9 @@ public abstract class ChunkStrategy
             faceFlag |= FaceFlag.FRONT;
             position.Z -= (int)Chunk.CHUNK_SIZE;
         }
+        System.Diagnostics.Debug.Assert(position.X >= 0 && position.X < Chunk.CHUNK_SIZE &&
+                                        position.Y >= 0 && position.Y < Chunk.CHUNK_SIZE &&
+                                        position.Z >= 0 && position.Z < Chunk.CHUNK_SIZE, "position must be in the chunk");
 
         FaceExtended? faceExtended = FaceFlagUtils.GetFaceExtended(faceFlag);
         if (faceExtended is not null) {
@@ -87,12 +90,14 @@ public abstract class ChunkStrategy
     }
 
     public virtual void SetBlock(int x, int y, int z, string name) {
-        chunk.chunkData.SetBlock(Chunk.blockFactory!.GetBlockData(name),x, y, z);
+        BlockData oldBlockData = chunk.chunkData.GetBlock(x,y,z);
+        BlockData newBlockData = Chunk.blockFactory!.GetBlockData(name);
+        chunk.chunkData.SetBlock(newBlockData,x, y, z);
         UpdateChunkFaces();
-        OnBlockSet(x, y, z);
+        OnBlockSet(x, y, z, oldBlockData, newBlockData);
     }
 
-    public virtual void OnBlockSet(int x, int y, int z){}
+    public virtual void OnBlockSet(int x, int y, int z, BlockData oldBlockData, BlockData newBlockData){}
 
     public virtual Block GetBlock(int x, int y, int z) {
         var blockData = GetBlockData(new Vector3D<int>(x, y, z));

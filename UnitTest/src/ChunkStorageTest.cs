@@ -88,7 +88,7 @@ public class ChunkStorageTest
         Console.WriteLine("nb block in palette: " + nbBlock);
         BlockData[] blocksData = new BlockData[nbBlock];
         for (int i = 0; i < nbBlock; i++) {
-            blocksData[i] = new BlockData(br.ReadInt16());
+            blocksData[i] = new BlockData(br);
             Console.WriteLine(blocksData[i].id);
         }
         

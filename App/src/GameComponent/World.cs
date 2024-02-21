@@ -21,7 +21,7 @@ public enum WorldMode
 public class World : GameObject
 {
     private Player player = null!;
-    public int radius { get; set; } = 12;
+    public int radius { get; set; } = 4;
     private readonly WorldUi worldUi;
     public IWorldGenerator worldGeneration;
     public WorldMode worldMode { get; set; }
@@ -334,10 +334,14 @@ public class World : GameObject
 
 
     private void AddExempleChunk() {
-        Vector3D<int>[] postions =
-        {
-            Vector3D<int>.Zero,
-        };
+        List<Vector3D<int>> postions = new List<Vector3D<int>>();
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                for (int k = 0; k < 3; k++) {
+                    postions.Add(new Vector3D<int>(i * Chunk.CHUNK_SIZE, j * Chunk.CHUNK_SIZE, k * Chunk.CHUNK_SIZE));
+                }
+            }
+        }
         chunkManager.AddChunksToLoad(postions.ToList());
     }
 

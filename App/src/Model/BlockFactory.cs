@@ -76,7 +76,7 @@ public class BlockFactory
         return blocks[AIR_BLOCK_ID].GetBlockData();
     }
 
-    public BlockData GetBlockData(short id) {
+    public BlockData GetBlockData(int id) {
         return blocks.TryGetValue(id, out Block? block) ? block.blockData : blocks[AIR_BLOCK_ID].blockData;
     }
 

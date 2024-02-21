@@ -29,6 +29,7 @@ namespace MinecraftCloneSilk.Model
             this.lightEmitting = lightEmitting;
             this.blockJson = blockJson;
             blockData = new BlockData(id);
+            blockData.SetLightLevel(this.lightEmitting);
         }
 
         public void UpdateFullTexture() {

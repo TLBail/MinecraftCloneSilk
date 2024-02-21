@@ -58,11 +58,9 @@ public class ChunkStorage : IChunkStorage
         
         Dictionary<int, BlockData> palette = GetPallette(chunk);
         
-        binaryWriter.Write(palette.Count);
+        binaryWriter.Write((int)palette.Count);
         foreach (BlockData blockData in palette.Values) {
-            for (int j = 0; j < BlockData.SIZEOF_SERIALIZE_DATA; j++) {
-                binaryWriter.Write((byte) (blockData.id >> (8 * j)));
-            }
+            blockData.WriteToStream(binaryWriter);
         }
 
         int[] arrayOfKey = palette.Keys.ToArray();
@@ -102,7 +100,10 @@ public class ChunkStorage : IChunkStorage
             for (int y = 0; y < Chunk.CHUNK_SIZE; y++) {
                 for (int z = 0; z < Chunk.CHUNK_SIZE; z++) {
                     BlockData blockData = blocks[x, y, z];
-                    palette.TryAdd(blockData.id, blockData);
+                    if (!palette.ContainsKey(blockData.id)) {
+                        blockData.SetLightLevel(Chunk.blockFactory.blocks[blockData.id].lightEmitting);
+                        palette.TryAdd(blockData.id, blockData);
+                    }
                 }
             }
         }

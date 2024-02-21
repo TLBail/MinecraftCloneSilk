@@ -81,7 +81,7 @@ public class WorldNaturalGeneration : IWorldGenerator
         return noise <= threasholdAir;
     }
     
-    public void GenerateTerrain(Vector3D<int> position, IChunkData lazyChunkData)
+    public void GenerateTerrain(Vector3D<int> position, IChunkData chunkData)
     {
         for (int x = 0; x < Chunk.CHUNK_SIZE; x++) {
             for (int y = Chunk.CHUNK_SIZE - 1; y >= 0; y--) {
@@ -96,9 +96,9 @@ public class WorldNaturalGeneration : IWorldGenerator
                             noise = diamondNoiseGenerator.GetNoise(position.X + x, globalY, position.Z + z);
                             float threasholdDiamond = -0.8f;
                             if (noise <= threasholdDiamond) {
-                                lazyChunkData.SetBlock(diamond, x,y,z);
+                                chunkData.SetBlock(diamond, x,y,z);
                             } else {
-                                lazyChunkData.SetBlock(stone, x,y,z);
+                                chunkData.SetBlock(stone, x,y,z);
                             }
                         }
                         continue;
@@ -108,7 +108,7 @@ public class WorldNaturalGeneration : IWorldGenerator
                     bool isAir = IsAirBlock(position.X + x,position.Y + y,position.Z + z);   
                     
                     if(isAir && globalY <= 0) {
-                        lazyChunkData.SetBlock(water, x,y,z);
+                        chunkData.SetBlock(water, x,y,z);
                         continue;
                     }
                     
@@ -117,22 +117,22 @@ public class WorldNaturalGeneration : IWorldGenerator
                         bool upperIsAir = IsAirBlock(position.X + x,position.Y + y + 1,position.Z + z);
                         if(upperIsAir) {
                             if (y + position.Y < 4) {
-                                lazyChunkData.SetBlock(sand, x,y,z);
+                                chunkData.SetBlock(sand, x,y,z);
                             } else {
-                                lazyChunkData.SetBlock(grass, x, y, z);
+                                chunkData.SetBlock(grass, x, y, z);
                             }
                         } else {
-                            lazyChunkData.SetBlock(stone, x,y,z);
+                            chunkData.SetBlock(stone, x,y,z);
                         }
                     } else {
-                        if (y < Chunk.CHUNK_SIZE - 1 && lazyChunkData.GetBlock(x, y + 1, z).id == 0) {
+                        if (y < Chunk.CHUNK_SIZE - 1 && chunkData.GetBlock(x, y + 1, z).id == 0) {
                             if (globalY < 4) {
-                                lazyChunkData.SetBlock(sand, x,y,z);
+                                chunkData.SetBlock(sand, x,y,z);
                             } else {
-                                lazyChunkData.SetBlock(grass, x, y, z);
+                                chunkData.SetBlock(grass, x, y, z);
                             }
                         } else {
-                            lazyChunkData.SetBlock(stone, x,y,z);
+                            chunkData.SetBlock(stone, x,y,z);
                         }
                     }
                         
