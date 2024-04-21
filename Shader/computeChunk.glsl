@@ -570,7 +570,6 @@ void processBlock(uint chunkIndex, int x, int y, int z, uint index){
     if((facesFlag & BACK) != 0){
         int skyLight = getSkyLightOfBlockData(blocks[getIndex(chunkIndex, x, y, z - 1)]);
         int blockLight = getBlockLightOfBlockData(blocks[getIndex(chunkIndex, x, y, z - 1)]);
-        int lightLevel = max(skyLight, blockLight) << 2;
     
         int indexFace = (getIdOfBlockData(blocks[index]) * 6)  + 5;
         vertices[vertexIndex].position = position + (30 << 16);
@@ -580,7 +579,8 @@ void processBlock(uint chunkIndex, int x, int y, int z, uint index){
             !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x, y - 1, z - 1)])), 
             !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y - 1, z - 1)])) 
         );
-        vertices[vertexIndex].data += lightLevel;
+        vertices[vertexIndex].data += blockLight << 2;
+        vertices[vertexIndex].data += skyLight << 6;
         vertexIndex++;
         vertices[vertexIndex].position = position + (31 << 16);
         vertices[vertexIndex].coords = texCoords[indexFace].topRight;
@@ -589,7 +589,8 @@ void processBlock(uint chunkIndex, int x, int y, int z, uint index){
             !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x, y + 1, z - 1)])), 
             !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y + 1, z - 1)])) 
         );
-        vertices[vertexIndex].data += lightLevel;
+        vertices[vertexIndex].data += blockLight << 2;
+        vertices[vertexIndex].data += skyLight << 6;
         vertexIndex++;
         vertices[vertexIndex].position = position + (32 << 16);
         vertices[vertexIndex].coords = texCoords[indexFace].bottomRight;
@@ -598,7 +599,9 @@ void processBlock(uint chunkIndex, int x, int y, int z, uint index){
             !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x, y - 1, z - 1)])), 
             !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y - 1, z - 1)])) 
         );
-        vertices[vertexIndex].data += lightLevel;
+        vertices[vertexIndex].data += blockLight << 2;
+        vertices[vertexIndex].data += skyLight << 6;
+
         vertexIndex++;
         vertices[vertexIndex].position = position + (33 << 16); 
         vertices[vertexIndex].coords = texCoords[indexFace].topRight;
@@ -607,7 +610,9 @@ void processBlock(uint chunkIndex, int x, int y, int z, uint index){
             !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x, y + 1, z - 1)])), 
             !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y + 1, z - 1)])) 
         );
-        vertices[vertexIndex].data += lightLevel;
+        vertices[vertexIndex].data += blockLight << 2;
+        vertices[vertexIndex].data += skyLight << 6;
+
         vertexIndex++;
         vertices[vertexIndex].position = position + (34 << 16); 
         vertices[vertexIndex].coords = texCoords[indexFace].bottomLeft;
@@ -616,7 +621,9 @@ void processBlock(uint chunkIndex, int x, int y, int z, uint index){
             !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x, y - 1, z - 1)])), 
             !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y - 1, z - 1)])) 
         );
-        vertices[vertexIndex].data += lightLevel;
+        vertices[vertexIndex].data += blockLight << 2;
+        vertices[vertexIndex].data += skyLight << 6;
+
         vertexIndex++;
         vertices[vertexIndex].position = position + (35 << 16); 
         vertices[vertexIndex].coords = texCoords[indexFace].topLeft;
@@ -625,7 +632,9 @@ void processBlock(uint chunkIndex, int x, int y, int z, uint index){
             !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x, y + 1, z - 1)])), 
             !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y + 1, z - 1)])) 
         );
-        vertices[vertexIndex].data += lightLevel;
+        vertices[vertexIndex].data += blockLight << 2;
+        vertices[vertexIndex].data += skyLight << 6;
+
         vertexIndex++;
     }
     
@@ -633,8 +642,6 @@ void processBlock(uint chunkIndex, int x, int y, int z, uint index){
     if((facesFlag & FRONT) != 0){
         int skyLight = getSkyLightOfBlockData(blocks[getIndex(chunkIndex, x, y, z + 1)]);
         int blockLight = getBlockLightOfBlockData(blocks[getIndex(chunkIndex, x, y, z + 1)]);
-        int lightLevel = max(skyLight, blockLight) << 2;
-
     
         int indexFace = (getIdOfBlockData(blocks[index]) * 6)  + 4;
         vertices[vertexIndex].position = position + (24 << 16);
@@ -644,7 +651,9 @@ void processBlock(uint chunkIndex, int x, int y, int z, uint index){
             !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x, y - 1, z + 1)])), 
             !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y - 1, z + 1)])) 
         );
-        vertices[vertexIndex].data += lightLevel;
+        vertices[vertexIndex].data += blockLight << 2;
+        vertices[vertexIndex].data += skyLight << 6;
+
         vertexIndex++;
         vertices[vertexIndex].position = position + (25 << 16); 
         vertices[vertexIndex].coords = texCoords[indexFace].bottomRight;
@@ -653,7 +662,9 @@ void processBlock(uint chunkIndex, int x, int y, int z, uint index){
             !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x, y - 1, z + 1)])), 
             !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y - 1, z + 1)])) 
         );
-        vertices[vertexIndex].data += lightLevel;
+        vertices[vertexIndex].data += blockLight << 2;
+        vertices[vertexIndex].data += skyLight << 6;
+
         vertexIndex++;
         vertices[vertexIndex].position = position + (26 << 16); 
         vertices[vertexIndex].coords = texCoords[indexFace].topRight;
@@ -662,7 +673,9 @@ void processBlock(uint chunkIndex, int x, int y, int z, uint index){
             !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x, y + 1, z + 1)])), 
             !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y + 1, z + 1)])) 
         );
-        vertices[vertexIndex].data += lightLevel;
+        vertices[vertexIndex].data += blockLight << 2;
+        vertices[vertexIndex].data += skyLight << 6;
+
         vertexIndex++;
         vertices[vertexIndex].position = position + (27 << 16); 
         vertices[vertexIndex].coords = texCoords[indexFace].topRight;
@@ -671,7 +684,9 @@ void processBlock(uint chunkIndex, int x, int y, int z, uint index){
             !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x, y + 1, z + 1)])), 
             !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y + 1, z + 1)])) 
         );
-        vertices[vertexIndex].data += lightLevel;
+        vertices[vertexIndex].data += blockLight << 2;
+        vertices[vertexIndex].data += skyLight << 6;
+
         vertexIndex++;
         vertices[vertexIndex].position = position + (28 << 16); 
         vertices[vertexIndex].coords = texCoords[indexFace].topLeft;
@@ -680,7 +695,9 @@ void processBlock(uint chunkIndex, int x, int y, int z, uint index){
             !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x, y + 1, z + 1)])), 
             !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y + 1, z + 1)])) 
         );
-        vertices[vertexIndex].data += lightLevel;
+        vertices[vertexIndex].data += blockLight << 2;
+        vertices[vertexIndex].data += skyLight << 6;
+
         vertexIndex++;
         vertices[vertexIndex].position = position + (29 << 16); 
         vertices[vertexIndex].coords = texCoords[indexFace].bottomLeft;
@@ -689,7 +706,9 @@ void processBlock(uint chunkIndex, int x, int y, int z, uint index){
             !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x, y - 1, z + 1)])), 
             !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y - 1, z + 1)])) 
         );
-        vertices[vertexIndex].data += lightLevel;
+        vertices[vertexIndex].data += blockLight << 2;
+        vertices[vertexIndex].data += skyLight << 6;
+
         vertexIndex++;
     }
     
@@ -698,8 +717,6 @@ void processBlock(uint chunkIndex, int x, int y, int z, uint index){
     if((facesFlag & RIGHT) != 0){
         int skyLight = getSkyLightOfBlockData(blocks[getIndex(chunkIndex, x - 1, y, z)]);
         int blockLight = getBlockLightOfBlockData(blocks[getIndex(chunkIndex, x - 1, y, z)]);
-        int lightLevel = max(skyLight, blockLight) << 2;
-
     
         int indexFace = (getIdOfBlockData(blocks[index]) * 6)  + 3;
         vertices[vertexIndex].position = position + (18 << 16);
@@ -709,7 +726,9 @@ void processBlock(uint chunkIndex, int x, int y, int z, uint index){
             !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y + 1, z)])), 
             !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y + 1, z + 1)])) 
         );
-        vertices[vertexIndex].data += lightLevel;
+        vertices[vertexIndex].data += blockLight << 2;
+        vertices[vertexIndex].data += skyLight << 6;
+
         vertexIndex++;
         vertices[vertexIndex].position = position + (19 << 16); 
         vertices[vertexIndex].coords = texCoords[indexFace].topLeft;
@@ -718,7 +737,9 @@ void processBlock(uint chunkIndex, int x, int y, int z, uint index){
             !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y + 1, z)])), 
             !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y + 1, z - 1)])) 
         );
-        vertices[vertexIndex].data += lightLevel;
+        vertices[vertexIndex].data += blockLight << 2;
+        vertices[vertexIndex].data += skyLight << 6;
+
         vertexIndex++;
         vertices[vertexIndex].position = position + (20 << 16); 
         vertices[vertexIndex].coords = texCoords[indexFace].bottomLeft;
@@ -727,7 +748,9 @@ void processBlock(uint chunkIndex, int x, int y, int z, uint index){
             !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y - 1, z)])), 
             !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y - 1, z - 1)])) 
         );
-        vertices[vertexIndex].data += lightLevel;
+        vertices[vertexIndex].data += blockLight << 2;
+        vertices[vertexIndex].data += skyLight << 6;
+
         vertexIndex++;
         vertices[vertexIndex].position = position + (21 << 16); 
         vertices[vertexIndex].coords = texCoords[indexFace].bottomLeft;
@@ -736,7 +759,9 @@ void processBlock(uint chunkIndex, int x, int y, int z, uint index){
             !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y - 1, z)])), 
             !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y - 1, z - 1)])) 
         );
-        vertices[vertexIndex].data += lightLevel;
+        vertices[vertexIndex].data += blockLight << 2;
+        vertices[vertexIndex].data += skyLight << 6;
+
         vertexIndex++;
         vertices[vertexIndex].position = position + (22 << 16); 
         vertices[vertexIndex].coords = texCoords[indexFace].bottomRight;
@@ -745,7 +770,9 @@ void processBlock(uint chunkIndex, int x, int y, int z, uint index){
             !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y - 1, z)])), 
             !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y - 1, z + 1)])) 
         );
-        vertices[vertexIndex].data += lightLevel;
+        vertices[vertexIndex].data += blockLight << 2;
+        vertices[vertexIndex].data += skyLight << 6;
+
         vertexIndex++;
         vertices[vertexIndex].position = position + (23 << 16); 
         vertices[vertexIndex].coords = texCoords[indexFace].topRight;   
@@ -754,7 +781,9 @@ void processBlock(uint chunkIndex, int x, int y, int z, uint index){
             !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y + 1, z)])), 
             !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y + 1, z + 1)])) 
         );
-        vertices[vertexIndex].data += lightLevel;
+        vertices[vertexIndex].data += blockLight << 2;
+        vertices[vertexIndex].data += skyLight << 6;
+
         vertexIndex++;    
     }
    
@@ -762,8 +791,6 @@ void processBlock(uint chunkIndex, int x, int y, int z, uint index){
     if((facesFlag & LEFT) != 0){
         int skyLight = getSkyLightOfBlockData(blocks[getIndex(chunkIndex, x + 1, y, z)]);
         int blockLight = getBlockLightOfBlockData(blocks[getIndex(chunkIndex, x + 1, y, z)]);
-        int lightLevel = max(skyLight, blockLight) << 2;
-
     
         int indexFace = (getIdOfBlockData(blocks[index]) * 6)  + 2;
         vertices[vertexIndex].position = position + (12 << 16); 
@@ -773,7 +800,9 @@ void processBlock(uint chunkIndex, int x, int y, int z, uint index){
             !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y + 1, z)])), 
             !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y + 1, z + 1)])) 
         );
-        vertices[vertexIndex].data += lightLevel;
+        vertices[vertexIndex].data += blockLight << 2;
+        vertices[vertexIndex].data += skyLight << 6;
+
         vertexIndex++;
         vertices[vertexIndex].position = position + (13 << 16); 
         vertices[vertexIndex].coords = texCoords[indexFace].bottomRight;
@@ -782,7 +811,9 @@ void processBlock(uint chunkIndex, int x, int y, int z, uint index){
             !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y - 1, z)])), 
             !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y - 1, z - 1)])) 
         );
-        vertices[vertexIndex].data += lightLevel;
+        vertices[vertexIndex].data += blockLight << 2;
+        vertices[vertexIndex].data += skyLight << 6;
+
         vertexIndex++;
         vertices[vertexIndex].position = position + (14 << 16); 
         vertices[vertexIndex].coords = texCoords[indexFace].topRight;
@@ -791,7 +822,9 @@ void processBlock(uint chunkIndex, int x, int y, int z, uint index){
             !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y + 1, z)])), 
             !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y + 1, z - 1)])) 
         );
-        vertices[vertexIndex].data += lightLevel;
+        vertices[vertexIndex].data += blockLight << 2;
+        vertices[vertexIndex].data += skyLight << 6;
+
         vertexIndex++;
         vertices[vertexIndex].position = position + (15 << 16); 
         vertices[vertexIndex].coords = texCoords[indexFace].bottomRight;
@@ -800,7 +833,9 @@ void processBlock(uint chunkIndex, int x, int y, int z, uint index){
             !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y - 1, z)])), 
             !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y - 1, z - 1)])) 
         );
-        vertices[vertexIndex].data += lightLevel;
+        vertices[vertexIndex].data += blockLight << 2;
+        vertices[vertexIndex].data += skyLight << 6;
+
         vertexIndex++;
         vertices[vertexIndex].position = position + (16 << 16); 
         vertices[vertexIndex].coords = texCoords[indexFace].topLeft;
@@ -809,7 +844,9 @@ void processBlock(uint chunkIndex, int x, int y, int z, uint index){
             !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y + 1, z)])), 
             !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y + 1, z + 1)])) 
         );
-        vertices[vertexIndex].data += lightLevel;
+        vertices[vertexIndex].data += blockLight << 2;
+        vertices[vertexIndex].data += skyLight << 6;
+
         vertexIndex++;
         vertices[vertexIndex].position = position + (17 << 16); 
         vertices[vertexIndex].coords = texCoords[indexFace].bottomLeft;    
@@ -818,7 +855,9 @@ void processBlock(uint chunkIndex, int x, int y, int z, uint index){
             !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y - 1, z)])), 
             !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y - 1, z + 1)])) 
         );
-        vertices[vertexIndex].data += lightLevel;
+        vertices[vertexIndex].data += blockLight << 2;
+        vertices[vertexIndex].data += skyLight << 6;
+
         vertexIndex++;
     }          
                 
@@ -826,8 +865,6 @@ void processBlock(uint chunkIndex, int x, int y, int z, uint index){
     if((facesFlag & BOTTOM) != 0){
         int skyLight = getSkyLightOfBlockData(blocks[getIndex(chunkIndex, x, y - 1, z)]);
         int blockLight = getBlockLightOfBlockData(blocks[getIndex(chunkIndex, x, y - 1, z)]);
-        int lightLevel = max(skyLight, blockLight) << 2;
-
     
         int indexFace = (getIdOfBlockData(blocks[index]) * 6)  + 1;
         vertices[vertexIndex].position = position + (6 << 16);
@@ -837,7 +874,9 @@ void processBlock(uint chunkIndex, int x, int y, int z, uint index){
             !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x, y - 1, z - 1)])),
             !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y - 1, z - 1)]))
         );
-        vertices[vertexIndex].data += lightLevel;
+        vertices[vertexIndex].data += blockLight << 2;
+        vertices[vertexIndex].data += skyLight << 6;
+
         vertexIndex++;
         vertices[vertexIndex].position = position + (7 << 16); 
         vertices[vertexIndex].coords = texCoords[indexFace].topLeft;
@@ -846,7 +885,9 @@ void processBlock(uint chunkIndex, int x, int y, int z, uint index){
             !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x, y - 1, z - 1)])),
             !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y - 1, z - 1)]))
         );
-        vertices[vertexIndex].data += lightLevel;
+        vertices[vertexIndex].data += blockLight << 2;
+        vertices[vertexIndex].data += skyLight << 6;
+
         vertexIndex++;
         vertices[vertexIndex].position = position + (8 << 16); 
         vertices[vertexIndex].coords = texCoords[indexFace].bottomLeft;
@@ -855,7 +896,9 @@ void processBlock(uint chunkIndex, int x, int y, int z, uint index){
             !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x, y - 1, z + 1)])),
             !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y - 1, z + 1)]))
         );
-        vertices[vertexIndex].data += lightLevel;
+        vertices[vertexIndex].data += blockLight << 2;
+        vertices[vertexIndex].data += skyLight << 6;
+
         vertexIndex++;
         vertices[vertexIndex].position = position + (9 << 16); 
         vertices[vertexIndex].coords = texCoords[indexFace].bottomLeft;
@@ -864,7 +907,9 @@ void processBlock(uint chunkIndex, int x, int y, int z, uint index){
             !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x, y - 1, z + 1)])),
             !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y - 1, z + 1)]))
         );
-        vertices[vertexIndex].data += lightLevel;
+        vertices[vertexIndex].data += blockLight << 2;
+        vertices[vertexIndex].data += skyLight << 6;
+
         vertexIndex++;
         vertices[vertexIndex].position = position + (10 << 16); 
         vertices[vertexIndex].coords = texCoords[indexFace].bottomRight;
@@ -873,7 +918,9 @@ void processBlock(uint chunkIndex, int x, int y, int z, uint index){
             !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x, y - 1, z + 1)])),
             !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y - 1, z + 1)]))
         );
-        vertices[vertexIndex].data += lightLevel;
+        vertices[vertexIndex].data += blockLight << 2;
+        vertices[vertexIndex].data += skyLight << 6;
+
         vertexIndex++;
         vertices[vertexIndex].position = position + (11 << 16); 
         vertices[vertexIndex].coords = texCoords[indexFace].topRight;
@@ -882,7 +929,9 @@ void processBlock(uint chunkIndex, int x, int y, int z, uint index){
             !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x, y - 1, z - 1)])), 
             !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y - 1, z - 1)])) 
         );
-        vertices[vertexIndex].data += lightLevel;
+        vertices[vertexIndex].data += blockLight << 2;
+        vertices[vertexIndex].data += skyLight << 6;
+
         vertexIndex++;
     }
 
@@ -890,8 +939,6 @@ void processBlock(uint chunkIndex, int x, int y, int z, uint index){
     if((facesFlag & TOP) != 0){
         int skyLight = getSkyLightOfBlockData(blocks[getIndex(chunkIndex, x, y + 1, z)]);
         int blockLight = getBlockLightOfBlockData(blocks[getIndex(chunkIndex, x, y + 1, z)]);
-        int lightLevel = max(skyLight, blockLight) << 2;
-
     
         int indexFace = (getIdOfBlockData(blocks[index]) * 6);
         vertices[vertexIndex].position = position + (0 << 16); 
@@ -901,7 +948,9 @@ void processBlock(uint chunkIndex, int x, int y, int z, uint index){
             !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x, y + 1, z - 1)])), // block top back
             !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y + 1, z - 1)])) // block top left back
         );
-        vertices[vertexIndex].data += lightLevel;
+        vertices[vertexIndex].data += blockLight << 2;
+        vertices[vertexIndex].data += skyLight << 6;
+
         vertexIndex++;
         vertices[vertexIndex].position = position + (1 << 16); 
         vertices[vertexIndex].coords = texCoords[indexFace].bottomRight;
@@ -910,7 +959,9 @@ void processBlock(uint chunkIndex, int x, int y, int z, uint index){
             !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x, y + 1, z + 1)])), // block top front
             !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y + 1, z + 1)])) // block top right front
         );
-        vertices[vertexIndex].data += lightLevel;
+        vertices[vertexIndex].data += blockLight << 2;
+        vertices[vertexIndex].data += skyLight << 6;
+
         vertexIndex++;
         vertices[vertexIndex].position = position + (2 << 16); 
         vertices[vertexIndex].coords = texCoords[indexFace].topRight;
@@ -919,7 +970,9 @@ void processBlock(uint chunkIndex, int x, int y, int z, uint index){
             !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x, y + 1, z - 1)])), // block top back
             !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y + 1, z - 1)])) // block top right back
         );
-        vertices[vertexIndex].data += lightLevel;
+        vertices[vertexIndex].data += blockLight << 2;
+        vertices[vertexIndex].data += skyLight << 6;
+
         vertexIndex++;
         vertices[vertexIndex].position = position + (3 << 16); 
         vertices[vertexIndex].coords = texCoords[indexFace].bottomRight;
@@ -928,7 +981,9 @@ void processBlock(uint chunkIndex, int x, int y, int z, uint index){
             !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x, y + 1, z + 1)])), // block top front
             !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x + 1, y + 1, z + 1)])) // block top right front
         );
-        vertices[vertexIndex].data += lightLevel;
+        vertices[vertexIndex].data += blockLight << 2;
+        vertices[vertexIndex].data += skyLight << 6;
+
         vertexIndex++;
         vertices[vertexIndex].position = position + (4 << 16); 
         vertices[vertexIndex].coords = texCoords[indexFace].topLeft;
@@ -937,7 +992,9 @@ void processBlock(uint chunkIndex, int x, int y, int z, uint index){
             !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x, y + 1, z - 1)])), // block top back
             !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y + 1, z - 1)])) // block top left back
         );
-        vertices[vertexIndex].data += lightLevel;
+        vertices[vertexIndex].data += blockLight << 2;
+        vertices[vertexIndex].data += skyLight << 6;
+
         vertexIndex++;
         vertices[vertexIndex].position = position + (5 << 16); 
         vertices[vertexIndex].coords = texCoords[indexFace].bottomLeft;
@@ -946,7 +1003,9 @@ void processBlock(uint chunkIndex, int x, int y, int z, uint index){
             !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x, y + 1, z + 1)])), // block top front
             !isTransparent(getIdOfBlockData(blocks[getIndex(chunkIndex, x - 1, y + 1, z + 1)])) // block top left front
         );
-        vertices[vertexIndex].data += lightLevel;
+        vertices[vertexIndex].data += blockLight << 2;
+        vertices[vertexIndex].data += skyLight << 6;
+
     }
     
 }

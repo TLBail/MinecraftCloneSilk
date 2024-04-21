@@ -1,17 +1,16 @@
 ﻿using System.Diagnostics;
-using MinecraftCloneSilk.GameComponent;
 using MinecraftCloneSilk.Model.NChunk;
 using Silk.NET.Maths;
-using Console = MinecraftCloneSilk.UI.Console;
 
-namespace MinecraftCloneSilk.Model;
+namespace MinecraftCloneSilk.Model.Lighting;
 
-public class Lighting
+public class LightCalculator
 {
     
     public float lightLevel = 1f;
 
 
+    [Logger.Timer]
     public static void LightChunk(Chunk chunk) {
         if(chunk.chunkData.IsOnlyOneBlock()) {
             BlockData block = chunk.chunkData.GetBlock();
@@ -97,29 +96,66 @@ public class Lighting
                 }
             }
         }
-        
-        //get all sunlight source of neighbor
+
+        Debug.Assert(topChunk.chunkData is not null);
+        if ((topChunk.chunkFace & ChunkFaceUtils.ALLTRANSPARENT) == 0) {
+            return;
+        }
+        bool[,] blocked = new bool[Chunk.CHUNK_SIZE, Chunk.CHUNK_SIZE];
         for (int x = 0; x < Chunk.CHUNK_SIZE; x++) {
             for (int z = 0; z < Chunk.CHUNK_SIZE; z++) {
-                if (blockFactory.blocks[blocks[x, 15, z].id].transparent &&
-                    topChunk.chunkData.GetBlock(x, 0, z).id == 0) {
-                    BlockData offsetBlock = chunk.chunkData.GetBlock(x, 15, z);
-                    offsetBlock.SetSkyLightLevel(15);
-                    chunk.SetBlockData(x, 15, z, offsetBlock);
-
-                    if (topChunk.chunkData.GetBlock(x, 0, z).GetSkyLightLevel() != 15) {
-                        BlockData topBlock = topChunk.chunkData.GetBlock(x, 0, z);
-                        topBlock.SetSkyLightLevel(15);
-                        topChunk.chunkData.SetBlock(topBlock,x, 0, z);
-                    }
-                    sunLightSource.Enqueue(new (
-                        new Vector3D<int>(x, 15, z),
-                        15
-                    ));
+                if (!blockFactory.blocks[blocks[x, 15, z].id].transparent) {
+                    blocked[x, z] = true;
+                    continue;
                 }
+                blocks[x, 15, z].SetSkyLightLevel(15);
             }
         }
-        PropageSunlightSource(chunk, sunLightSource);
+        
+        for (int y = 15; y > 0; y--) {
+            for (int x = 0; x < Chunk.CHUNK_SIZE; x++) {
+                for (int z = 0; z < Chunk.CHUNK_SIZE; z++) {
+                    if(blocked[x,z]) continue;
+                    Debug.Assert(blockFactory.blocks[blocks[x, y, z].id].transparent);
+                    
+                    
+                    // check neighbors for light 
+                    if (x > 0 && blockFactory.blocks[blocks[x - 1, y, z].id].transparent
+                              && blocks[x - 1, y, z].GetSkyLightLevel() < 14) {
+                        blocks[x - 1,y,z].SetSkyLightLevel(14);
+                        sunLightSource.Enqueue(new LightNode(new (x - 1,y,z), 14));
+                    }
+                    
+                    if (x < Chunk.CHUNK_SIZE - 1 && blockFactory.blocks[blocks[x + 1, y, z].id].transparent && 
+                        blocks[x + 1, y, z].GetSkyLightLevel() < 14) {
+                        blocks[x + 1,y,z].SetSkyLightLevel(14);
+                        sunLightSource.Enqueue(new LightNode(new (x + 1,y,z), 14));
+                    }
+                    
+                    if (z > 0 && blockFactory.blocks[blocks[x, y, z - 1].id].transparent && blocks[x, y, z - 1].GetSkyLightLevel() < 14) {
+                        blocks[x,y,z - 1].SetSkyLightLevel(14);
+                        sunLightSource.Enqueue(new LightNode(new (x,y,z - 1), 14));
+                    }
+                    
+                    if (z < Chunk.CHUNK_SIZE - 1 && blockFactory.blocks[blocks[x, y, z + 1].id].transparent &&
+                        blocks[x, y, z + 1].GetSkyLightLevel() < 14) {
+                        blocks[x,y,z + 1].SetSkyLightLevel(14);
+                        sunLightSource.Enqueue(new LightNode(new (x,y,z + 1), 14));
+                    }
+                    
+                    if(!blockFactory.blocks[blocks[x, y - 1, z].id].transparent) {
+                        blocked[x, z] = true;
+                        continue;
+                    }
+                    blocks[x,y - 1,z].SetSkyLightLevel(15);
+                }
+            }
+            
+        }
+
+        if (sunLightSource.Count > 0) {
+            PropageSunlightSource(chunk, sunLightSource);
+        }
         
     }
 
@@ -150,6 +186,7 @@ public class Lighting
         }
     }
 
+    [Logger.Timer]
     private static void PropageSunlightSource(Chunk chunk, Queue<LightNode> lightSources) {
         BlockFactory blockFactory = Chunk.blockFactory!;
         while (lightSources.TryDequeue(out LightNode lightSource)) {
@@ -218,7 +255,7 @@ public class Lighting
                 faceFlag |= FaceFlag.FRONT;
             }
             FaceExtended? faceExtended = FaceFlagUtils.GetFaceExtended(faceFlag);
-            if(faceExtended is not null) chunk.chunksNeighbors![(int)faceExtended].chunkStrategy.UpdateChunkVertex();
+            if(faceExtended is not null) chunk.chunksNeighbors![(int)faceExtended].UpdateChunkVertex();
         }
     }
 

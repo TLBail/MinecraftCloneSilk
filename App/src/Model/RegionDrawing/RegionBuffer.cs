@@ -2,6 +2,7 @@
 using System.Numerics;
 using MinecraftCloneSilk.Collision;
 using MinecraftCloneSilk.Core;
+using MinecraftCloneSilk.Model.Lighting;
 using MinecraftCloneSilk.Model.NChunk;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL;
@@ -176,7 +177,7 @@ public class RegionBuffer : IDisposable
         chunkCount++;
     }
 
-    public void Draw(Camera cam, Lighting lighting) {
+    public void Draw(Camera cam, LightCalculator lightCalculator) {
         haveDrawLastFrame = false;
         if (nbBlockVertex == 0) return;
         if (!RegionInCameraView(cam)) return;
@@ -186,7 +187,7 @@ public class RegionBuffer : IDisposable
 
         vaoBlock!.Bind();
         cubeShader!.Use();
-        cubeShader.SetUniform("ambientStrength", lighting.lightLevel);
+        cubeShader.SetUniform("ambientStrength", lightCalculator.lightLevel);
         cubeTexture.Bind();
         
         gl.DrawArrays(PrimitiveType.Triangles, 0, (uint)nbBlockVertex);
@@ -195,7 +196,7 @@ public class RegionBuffer : IDisposable
         haveDrawLastFrame = true;
     }
 
-    public void DrawWater(Camera cam, Lighting lighting) {
+    public void DrawWater(Camera cam, LightCalculator lightCalculator) {
         if (nbWaterVertex == 0) return;
         if (!RegionInCameraView(cam)) return;
 
@@ -204,7 +205,7 @@ public class RegionBuffer : IDisposable
         
         vaoWater!.Bind();
         cubeShader!.Use();
-        cubeShader.SetUniform("ambientStrength", lighting.lightLevel);
+        cubeShader.SetUniform("ambientStrength", lightCalculator.lightLevel);
         gl.BindBufferBase(BufferTargetARB.ShaderStorageBuffer, 5, subBlockPositionsBuffer.handle);
 
         cubeTexture.Bind();

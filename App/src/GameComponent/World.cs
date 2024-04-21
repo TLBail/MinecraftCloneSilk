@@ -2,6 +2,7 @@
 using MinecraftCloneSilk.Core;
 using MinecraftCloneSilk.Model;
 using MinecraftCloneSilk.Model.ChunkManagement;
+using MinecraftCloneSilk.Model.Lighting;
 using MinecraftCloneSilk.Model.NChunk;
 using MinecraftCloneSilk.Model.Storage;
 using MinecraftCloneSilk.Model.WorldGen;
@@ -27,7 +28,8 @@ public class World : GameObject
     public WorldMode worldMode { get; set; }
     public ChunkManager chunkManager;
     private IChunkStorage chunkStorage;
-    public Lighting lighting { get; private set; }
+    public LightCalculator lightCalculator { get; private set; }
+    private ChunkLightManager chunkLightManager = new ChunkLightManager();
     private List<string> commandKeys = new();
     
     public World(Game game, WorldMode worldMode) : this(game, null, worldMode, null){} 
@@ -37,20 +39,23 @@ public class World : GameObject
 
     public World(Game game, IWorldGenerator? worldGenerator = null, WorldMode worldMode = WorldMode.EMPTY, string? saveLocation = null) : base(game) {
         this.worldMode = worldMode;
-        this.lighting = new Lighting();
-        worldUi = new WorldUi(this, lighting);
+        this.lightCalculator = new LightCalculator();
+        worldUi = new WorldUi(this, lightCalculator);
         worldGeneration = worldGenerator ?? new WorldNaturalGeneration();
         chunkStorage = saveLocation is not null ? new RegionStorage(saveLocation) : new NullChunkStorage();
-        chunkManager = new ChunkManager(radius, worldGeneration, chunkStorage);
+        this.chunkLightManager = new ChunkLightManager();
+        chunkManager = new ChunkManager(radius, worldGeneration, chunkStorage, chunkLightManager);
     } 
     
     public void Reset(IWorldGenerator? worldGenerator = null,  WorldMode worldMode = WorldMode.EMPTY, string? saveLocation = null) {
         chunkManager.Clear();
         chunkStorage.Dispose();
+        chunkLightManager.Dispose();
         
         worldGeneration = worldGenerator ?? new WorldNaturalGeneration();
         chunkStorage = saveLocation is not null ? new RegionStorage(saveLocation) : new NullChunkStorage();
-        chunkManager = new ChunkManager(radius, worldGeneration, chunkStorage);
+        chunkLightManager = new ChunkLightManager();
+        chunkManager = new ChunkManager(radius, worldGeneration, chunkStorage, chunkLightManager);
         SetWorldMode(worldMode);
     }
 
@@ -74,6 +79,7 @@ public class World : GameObject
         base.Destroy();
         foreach(string key in commandKeys) console.RemoveCommand(key);
         chunkStorage.Dispose();
+        chunkLightManager.Dispose();
     }
 
     public void SetBlock(string blockName, Vector3D<int> position) {

@@ -1,4 +1,5 @@
-﻿using Silk.NET.Maths;
+﻿using MinecraftCloneSilk.Model.Lighting;
+using Silk.NET.Maths;
 
 namespace MinecraftCloneSilk.Model.NChunk;
 
@@ -16,8 +17,8 @@ public class ChunkLightingStrategy : ChunkStrategy
 
     public override void Init() {
         chunk.chunkState = ChunkState.LIGHTLOADING;
+        System.Diagnostics.Debug.Assert(chunk.chunkFace is not null);
         SetupNeighbors();
-        Lighting.LightChunk(chunk);
     }
     protected virtual void SetupNeighbors() {
         chunk.chunksNeighbors = new Chunk[26];
@@ -32,7 +33,8 @@ public class ChunkLightingStrategy : ChunkStrategy
     }
 
     public override void Load() {
-        if(chunk.chunkFace is null) UpdateChunkFaces();
+        // chunk.chunkLightManager.FullLightChunk(chunk).Wait();
+        LightCalculator.LightChunk(chunk);
     }
 
 

@@ -8,11 +8,13 @@ public static class Fonts
 {
     
     public static readonly string[] FONTS_PATH = [
-        "./Assets/fonts/cousine.ttf",
-        "./Assets/fonts/Roboto-Medium.ttf"
+        Generated.FilePathConstants.Fonts.cousine_ttf,
+        Generated.FilePathConstants.Fonts.Miracode_ttf,
+        Generated.FilePathConstants.Fonts.Minecraftia_Regular_ttf,
+        Generated.FilePathConstants.Fonts.Roboto_Medium_ttf
     ];
     
-    public const string DEFAULT_FONT_PATH = "./Assets/fonts/Minecraftia-Regular.ttf";
+    public const string DEFAULT_FONT_PATH = Generated.FilePathConstants.Fonts.Miracode_ttf;
     
     public static readonly ImGuiFontConfig DEFAULT_FONT_CONFIG = new ImGuiFontConfig(Fonts.DEFAULT_FONT_PATH, 24);
     

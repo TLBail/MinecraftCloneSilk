@@ -11,6 +11,7 @@ using Silk.NET.Windowing;
 using Silk.NET.OpenGL.Extensions.ImGui;
 using Silk.NET.Windowing.Glfw;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats;
 using SixLabors.ImageSharp.PixelFormats;
 using Color = System.Drawing.Color;
 using Glfw = Silk.NET.GLFW.Glfw;
@@ -136,9 +137,9 @@ namespace MinecraftCloneSilk.Core
 
 
         private void LoadIcon() {
-            Configuration configuration = Configuration.Default;
-            configuration.PreferContiguousImageBuffers = true;
-            using (var img = Image.Load<Rgba32>(configuration, Generated.FilePathConstants.Sprite.minecraftLogo_png))
+            DecoderOptions options = new DecoderOptions();
+            options.Configuration.PreferContiguousImageBuffers = true;
+            using (var img = Image.Load<Rgba32>(options, Generated.FilePathConstants.Sprite.minecraftLogo_png))
             {
                 img.DangerousTryGetSinglePixelMemory(out var imageSpan);
                 var imageBytes = MemoryMarshal.AsBytes(imageSpan.Span).ToArray();

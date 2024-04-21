@@ -2,6 +2,7 @@
 using System.Runtime.InteropServices;
 using MinecraftCloneSilk.Core;
 using MinecraftCloneSilk.GameComponent;
+using MinecraftCloneSilk.Model.Lighting;
 using MinecraftCloneSilk.Model.RegionDrawing;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL;
@@ -86,7 +87,7 @@ public class ChunkDrawableStrategy : ChunkStrategy
 
 
     public override void OnBlockSet(int x, int y, int z, BlockData oldBlockData, BlockData newBlockData) {
-        Lighting.OnBlockSet(chunk, new(x,y,z), oldBlockData, newBlockData);
+        LightCalculator.OnBlockSet(chunk, new(x,y,z), oldBlockData, newBlockData);
         UpdateBlocksAround(x, y, z);
         UpdateChunkVertex();
     }

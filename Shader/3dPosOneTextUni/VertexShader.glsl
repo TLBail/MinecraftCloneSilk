@@ -4,7 +4,8 @@ layout (location = 1) in int data;
 layout (location = 2) in vec2 aTexCoord;
 
 out vec2 TexCoord;
-out float lightLevel;
+flat out int lightLevel;
+flat out int skyLightLevel;
 out float ambiantOcclusion;
 
 layout (std140, binding = 0) uniform Matrices{
@@ -31,7 +32,8 @@ void main()
     
     vec4 aPos = vec4(int(x), int(y), int(z), 1.0f) + subBlockPositions[subBlockPositionsIndex] + chunkCoords[chunkIndex];
     
-    lightLevel = (float((data >> 2) & 0xF) / 15.0f);
+    lightLevel = int((data >> 2) & 0xF);
+    skyLightLevel = int((data >> 6) & 0xF);
     int aoInt = data & 0x3;
     if(aoInt == 3) ambiantOcclusion = 1.0f;
     if(aoInt == 2) ambiantOcclusion = 0.80f;

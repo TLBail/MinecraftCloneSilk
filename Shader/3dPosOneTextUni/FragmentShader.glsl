@@ -2,7 +2,8 @@
 out vec4 FragColor;
   
 in vec2 TexCoord;
-in float lightLevel;
+flat in int lightLevel;
+flat in int skyLightLevel;
 in float ambiantOcclusion;
 
 
@@ -17,9 +18,10 @@ void main()
     if(texColor.a < 0.1)
         discard;
         
+    float skyLight = (float(skyLightLevel) / 15.0) * ambientStrength;
+    float lightMultiplier = max(float(lightLevel) / 15.0, skyLight);    
+    texColor.rgb *= lightMultiplier;
     texColor.rgb *= ambiantOcclusion;
-    texColor.rgb *= lightLevel;
-    texColor.rgb *= ambientStrength;
     
     FragColor = texColor; 
 }

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using System.Diagnostics;
 using MinecraftCloneSilk.Model.ChunkManagement;
+using MinecraftCloneSilk.Model.Lighting;
 using MinecraftCloneSilk.Model.NChunk;
 using MinecraftCloneSilk.Model.Storage;
 using MinecraftCloneSilk.Model.WorldGen;
@@ -16,11 +17,13 @@ public class ChunkPool
     public IChunkManager chunkManager { get; init; }
     public IWorldGenerator worldGenerator { get; init; }
     public IChunkStorage chunkStorage { get; init; }
+    public IChunkLightManager chunkLightManager { get; init; }
     
-    public ChunkPool(IChunkManager chunkManager, IWorldGenerator worldGenerator, IChunkStorage chunkStorage) {
+    public ChunkPool(IChunkManager chunkManager, IWorldGenerator worldGenerator, IChunkStorage chunkStorage, IChunkLightManager chunkLightManager) {    
         this.chunkManager = chunkManager;
         this.worldGenerator = worldGenerator;
         this.chunkStorage = chunkStorage;
+        this.chunkLightManager = chunkLightManager;
     }
 
     public int Count() => chunkPool.Count;
@@ -28,7 +31,7 @@ public class ChunkPool
         Chunk chunk;
         if (chunkPool.TryTake(out Chunk? result)) {
             chunk = result;
-            chunk.Reset(position, chunkManager, worldGenerator, chunkStorage);
+            chunk.Reset(position, chunkManager, worldGenerator, chunkStorage, chunkLightManager);
         } else {
             chunk = BuildChunk(position);
         }
@@ -44,6 +47,6 @@ public class ChunkPool
     } 
     
     private Chunk BuildChunk(Vector3D<int> position) {
-        return new Chunk(position, chunkManager, worldGenerator, chunkStorage);
+        return new Chunk(position, chunkManager, worldGenerator, chunkStorage, chunkLightManager);
     }
 }

@@ -1,6 +1,7 @@
 ﻿using ImGuiNET;
 using MinecraftCloneSilk.GameComponent;
 using MinecraftCloneSilk.Model;
+using MinecraftCloneSilk.Model.Lighting;
 using MinecraftCloneSilk.Model.WorldGen;
 using Silk.NET.Maths;
 
@@ -10,11 +11,11 @@ public class WorldUi
 {
     private readonly World world;
     private readonly string[] blockNames;
-    private Lighting lighting;
-    public WorldUi(World world, Lighting lighting)
+    private LightCalculator lightCalculator;
+    public WorldUi(World world, LightCalculator lightCalculator)
     {
         this.world = world;
-        this.lighting = lighting;
+        this.lightCalculator = lightCalculator;
         chunkRenderDistance = this.world.radius;
         worldMode = world.worldMode.ToString();
         blockNames = new string[BlockFactory.GetInstance().blocks.Count];
@@ -113,6 +114,6 @@ public class WorldUi
     
     private void LightUi() {
         ImGui.Text("Light");
-        ImGui.DragFloat("light intensity", ref lighting.lightLevel, 0.01f, 0, 1);
+        ImGui.DragFloat("light intensity", ref lightCalculator.lightLevel, 0.01f, 0, 1);
     }
 }

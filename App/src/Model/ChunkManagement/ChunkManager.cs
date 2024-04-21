@@ -4,6 +4,7 @@ using System.Numerics;
 using ImGuiNET;
 using MinecraftCloneSilk.GameComponent;
 using MinecraftCloneSilk.Logger;
+using MinecraftCloneSilk.Model.Lighting;
 using MinecraftCloneSilk.Model.NChunk;
 using MinecraftCloneSilk.Model.WorldGen;
 using Silk.NET.Maths;
@@ -14,29 +15,34 @@ public class ChunkManager : IChunkManager
 {
     internal readonly ConcurrentDictionary<Vector3D<int>, Chunk> chunks;
     public IWorldGenerator worldGenerator { get; set; }
+    private object lockChunksToUpdate = new object();
     private List<Chunk> chunksToUpdate = new List<Chunk>();
     private ChunkPool chunkPool;
     private ChunkLoader chunkLoader;
     private ChunkUnloader chunkUnloader;
-    private IChunkStorage chunkStorage;
 
     public Vector3D<int> centerChunk = new Vector3D<int>(-1);
 
-    public ChunkManager(int radius, IWorldGenerator worldGenerator, IChunkStorage chunkStorage) {
+    public ChunkManager(int radius, IWorldGenerator worldGenerator, IChunkStorage chunkStorage, IChunkLightManager chunkLightManager) {
         chunks = new ConcurrentDictionary<Vector3D<int>, Chunk>(Environment.ProcessorCount * 2,
             radius * radius * radius);
         this.worldGenerator = worldGenerator;
         chunkLoader = new ChunkLoader(ChunkLoader.ChunkLoaderMode.ASYNC);
-        chunkPool = new ChunkPool(this, worldGenerator, chunkStorage);
+        chunkPool = new ChunkPool(this, worldGenerator, chunkStorage, chunkLightManager);
         chunkUnloader = new ChunkUnloader(this, chunkPool, chunkStorage);
-        this.chunkStorage = chunkStorage;
     }
 
     [Logger.Timer]
     public void Update(double deltatime) {
         chunkLoader.Update(); 
         chunkUnloader.Update();
-        foreach (Chunk chunk in new List<Chunk>(chunksToUpdate)) {
+        List<Chunk> chunksToUpdateCopy;
+        lock (lockChunksToUpdate) {
+            chunksToUpdateCopy = new List<Chunk>(this.chunksToUpdate);
+        }
+        Debug.Assert(!chunksToUpdateCopy.Any((chunk) => chunk is null));
+        foreach (Chunk chunk in chunksToUpdateCopy) {
+            Debug.Assert(chunk is not null, "chunk must be not null");
             Debug.Assert(chunk.chunkState >= ChunkState.DRAWABLE, $"try to update a chunk:{chunk} with a lower state than the minimum");
             chunk.Update(deltatime);
         }
@@ -74,11 +80,16 @@ public class ChunkManager : IChunkManager
     }
 
     public void AddChunkToUpdate(Chunk chunk) {
-        chunksToUpdate.Add(chunk);
+        Debug.Assert(chunk is not null, "try to add a null chunk to update");
+        lock (lockChunksToUpdate) {
+            chunksToUpdate.Add(chunk);
+        }
     }
 
     public void RemoveChunkToUpdate(Chunk chunk) {
-        chunksToUpdate.Remove(chunk);
+        lock (lockChunksToUpdate) {
+            chunksToUpdate.Remove(chunk);
+        }
     }
 
     [Logger.Timer]

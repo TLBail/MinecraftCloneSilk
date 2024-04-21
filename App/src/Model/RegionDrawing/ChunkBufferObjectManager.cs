@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using MinecraftCloneSilk.Core;
 using MinecraftCloneSilk.GameComponent;
+using MinecraftCloneSilk.Model.Lighting;
 using MinecraftCloneSilk.Model.NChunk;
 using Silk.NET.OpenGL;
 using Texture = MinecraftCloneSilk.Core.Texture;
@@ -20,7 +21,7 @@ public class ChunkBufferObjectManager : GameObject
     private Texture cubeTexture;
     private Camera? cam;
     private Game game;
-    private Lighting lighting;
+    private LightCalculator lightCalculator;
     
     public ChunkBufferObjectManager(Game game, Texture cubeTexture) : base(game) {
         this.cubeTexture = cubeTexture;
@@ -32,7 +33,7 @@ public class ChunkBufferObjectManager : GameObject
 
     protected override void Start() {
         cam = game.mainCamera;
-        lighting = (game.gameObjects[typeof(World).FullName!] as World)!.lighting;
+        lightCalculator = (game.gameObjects[typeof(World).FullName!] as World)!.lightCalculator;
     }
 
 
@@ -64,10 +65,10 @@ public class ChunkBufferObjectManager : GameObject
 
     private void Draw(GL gl, double deltatime) {
         foreach (RegionBuffer region in regions) {
-            region.Draw(cam!, lighting);
+            region.Draw(cam!, lightCalculator);
         }
         foreach (RegionBuffer region in regions) {
-            region.DrawWater(cam!, lighting);
+            region.DrawWater(cam!, lightCalculator);
         }
     }
 

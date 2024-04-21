@@ -3,6 +3,7 @@ using MinecraftCloneSilk.Collision;
 using MinecraftCloneSilk.Core;
 using MinecraftCloneSilk.GameComponent;
 using MinecraftCloneSilk.Model.ChunkManagement;
+using MinecraftCloneSilk.Model.Lighting;
 using MinecraftCloneSilk.Model.RegionDrawing;
 using MinecraftCloneSilk.Model.Storage;
 using MinecraftCloneSilk.Model.WorldGen;
@@ -22,6 +23,7 @@ public class Chunk
     internal IChunkManager chunkManager;
     internal IWorldGenerator worldGenerator;
     internal IChunkStorage chunkStorage;
+    internal IChunkLightManager chunkLightManager;
 
     internal Line? debugRay;
     internal bool debugMode = false;
@@ -44,12 +46,13 @@ public class Chunk
 
     public List<ChunkLoadingTask> chunkTaskOfChunk = new();
 
-    public Chunk(Vector3D<int> position, IChunkManager chunkManager, IWorldGenerator worldGenerator, IChunkStorage chunkStorage) {
+    public Chunk(Vector3D<int> position, IChunkManager chunkManager, IWorldGenerator worldGenerator, IChunkStorage chunkStorage, IChunkLightManager chunkLightManager) {
         this.chunkState = DEFAULTSTARTINGCHUNKSTATE;
         this.chunkStrategy = new ChunkEmptyStrategy(this);
         this.chunkManager = chunkManager;
         this.worldGenerator = worldGenerator;
         this.chunkStorage = chunkStorage;
+        this.chunkLightManager = chunkLightManager;
         this.position = position;
         this.aabbCube = new AABBCube(new Vector3(position.X, position.Y, position.Z), new Vector3(position.X + Chunk.CHUNK_SIZE, position.Y + Chunk.CHUNK_SIZE, position.Z + Chunk.CHUNK_SIZE));
         this.chunkStateInStorage = ChunkState.UNKNOW;
@@ -178,7 +181,7 @@ public class Chunk
     
     public AABBCube GetAABBCube() => aabbCube;
     
-    public void Reset(Vector3D<int> position, IChunkManager chunkManager, IWorldGenerator worldGenerator, IChunkStorage chunkStorage) {
+    public void Reset(Vector3D<int> position, IChunkManager chunkManager, IWorldGenerator worldGenerator, IChunkStorage chunkStorage, IChunkLightManager chunkLightManager) {
         System.Diagnostics.Debug.Assert(!IsRequiredByChunkLoader(), "is required by chunk loader");
         System.Diagnostics.Debug.Assert(!IsRequiredByChunkSaver(), "is required by chunk unloader");
         System.Diagnostics.Debug.Assert(!blockModified, "block is modified but not saved");
@@ -192,6 +195,7 @@ public class Chunk
         this.aabbCube = new AABBCube(new Vector3(position.X, position.Y, position.Z), new Vector3(position.X + Chunk.CHUNK_SIZE, position.Y + Chunk.CHUNK_SIZE, position.Z + Chunk.CHUNK_SIZE));
         this.chunkStateInStorage = ChunkState.UNKNOW;
         this.chunkStorage = chunkStorage;
+        this.chunkLightManager = chunkLightManager;
         Debug(false);
         chunksNeighbors = new Chunk[6];
         chunkState = DEFAULTSTARTINGCHUNKSTATE;
