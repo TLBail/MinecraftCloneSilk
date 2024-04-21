@@ -1,5 +1,6 @@
 ﻿using MinecraftCloneSilk.Model;
 using MinecraftCloneSilk.Model.ChunkManagement;
+using MinecraftCloneSilk.Model.Lighting;
 using MinecraftCloneSilk.Model.NChunk;
 using MinecraftCloneSilk.Model.Storage;
 using MinecraftCloneSilk.Model.WorldGen;
@@ -13,17 +14,19 @@ public class ChunkManagerEmpty : IChunkManager
 
     public IWorldGenerator worldGenerator;
     public IChunkStorage chunkStorage;
+    public IChunkLightManager chunkLightManager;
 
     public ChunkManagerEmpty(IWorldGenerator worldGenerator, IChunkStorage chunkStorage) {
         this.worldGenerator = worldGenerator;
         this.chunkStorage = chunkStorage;
+        chunkLightManager = new ChunkLightManager();
     }
 
     public Chunk GetChunk(Vector3D<int> position) {
         if (chunks.ContainsKey(position)) {
             return chunks[position];
         }    
-        chunks.Add(position, new Chunk(position, this, worldGenerator, chunkStorage));
+        chunks.Add(position, new Chunk(position, this, worldGenerator, chunkStorage, chunkLightManager));
         return chunks[position];
     }
     

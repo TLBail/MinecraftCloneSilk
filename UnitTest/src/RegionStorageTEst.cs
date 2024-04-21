@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using MinecraftCloneSilk.Model;
 using MinecraftCloneSilk.Model.ChunkManagement;
+using MinecraftCloneSilk.Model.Lighting;
 using MinecraftCloneSilk.Model.NChunk;
 using MinecraftCloneSilk.Model.Storage;
 using MinecraftCloneSilk.Model.WorldGen;
@@ -167,6 +168,7 @@ public class RegionStorageTEst
     [Test]
     public void testSaveMultipleChunkInOneRegion() {
         RegionStorage regionStorage = new RegionStorage("./Worlds/newWorld");
+        ChunkLightManager chunkLightManager = new ChunkLightManager();
         Span<Vector3D<int>> positions = stackalloc Vector3D<int>[]
         {
             new(0, 0, 0),
@@ -182,7 +184,7 @@ public class RegionStorageTEst
         chunks[1].SetBlock(14, 0, 3, "oak");
         this.regionStorage.SaveChunk(chunks[0]);
         this.regionStorage.SaveChunk(chunks[1]);
-        Chunk chunk = new Chunk(positions[0], chunkManagerEmpty, new WorldFlatGeneration(), this.regionStorage);
+        Chunk chunk = new Chunk(positions[0], chunkManagerEmpty, new WorldFlatGeneration(), this.regionStorage, chunkLightManager);
         regionStorage.LoadChunk(chunk);
         
         FieldInfo fi = typeof(Chunk).GetField("chunkData",    BindingFlags.NonPublic | BindingFlags.Instance)!;
@@ -193,7 +195,7 @@ public class RegionStorageTEst
         
         
         
-        chunk = new Chunk(positions[1], chunkManagerEmpty, new WorldFlatGeneration(), this.regionStorage);
+        chunk = new Chunk(positions[1], chunkManagerEmpty, new WorldFlatGeneration(), this.regionStorage, chunkLightManager);
         regionStorage.LoadChunk(chunk);
         
 
@@ -302,6 +304,7 @@ public class RegionStorageTEst
     [Test]
     public void testUpdateExistingChunk() {
         RegionStorage regionStorage = new RegionStorage("./Worlds/newWorld");
+        ChunkLightManager chunkLightManager = new ChunkLightManager();
         Span<Vector3D<int>> positions = stackalloc Vector3D<int>[]
         {
             new(0, 0, 0),
@@ -321,7 +324,7 @@ public class RegionStorageTEst
         
         this.regionStorage.SaveChunk(chunks[0]);
         
-        Chunk chunk = new Chunk(positions[0], chunkManagerEmpty, new WorldFlatGeneration(), this.regionStorage);
+        Chunk chunk = new Chunk(positions[0], chunkManagerEmpty, new WorldFlatGeneration(), this.regionStorage, chunkLightManager);
         regionStorage.LoadChunk(chunk);
         FieldInfo fi = typeof(Chunk).GetField("chunkData",    BindingFlags.NonPublic | BindingFlags.Instance)!;
         IChunkData chunkData = (IChunkData)fi.GetValue(chunk)!;
@@ -330,7 +333,7 @@ public class RegionStorageTEst
         Assert.That(block.name, Is.EqualTo("metal"));  
         
         
-        Chunk chunk2 = new Chunk(positions[1], chunkManagerEmpty, new WorldFlatGeneration(), this.regionStorage);
+        Chunk chunk2 = new Chunk(positions[1], chunkManagerEmpty, new WorldFlatGeneration(), this.regionStorage, chunkLightManager);
         regionStorage.LoadChunk(chunk2);
         chunkData = (IChunkData)fi.GetValue(chunk2)!;
         blocks = chunkData.GetBlocks();
@@ -342,6 +345,7 @@ public class RegionStorageTEst
     [Test]
     public void testUpdateExistingChunks() {
         RegionStorage regionStorage = new RegionStorage("./Worlds/newWorld");
+        ChunkLightManager chunkLightManager = new ChunkLightManager();
         Span<Vector3D<int>> positions = stackalloc Vector3D<int>[]
         {
             new(0, 0, 0),
@@ -364,7 +368,7 @@ public class RegionStorageTEst
         
         this.regionStorage.SaveChunks(chunks.ToList());
         
-        Chunk chunk = new Chunk(positions[0], chunkManagerEmpty, new WorldFlatGeneration(), this.regionStorage);
+        Chunk chunk = new Chunk(positions[0], chunkManagerEmpty, new WorldFlatGeneration(), this.regionStorage, chunkLightManager);
         regionStorage.LoadChunk(chunk);
         FieldInfo fi = typeof(Chunk).GetField("chunkData",    BindingFlags.NonPublic | BindingFlags.Instance)!;
         IChunkData chunkData = (IChunkData)fi.GetValue(chunk)!;
@@ -373,7 +377,7 @@ public class RegionStorageTEst
         Assert.That(block.name, Is.EqualTo("metal"));  
         
         
-        Chunk chunk2 = new Chunk(positions[1], chunkManagerEmpty, new WorldFlatGeneration(), this.regionStorage);
+        Chunk chunk2 = new Chunk(positions[1], chunkManagerEmpty, new WorldFlatGeneration(), this.regionStorage, chunkLightManager);
         regionStorage.LoadChunk(chunk2);
         chunkData = (IChunkData)fi.GetValue(chunk2)!;
         blocks = chunkData.GetBlocks();
@@ -385,6 +389,7 @@ public class RegionStorageTEst
     [Test]
     public void testOverflowOfChunkReservedSpace() {
         RegionStorage regionStorage = new RegionStorage("./Worlds/newWorld");
+        ChunkLightManager chunkLightManager = new ChunkLightManager();
         Span<Vector3D<int>> positions = stackalloc Vector3D<int>[]
         {
             new(0, 5 * Chunk.CHUNK_SIZE, 0),
@@ -414,7 +419,7 @@ public class RegionStorageTEst
         
         this.regionStorage.SaveChunk(chunks[0]);
         
-        Chunk chunk = new Chunk(positions[1], chunkManagerEmpty, new WorldFlatGeneration(), this.regionStorage);
+        Chunk chunk = new Chunk(positions[1], chunkManagerEmpty, new WorldFlatGeneration(), this.regionStorage, chunkLightManager);
     } 
 
     
