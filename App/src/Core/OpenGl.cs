@@ -50,7 +50,8 @@ namespace MinecraftCloneSilk.Core
         public uint uboWorld;
         public uint uboUi;
 
-        private static readonly Color ClearColor = Color.Lavender;
+        public static readonly Color DEFAULT_CLEAR_COLOR = Color.Lavender;
+        public Color ClearColor = DEFAULT_CLEAR_COLOR;
 
         private Glfw glfw;
 

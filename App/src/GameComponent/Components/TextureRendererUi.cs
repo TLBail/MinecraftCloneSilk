@@ -89,6 +89,7 @@ public class TextureRendererUi : Component
 
 
     public override void ToImGui() {
+        ImGui.Text("TextureRendererUi");
         if(transform.ToImGui("ui")) UpdateData();
     }
 

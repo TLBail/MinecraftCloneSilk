@@ -1,4 +1,5 @@
-﻿using System.Numerics;
+﻿using System.Drawing;
+using System.Numerics;
 using MinecraftCloneSilk.Core;
 using MinecraftCloneSilk.Model;
 using MinecraftCloneSilk.Model.ChunkManagement;
@@ -22,7 +23,7 @@ public enum WorldMode
 public class World : GameObject
 {
     private Player player = null!;
-    public int radius { get; set; } = 4;
+    public int radius { get; set; } = 8;
     private readonly WorldUi worldUi;
     public IWorldGenerator worldGeneration;
     public WorldMode worldMode { get; set; }
@@ -69,11 +70,22 @@ public class World : GameObject
 
     [Logger.Timer]
     protected override void Update(double deltaTime) {
+        UpdateClearColor();
         if (worldMode == WorldMode.DYNAMIC) {
             chunkManager.LoadChunkAroundACenter(GetChunkPosition(new Vector3D<int>((int)player.position.X, (int)player.position.Y, (int)player.position.Z)), radius);
         }
         chunkManager.Update(deltaTime);
     }
+
+    private void UpdateClearColor() {
+        OpenGl openGl = game.openGl;
+        int red = (int)(OpenGl.DEFAULT_CLEAR_COLOR.R * lightCalculator.lightLevel);
+        int green = (int)(OpenGl.DEFAULT_CLEAR_COLOR.G * lightCalculator.lightLevel);
+        int blue = (int)(OpenGl.DEFAULT_CLEAR_COLOR.B * lightCalculator.lightLevel);
+        
+        openGl.ClearColor = Color.FromArgb(255, red, green, blue);
+    }
+
 
     public override void Destroy() {
         base.Destroy();
