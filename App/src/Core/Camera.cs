@@ -12,6 +12,7 @@ namespace MinecraftCloneSilk.Core
     {
         
         public Vector3 position { get; set; }
+        public Vector3 uiPosition = new Vector3(0, 0, 3);
         public Vector3 Front { get; set; }
 
         public Vector3 up { get; private set; }
@@ -99,15 +100,12 @@ namespace MinecraftCloneSilk.Core
             up = Vector3.Normalize(Vector3.Cross(Right, Front));
         }
 
-        public Matrix4x4 GetViewMatrix()
-        {
-            return Matrix4x4.CreateLookAt(position, position + Front, up);
-        }
+        public Matrix4x4 GetViewMatrix() => Matrix4x4.CreateLookAt(position, position + Front, up);
 
-        public Matrix4x4 GetProjectionMatrix()
-        {
-            return Matrix4x4.CreatePerspectiveFieldOfView(MathHelper.DegreesToRadians(zoom), aspectRatio, nearDistance, farDistance);
-        }
+        public Matrix4x4 GetUiViewMatrix() => Matrix4x4.CreateLookAt(uiPosition, uiPosition + new Vector3(0,0,-1), WorldUp);
+
+        public Matrix4x4 GetProjectionMatrix() => Matrix4x4.CreatePerspectiveFieldOfView(MathHelper.DegreesToRadians(zoom), aspectRatio, nearDistance, farDistance);
+        public Matrix4x4 GetUiProjectionMatrix() => Matrix4x4.CreatePerspectiveFieldOfView(MathHelper.DegreesToRadians(60), aspectRatio, nearDistance, farDistance);
 
         private void OnMouseMove(IMouse mouse, Vector2 position)
         {
@@ -188,5 +186,7 @@ namespace MinecraftCloneSilk.Core
                 -(Right * halfHSide)
             );
         }
+
+       
     }
 }

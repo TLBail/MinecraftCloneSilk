@@ -5,11 +5,13 @@ namespace MinecraftCloneSilk.GameComponent;
 
 public abstract class GameObject
 {
-    protected Game game;
+    public Game game;
     protected Console console;
     private object haveStartedLock = new object();
     private bool haveStarted = false;
     private bool isDestroyed = false;
+    
+    public List<Component> components = new List<Component>();
 
     protected GameObject(Game game)
     {
@@ -28,6 +30,10 @@ public abstract class GameObject
             game.updatables -= Update;
         }
         isDestroyed = true;
+        
+        foreach (Component component in components) {
+            component.Destroy();
+        }
     }
 
     protected virtual void Start() { }
@@ -39,6 +45,9 @@ public abstract class GameObject
         }
         if (isDestroyed) throw new Exception("GameObject is destroyed");
         Start();
+        foreach (Component component in components) {
+            component.Start();
+        }
     }
 
     protected virtual void Update(double deltaTime) {}
@@ -46,6 +55,12 @@ public abstract class GameObject
     public virtual void ToImGui()
     {
         ImGui.Text("gameObject : " + this.GetType().Name);
+        
+        
+        ImGui.Separator();
+        foreach (Component component in components) {
+            component.ToImGui();
+        }
     }
 
 }

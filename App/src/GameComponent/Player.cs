@@ -1,6 +1,7 @@
 ﻿using System.Numerics;
 using Silk.NET.Input;
 using MinecraftCloneSilk.Core;
+using MinecraftCloneSilk.GameComponent.Components;
 using MinecraftCloneSilk.Model;
 using MinecraftCloneSilk.Model.NChunk;
 using MinecraftCloneSilk.UI;
@@ -35,8 +36,6 @@ namespace MinecraftCloneSilk.GameComponent
                     "player position has been set at (" + position.X + "," + position.Y + "," + position.Z + ")");
             }
         }
-        
-        public Player(Game game) :this(game, Vector3.Zero){}
         public Player(Game game, Vector3 position) : base(game)
         {
             //Start a camera at position 3 on the Z axis, looking at position -1 on the Z axis
@@ -48,6 +47,13 @@ namespace MinecraftCloneSilk.GameComponent
             mouse.MouseDown += OnMouseClick;
             inventaire = new Inventaire(this);
             this.position = position;
+            
+            
+            
+            components.Add(new TextureRendererUi(this, TextureManager.GetInstance().
+                textures["crosshair.png"],
+                new Transform(Vector3.Zero, new Vector3(0.1f))
+                ));
         }
 
         public Vector3 GetDirection3D() {
@@ -185,6 +191,7 @@ namespace MinecraftCloneSilk.GameComponent
 
         public override void ToImGui()
         {
+            base.ToImGui();
             playerUi.DrawUi();
         }
         

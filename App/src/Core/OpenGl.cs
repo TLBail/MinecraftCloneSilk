@@ -48,6 +48,7 @@ namespace MinecraftCloneSilk.Core
         public Game game;
 
         public uint uboWorld;
+        public uint uboUi;
 
         private static readonly Color ClearColor = Color.Lavender;
 
@@ -159,6 +160,14 @@ namespace MinecraftCloneSilk.Core
             Gl.BindBuffer(BufferTargetARB.UniformBuffer, 0);
 
             Gl.BindBufferRange(BufferTargetARB.UniformBuffer, 0, uboWorld, 0, (nuint)(2 * sizeof(Matrix4X4<float>)));
+            
+            
+            uboUi = Gl.GenBuffer();
+            Gl.BindBuffer(BufferTargetARB.UniformBuffer, uboUi);
+            Gl.BufferData(BufferTargetARB.UniformBuffer, (nuint)(2 * sizeof(Matrix4X4<float>)), null, GLEnum.StaticDraw);
+            Gl.BindBuffer(BufferTargetARB.UniformBuffer, 0);
+
+            Gl.BindBufferRange(BufferTargetARB.UniformBuffer, 1, uboUi, 0, (nuint)(2 * sizeof(Matrix4X4<float>)));
         }
 
         private void EnableFaceCulling()
@@ -194,7 +203,7 @@ namespace MinecraftCloneSilk.Core
             Gl.Clear((uint)(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit));
 
             game.Draw(Gl, delta);
-            game.DrawUi();
+            game.DrawUi(Gl, delta);
 
             imGuiController.Render();
         }

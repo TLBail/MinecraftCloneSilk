@@ -25,7 +25,7 @@ namespace MinecraftCloneSilk.GameComponent;
 public delegate void Startable();
 public delegate void Update(double deltaTime);
 public delegate void Draw(GL gl,double deltaTime);
-public delegate void DrawUi();
+public delegate void DrawUi(GL gl, double deltaTime);
 
 public sealed class Game
 {
@@ -108,8 +108,8 @@ public sealed class Game
     }
 
     private void InitShaders(GL gl) {
-        Shader chunkShader = new Shader(gl, "./Shader/3dPosOneTextUni/VertexShader.glsl",
-            "./Shader/3dPosOneTextUni/FragmentShader.glsl");
+        Shader chunkShader = new Shader(gl, "./Shader/World/VertexShader.glsl",
+            "./Shader/World/FragmentShader.glsl");
         chunkShader.Use();
         chunkShader.SetUniform("texture1", 0);
         Chunk.InitStaticMembers(chunkShader, BlockFactory.GetInstance(), gl);
@@ -168,9 +168,23 @@ public sealed class Game
         }
     }
         
-    public void DrawUi()
+    public unsafe void DrawUi(GL gl, double deltaTime)
     {
-        uiDrawables?.Invoke();
+        
+        gl.BindBuffer(BufferTargetARB.UniformBuffer, openGl.uboUi);
+        System.Numerics.Matrix4x4 projectionMatrix = mainCamera!.GetUiProjectionMatrix();
+        gl.BufferSubData(BufferTargetARB.UniformBuffer, 0, (uint)sizeof(System.Numerics.Matrix4x4), projectionMatrix);
+        gl.BindBuffer(BufferTargetARB.UniformBuffer, 0);
+
+
+        gl.BindBuffer(BufferTargetARB.UniformBuffer, openGl.uboUi);
+        System.Numerics.Matrix4x4 viewMatrix = mainCamera!.GetUiViewMatrix();
+        gl.BufferSubData(BufferTargetARB.UniformBuffer, sizeof(System.Numerics.Matrix4x4), (uint)sizeof(System.Numerics.Matrix4x4), viewMatrix);
+        gl.BindBuffer(BufferTargetARB.UniformBuffer, 0);
+ 
+        gl.Disable(GLEnum.DepthTest);
+        uiDrawables?.Invoke(gl, deltaTime);
+        gl.Enable(GLEnum.DepthTest);
     }
 
 

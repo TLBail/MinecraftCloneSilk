@@ -2,6 +2,7 @@
 using MinecraftCloneSilk.Core;
 using MinecraftCloneSilk.GameComponent;
 using Silk.NET.Input;
+using Silk.NET.OpenGL;
 
 namespace MinecraftCloneSilk.UI;
 
@@ -44,7 +45,7 @@ public abstract class UiWindow : GameObject
         if(ImGui.GetIO().WantTextInput) return;
         if (key == this.key) visible = !visible;
     }
-    public void UiPipeline() {
+    public void UiPipeline(GL gl, double deltaTime) {
         if(!visible) return;
         
         

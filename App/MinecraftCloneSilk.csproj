@@ -9,7 +9,7 @@
     <GenerateProgramFile>false</GenerateProgramFile>
     <LangVersion>12</LangVersion>
     <ApplicationIcon>..\Assets\icons8_minecraft_logo.ico</ApplicationIcon>
-    <IsOriginalProject>true</IsOriginalProject>
+    <IsOriginalProject>false</IsOriginalProject>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
     <DisableFody Condition="'$(IsOriginalProject)'=='true' AND '$(Configuration)'!='Debug'">true</DisableFody>
