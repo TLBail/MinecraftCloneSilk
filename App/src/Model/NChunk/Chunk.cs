@@ -65,6 +65,11 @@ public class Chunk
     }
 
 
+    /**
+     *  test if the chunk is capable of loading else it will add the task to the chunkLoader
+     *  @return true if the chunk is capable of loading directly
+     *  @return false if the chunk is not capable of loading directly
+     */
     public bool TryToSetChunkState(ChunkLoader chunkLoader, ChunkLoadingTask chunkLoadingTask) {
         System.Diagnostics.Debug.Assert(chunkState < chunkLoadingTask.wantedChunkState);
 
@@ -87,7 +92,37 @@ public class Chunk
             case ChunkState.BLOCKGENERATED:
                 return AddTask(chunkLoader, chunkLoadingTask, ChunkState.GENERATEDTERRAIN, ChunkState.GENERATEDTERRAIN);
             case ChunkState.LIGHTING:
+                Chunk topChunk = chunkManager.GetChunk(position + new Vector3D<int>(0, CHUNK_SIZE, 0));
+                if (topChunk.chunkState < ChunkState.BLOCKGENERATED) {
+                    ChunkWaitingTask chunkWaitingTask = new ChunkWaitingTask(chunkLoadingTask, 1);
+                    ChunkLoadingTask? alreadyExistingTask = chunkLoader.FindTask(topChunk, ChunkState.BLOCKGENERATED);
+                    if (alreadyExistingTask is not null) {
+                        alreadyExistingTask.parents.Add(chunkWaitingTask);
+                    } else {
+                        bool added =
+                            chunkLoader.NewJob(new ChunkLoadingTask(topChunk, ChunkState.BLOCKGENERATED, chunkWaitingTask));
+                        if (!added) throw new Exception("topChunk not added concurrent access error");
+                    }
+
+                    return false;
+                }
+                
+                if (!LightCalculator.IsChunkOkToGenerateLightBelow(topChunk)) {
+                    ChunkWaitingTask chunkWaitingTask = new ChunkWaitingTask(chunkLoadingTask, 1);
+                    ChunkLoadingTask? alreadyExistingTask = chunkLoader.FindTask(topChunk, ChunkState.LIGHTING);
+                    if (alreadyExistingTask is not null) {
+                        alreadyExistingTask.parents.Add(chunkWaitingTask);
+                    } else {
+                        bool added =
+                            chunkLoader.NewJob(new ChunkLoadingTask(topChunk, ChunkState.LIGHTING, chunkWaitingTask));
+                        if (!added) throw new Exception("topChunk not added concurrent access error");
+                    }
+
+                    return false;
+                }
+
                 return AddTask(chunkLoader, chunkLoadingTask, ChunkState.BLOCKGENERATED, ChunkState.BLOCKGENERATED);
+
             case ChunkState.DRAWABLE:
                 return AddTask(chunkLoader, chunkLoadingTask, ChunkState.BLOCKGENERATED, ChunkState.LIGHTING);
             default:

@@ -21,6 +21,8 @@ public class ChunkStorageStrategy : ChunkStrategy
         System.Diagnostics.Debug.Assert(!ChunkStateTools.IsChunkIsLoading(chunk.chunkStateInStorage), "bad chunk state in storage 💾");
         if(chunk.chunkStateInStorage > ChunkState.EMPTY)
             chunk.chunkStorage.LoadChunk(chunk);
+        
+        if(chunk.chunkStateInStorage == ChunkState.BLOCKGENERATED) UpdateChunkFaces();
     }
 
     public override void Finish() {

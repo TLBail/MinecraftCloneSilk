@@ -19,13 +19,13 @@ public class ChunkGenerationTest
 
     [OneTimeSetUp]
     public  void initGame() {
-        Scene scene = new Scene(new List<InitGameData>()
+        GameParameter gameParameter = new GameParameter(new List<InitGameData>()
             {
                 new (typeof(Player).FullName!),
             new (typeof(World).FullName!, new object[]{WorldMode.EMPTY, "Worlds/testWorld"}),
             }, new OpenGlConfig(true)
         );
-        game = Game.GetInstance(scene, false);
+        game = Game.GetInstance(gameParameter, false);
         gameThread = new Thread(() => {
             game.Run();
         });

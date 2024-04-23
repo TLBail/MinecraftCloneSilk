@@ -40,7 +40,7 @@ public sealed class Game
 
     public Camera? mainCamera { get; set; }
 
-    private Scene scene;
+    private GameParameter gameParameter;
     private TextureManager? textureManager;
     private AudioMaster audioMaster;
 
@@ -54,12 +54,12 @@ public sealed class Game
     public ChunkBufferObjectManager? chunkBufferObjectManager;
         
         
-    private Game(Scene scene) {
+    private Game(GameParameter gameParameter) {
 #if DEBUG
         ChromeTrace.Init();
 #endif
-        this.scene = scene;
-        openGl = new OpenGl(this, scene.openGlConfig);
+        this.gameParameter = gameParameter;
+        openGl = new OpenGl(this, gameParameter.openGlConfig);
         console = new Console(this);
         audioMaster = AudioMaster.GetInstance();
     }
@@ -82,7 +82,7 @@ public sealed class Game
 
     [Logger.Timer]
     public void Awake() {
-        foreach (InitGameData data in scene.gameObjects) {
+        foreach (InitGameData data in gameParameter.gameObjects) {
             AddGameObject(data);
         }
     }
@@ -214,7 +214,7 @@ public sealed class Game
     }
 
 
-    public static Game GetInstance(Scene? scene = null, bool run = true)
+    public static Game GetInstance(GameParameter? scene = null, bool run = true)
     {
         if (instance == null)
         {
@@ -222,7 +222,7 @@ public sealed class Game
             {
                 if (instance == null)
                 {
-                    instance = new Game(scene ?? new Scene(new List<InitGameData>(), new OpenGlConfig()));
+                    instance = new Game(scene ?? new GameParameter(new List<InitGameData>(), new OpenGlConfig()));
                 }
             }
         }

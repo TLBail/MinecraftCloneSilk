@@ -16,12 +16,12 @@ public struct InitGameData
 
 
 
-public class Scene
+public class GameParameter
 {
     public OpenGlConfig  openGlConfig;
     public List<InitGameData> gameObjects { get; init; }
 
-    public Scene(List<InitGameData> gameObjects, OpenGlConfig config) {
+    public GameParameter(List<InitGameData> gameObjects, OpenGlConfig config) {
         this.gameObjects = gameObjects;
         this.openGlConfig = config;
     }

@@ -332,148 +332,77 @@ public class RegionBuffer : IDisposable
             int superChunkIndex = 0;
            
             // inner chunk
-            if (!chunk.chunkData.IsOnlyOneBlock()) {
-                Span<BlockData> blockDataSpan = chunk.chunkData.GetBlocksSpan();
-                for (int x = 0; x < Chunk.CHUNK_SIZE; x++) {
-                    for (int y = 0; y < Chunk.CHUNK_SIZE; y++) {
-                        int offsetSuperChunk = ((x + 1) * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE + (y + 1) * SUPER_CHUNK_SIZE + 1) + offset;
-                        int offsetBlocks = x * Chunk.CHUNK_SIZE * Chunk.CHUNK_SIZE + y * Chunk.CHUNK_SIZE;
-                        blockDataSpan.Slice(offsetBlocks, Chunk.CHUNK_SIZE).CopyTo(superChunk[offsetSuperChunk..]);
-                    }
-                }
-            } else {
-                BlockData block = chunk.chunkData.GetBlock();
-                Debug.Assert(block.id != 0);
-                for (int x = 0; x < Chunk.CHUNK_SIZE; x++) {
-                    for (int y = 0; y < Chunk.CHUNK_SIZE; y++) {
-                        int offsetSuperChunk = ((x + 1) * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE + (y + 1) * SUPER_CHUNK_SIZE + 1) + offset;
-                        superChunk[offsetSuperChunk..].Fill(block);
-                    }
+            Span<BlockData> blockDataSpan = chunk.chunkData.GetBlocksSpan();
+            for (int x = 0; x < Chunk.CHUNK_SIZE; x++) {
+                for (int y = 0; y < Chunk.CHUNK_SIZE; y++) {
+                    int offsetSuperChunk = ((x + 1) * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE + (y + 1) * SUPER_CHUNK_SIZE + 1) + offset;
+                    int offsetBlocks = x * Chunk.CHUNK_SIZE * Chunk.CHUNK_SIZE + y * Chunk.CHUNK_SIZE;
+                    blockDataSpan.Slice(offsetBlocks, Chunk.CHUNK_SIZE).CopyTo(superChunk[offsetSuperChunk..]);
                 }
             }
             // left chunk
             Chunk leftNeighbor = chunk.chunksNeighbors![(int)FaceExtended.LEFT];
             Debug.Assert(leftNeighbor.chunkState >= ChunkState.BLOCKGENERATED);
-            if(leftNeighbor.chunkData.IsOnlyOneBlock() && leftNeighbor.chunkData.GetBlock().id != 0){
-                BlockData block = leftNeighbor.chunkData.GetBlock();
-                for(int y = 0; y < Chunk.CHUNK_SIZE; y++) {
-                    for(int z = 0; z < Chunk.CHUNK_SIZE; z++) {
-                        superChunkIndex = 0 * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE + (y + 1) * SUPER_CHUNK_SIZE + (z + 1);
-                        superChunk[offset + superChunkIndex] = block;
-                    }
-                }
-            }else if(!leftNeighbor.chunkData.IsOnlyOneBlock()){
-                BlockData[,,] blocks = leftNeighbor.chunkData.GetBlocks();
-                for(int y = 0; y < Chunk.CHUNK_SIZE; y++) {
-                    for(int z = 0; z < Chunk.CHUNK_SIZE; z++) {
-                        superChunkIndex = 0 * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE + (y + 1) * SUPER_CHUNK_SIZE + (z + 1);
-                        superChunk[offset + superChunkIndex] = blocks[15,y,z];
-                    }
+            BlockData[,,] blocks = leftNeighbor.chunkData.GetBlocks();
+            for(int y = 0; y < Chunk.CHUNK_SIZE; y++) {
+                for(int z = 0; z < Chunk.CHUNK_SIZE; z++) {
+                    superChunkIndex = 0 * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE + (y + 1) * SUPER_CHUNK_SIZE + (z + 1);
+                    superChunk[offset + superChunkIndex] = blocks[15,y,z];
                 }
             }
             
             // right chunk
             Chunk rightNeighbor = chunk.chunksNeighbors![(int)FaceExtended.RIGHT];
             Debug.Assert(rightNeighbor.chunkState >= ChunkState.BLOCKGENERATED);
-            if(rightNeighbor.chunkData.IsOnlyOneBlock() && rightNeighbor.chunkData.GetBlock().id != 0){
-                BlockData block = rightNeighbor.chunkData.GetBlock();
-                for(int y = 0; y < Chunk.CHUNK_SIZE; y++) {
-                    for(int z = 0; z < Chunk.CHUNK_SIZE; z++) {
-                        superChunkIndex = (SUPER_CHUNK_SIZE - 1) * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE + (y + 1) * SUPER_CHUNK_SIZE + (z + 1);
-                        superChunk[offset + superChunkIndex] = block;
-                    }
-                }
-            }else if(!rightNeighbor.chunkData.IsOnlyOneBlock()){
-                BlockData[,,] blocks = rightNeighbor.chunkData.GetBlocks();
-                for(int y = 0; y < Chunk.CHUNK_SIZE; y++) {
-                    for(int z = 0; z < Chunk.CHUNK_SIZE; z++) {
-                        superChunkIndex = (SUPER_CHUNK_SIZE - 1) * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE + (y + 1) * SUPER_CHUNK_SIZE + (z + 1);
-                        superChunk[offset + superChunkIndex] = blocks[0,y,z];
-                    }
+            blocks = rightNeighbor.chunkData.GetBlocks();
+            for(int y = 0; y < Chunk.CHUNK_SIZE; y++) {
+                for(int z = 0; z < Chunk.CHUNK_SIZE; z++) {
+                    superChunkIndex = (SUPER_CHUNK_SIZE - 1) * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE + (y + 1) * SUPER_CHUNK_SIZE + (z + 1);
+                    superChunk[offset + superChunkIndex] = blocks[0,y,z];
                 }
             }
             
             // top chunk
             Chunk topNeighbor = chunk.chunksNeighbors![(int)FaceExtended.TOP];
             Debug.Assert(topNeighbor.chunkState >= ChunkState.BLOCKGENERATED);
-            if(topNeighbor.chunkData.IsOnlyOneBlock() && topNeighbor.chunkData.GetBlock().id != 0){
-                BlockData block = topNeighbor.chunkData.GetBlock();
-                for(int x = 0; x < Chunk.CHUNK_SIZE; x++) {
-                    for(int z = 0; z < Chunk.CHUNK_SIZE; z++) {
-                        superChunkIndex = (x + 1) * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE + (SUPER_CHUNK_SIZE - 1) * SUPER_CHUNK_SIZE + (z + 1);
-                        superChunk[offset + superChunkIndex] = block;
-                    }
-                }
-            }else if(!topNeighbor.chunkData.IsOnlyOneBlock()){
-                BlockData[,,] blocks = topNeighbor.chunkData.GetBlocks();
-                for(int x = 0; x < Chunk.CHUNK_SIZE; x++) {
-                    for(int z = 0; z < Chunk.CHUNK_SIZE; z++) {
-                        superChunkIndex = (x + 1) * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE + (SUPER_CHUNK_SIZE - 1) * SUPER_CHUNK_SIZE + (z + 1);
-                        superChunk[offset + superChunkIndex] = blocks[x,0,z];
-                    }
+            blocks = topNeighbor.chunkData.GetBlocks();
+            for(int x = 0; x < Chunk.CHUNK_SIZE; x++) {
+                for(int z = 0; z < Chunk.CHUNK_SIZE; z++) {
+                    superChunkIndex = (x + 1) * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE + (SUPER_CHUNK_SIZE - 1) * SUPER_CHUNK_SIZE + (z + 1);
+                    superChunk[offset + superChunkIndex] = blocks[x,0,z];
                 }
             }
             
             // bottom chunk
             Chunk bottomNeighbor = chunk.chunksNeighbors![(int)FaceExtended.BOTTOM];
             Debug.Assert(bottomNeighbor.chunkState >= ChunkState.BLOCKGENERATED);
-            if(bottomNeighbor.chunkData.IsOnlyOneBlock() && bottomNeighbor.chunkData.GetBlock().id != 0){
-                BlockData block = bottomNeighbor.chunkData.GetBlock();
-                for(int x = 0; x < Chunk.CHUNK_SIZE; x++) {
-                    for(int z = 0; z < Chunk.CHUNK_SIZE; z++) {
-                        superChunkIndex = (x + 1) * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE + 0 * SUPER_CHUNK_SIZE + (z + 1);
-                        superChunk[offset + superChunkIndex] = block;
-                    }
-                }
-            }else if(!bottomNeighbor.chunkData.IsOnlyOneBlock()){
-                BlockData[,,] blocks = bottomNeighbor.chunkData.GetBlocks();
-                for(int x = 0; x < Chunk.CHUNK_SIZE; x++) {
-                    for(int z = 0; z < Chunk.CHUNK_SIZE; z++) {
-                        superChunkIndex = (x + 1) * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE + 0 * SUPER_CHUNK_SIZE + (z + 1);
-                        superChunk[offset + superChunkIndex] = blocks[x,15,z];
-                    }
+            blocks = bottomNeighbor.chunkData.GetBlocks();
+            for(int x = 0; x < Chunk.CHUNK_SIZE; x++) {
+                for(int z = 0; z < Chunk.CHUNK_SIZE; z++) {
+                    superChunkIndex = (x + 1) * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE + 0 * SUPER_CHUNK_SIZE + (z + 1);
+                    superChunk[offset + superChunkIndex] = blocks[x,15,z];
                 }
             }
             
             // front chunk
             Chunk frontNeighbor = chunk.chunksNeighbors![(int)FaceExtended.FRONT];
             Debug.Assert(frontNeighbor.chunkState >= ChunkState.BLOCKGENERATED);
-            if(frontNeighbor.chunkData.IsOnlyOneBlock() && frontNeighbor.chunkData.GetBlock().id != 0){
-                BlockData block = frontNeighbor.chunkData.GetBlock();
-                for(int x = 0; x < Chunk.CHUNK_SIZE; x++) {
-                    for(int y = 0; y < Chunk.CHUNK_SIZE; y++) {
-                        superChunkIndex = (x + 1) * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE + (y + 1) * SUPER_CHUNK_SIZE + (SUPER_CHUNK_SIZE - 1);
-                        superChunk[offset + superChunkIndex] = block;
-                    }
-                }
-            }else if(!frontNeighbor.chunkData.IsOnlyOneBlock()){
-                BlockData[,,] blocks = frontNeighbor.chunkData.GetBlocks();
-                for(int x = 0; x < Chunk.CHUNK_SIZE; x++) {
-                    for(int y = 0; y < Chunk.CHUNK_SIZE; y++) {
-                        superChunkIndex = (x + 1) * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE + (y + 1) * SUPER_CHUNK_SIZE + (SUPER_CHUNK_SIZE - 1);
-                        superChunk[offset + superChunkIndex] = blocks[x,y,0];
-                    }
+            blocks = frontNeighbor.chunkData.GetBlocks();
+            for(int x = 0; x < Chunk.CHUNK_SIZE; x++) {
+                for(int y = 0; y < Chunk.CHUNK_SIZE; y++) {
+                    superChunkIndex = (x + 1) * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE + (y + 1) * SUPER_CHUNK_SIZE + (SUPER_CHUNK_SIZE - 1);
+                    superChunk[offset + superChunkIndex] = blocks[x,y,0];
                 }
             }
             
             // back chunk
             Chunk backNeighbor = chunk.chunksNeighbors![(int)FaceExtended.BACK];
             Debug.Assert(backNeighbor.chunkState >= ChunkState.BLOCKGENERATED);
-            if(backNeighbor.chunkData.IsOnlyOneBlock() && backNeighbor.chunkData.GetBlock().id != 0){
-                BlockData block = backNeighbor.chunkData.GetBlock();
-                for(int x = 0; x < Chunk.CHUNK_SIZE; x++) {
-                    for(int y = 0; y < Chunk.CHUNK_SIZE; y++) {
-                        superChunkIndex = (x + 1) * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE + (y + 1) * SUPER_CHUNK_SIZE + 0;
-                        superChunk[offset + superChunkIndex] = block;
-                    }
-                }
-            }else if(!backNeighbor.chunkData.IsOnlyOneBlock()){
-                BlockData[,,] blocks = backNeighbor.chunkData.GetBlocks();
-                for(int x = 0; x < Chunk.CHUNK_SIZE; x++) {
-                    for(int y = 0; y < Chunk.CHUNK_SIZE; y++) {
-                        superChunkIndex = (x + 1) * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE + (y + 1) * SUPER_CHUNK_SIZE + 0;
-                        superChunk[offset + superChunkIndex] = blocks[x,y,15];
-                    }
+            blocks = backNeighbor.chunkData.GetBlocks();
+            for(int x = 0; x < Chunk.CHUNK_SIZE; x++) {
+                for(int y = 0; y < Chunk.CHUNK_SIZE; y++) {
+                    superChunkIndex = (x + 1) * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE + (y + 1) * SUPER_CHUNK_SIZE + 0;
+                    superChunk[offset + superChunkIndex] = blocks[x,y,15];
                 }
             }
             
@@ -481,17 +410,10 @@ public class RegionBuffer : IDisposable
             //LEFTTOP
             Chunk chkn = chunk.chunksNeighbors![(int)FaceExtended.LEFTTOP];
             Debug.Assert(chkn.chunkState >= ChunkState.BLOCKGENERATED);
-            if(chkn.chunkData.IsOnlyOneBlock() && chkn.chunkData.GetBlock().id != 0){
-                BlockData blockData = chkn.chunkData.GetBlock();
-                for(int b = 0; b < Chunk.CHUNK_SIZE; b++) {
-                    superChunkIndex = (0 * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE) + ((SUPER_CHUNK_SIZE - 1) * SUPER_CHUNK_SIZE) + (b + 1);
-                    superChunk[offset + superChunkIndex] = blockData;
-                }
-            }else if (!chkn.chunkData.IsOnlyOneBlock()) {
-                for(int b = 0; b < Chunk.CHUNK_SIZE; b++) {
-                    superChunkIndex = (0 * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE) + ((SUPER_CHUNK_SIZE - 1) * SUPER_CHUNK_SIZE) + (b + 1);
-                    superChunk[offset + superChunkIndex] = chkn.chunkData.GetBlocks()[15,0,b];
-                }
+            blocks = chkn.chunkData.GetBlocks();
+            for(int b = 0; b < Chunk.CHUNK_SIZE; b++) {
+                superChunkIndex = (0 * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE) + ((SUPER_CHUNK_SIZE - 1) * SUPER_CHUNK_SIZE) + (b + 1);
+                superChunk[offset + superChunkIndex] = blocks[15,0,b];
             }
             
             
@@ -499,263 +421,144 @@ public class RegionBuffer : IDisposable
             //RIGHTTOP] 
             chkn = chunk.chunksNeighbors![(int)FaceExtended.RIGHTTOP];
             Debug.Assert(chkn.chunkState >= ChunkState.BLOCKGENERATED);
-            if(chkn.chunkData.IsOnlyOneBlock() && chkn.chunkData.GetBlock().id != 0){
-                BlockData block = chkn.chunkData.GetBlock();
-                for(int b = 0; b < Chunk.CHUNK_SIZE; b++) {
-                    superChunkIndex = ((SUPER_CHUNK_SIZE - 1) * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE) + ((SUPER_CHUNK_SIZE - 1) * SUPER_CHUNK_SIZE) + (b + 1);
-                    superChunk[offset + superChunkIndex] = block;
-                }
-            }else if(!chkn.chunkData.IsOnlyOneBlock()){
-                BlockData[,,] blocks = chkn.chunkData.GetBlocks();
-                for(int b = 0; b < Chunk.CHUNK_SIZE; b++) {
-                    superChunkIndex = ((SUPER_CHUNK_SIZE - 1) * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE) + ((SUPER_CHUNK_SIZE - 1) * SUPER_CHUNK_SIZE) + (b + 1);
-                    superChunk[offset + superChunkIndex] = blocks[0,0,b];
-                }
+            blocks = chkn.chunkData.GetBlocks();
+            for(int b = 0; b < Chunk.CHUNK_SIZE; b++) {
+                superChunkIndex = ((SUPER_CHUNK_SIZE - 1) * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE) + ((SUPER_CHUNK_SIZE - 1) * SUPER_CHUNK_SIZE) + (b + 1);
+                superChunk[offset + superChunkIndex] = blocks[0,0,b];
             }
+            
+            
             //TOPFRONT 
             chkn = chunk.chunksNeighbors![(int)FaceExtended.TOPFRONT];
             Debug.Assert(chkn.chunkState >= ChunkState.BLOCKGENERATED);
-            if(chkn.chunkData.IsOnlyOneBlock() && chkn.chunkData.GetBlock().id != 0){
-                BlockData block = chkn.chunkData.GetBlock();
-                for(int b = 0; b < Chunk.CHUNK_SIZE; b++) {
-                    superChunkIndex = ((b+1) * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE) + ((SUPER_CHUNK_SIZE - 1) * SUPER_CHUNK_SIZE) + ((SUPER_CHUNK_SIZE - 1));
-                    superChunk[offset + superChunkIndex] = block;
-                }
-            }else if(!chkn.chunkData.IsOnlyOneBlock()){
-                BlockData[,,] blocks = chkn.chunkData.GetBlocks();
-                for(int b = 0; b < Chunk.CHUNK_SIZE; b++) {
-                    superChunkIndex = ((b+1) * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE) + ((SUPER_CHUNK_SIZE - 1) * SUPER_CHUNK_SIZE) + ((SUPER_CHUNK_SIZE - 1));
-                    superChunk[offset + superChunkIndex] = blocks[b,0,0];
-                }
+            blocks = chkn.chunkData.GetBlocks();
+            for(int b = 0; b < Chunk.CHUNK_SIZE; b++) {
+                superChunkIndex = ((b+1) * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE) + ((SUPER_CHUNK_SIZE - 1) * SUPER_CHUNK_SIZE) + ((SUPER_CHUNK_SIZE - 1));
+                superChunk[offset + superChunkIndex] = blocks[b,0,0];
             }
             //TOPBACK 
             chkn = chunk.chunksNeighbors![(int)FaceExtended.TOPBACK];
             Debug.Assert(chkn.chunkState >= ChunkState.BLOCKGENERATED);
-            if(chkn.chunkData.IsOnlyOneBlock() && chkn.chunkData.GetBlock().id != 0){
-                BlockData block = chkn.chunkData.GetBlock();
-                for(int b = 0; b < Chunk.CHUNK_SIZE; b++) {
-                    superChunkIndex = ((b+1) * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE) + ((SUPER_CHUNK_SIZE - 1) * SUPER_CHUNK_SIZE) + (0);
-                    superChunk[offset + superChunkIndex] = block;
-                }
-            }else if(!chkn.chunkData.IsOnlyOneBlock()){
-                BlockData[,,] blocks = chkn.chunkData.GetBlocks();
-                for(int b = 0; b < Chunk.CHUNK_SIZE; b++) {
-                    superChunkIndex = ((b+1) * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE) + ((SUPER_CHUNK_SIZE - 1) * SUPER_CHUNK_SIZE) + (0);
-                    superChunk[offset + superChunkIndex] = blocks[b,0,15];
-                }
+            blocks = chkn.chunkData.GetBlocks();
+            for(int b = 0; b < Chunk.CHUNK_SIZE; b++) {
+                superChunkIndex = ((b+1) * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE) + ((SUPER_CHUNK_SIZE - 1) * SUPER_CHUNK_SIZE) + (0);
+                superChunk[offset + superChunkIndex] = blocks[b,0,15];
             }
 		
             //LEFTBOTTOM 
             chkn = chunk.chunksNeighbors![(int)FaceExtended.LEFTBOTTOM];
             Debug.Assert(chkn.chunkState >= ChunkState.BLOCKGENERATED);
-            if(chkn.chunkData.IsOnlyOneBlock() && chkn.chunkData.GetBlock().id != 0){
-                BlockData block = chkn.chunkData.GetBlock();
-                for(int b = 0; b < Chunk.CHUNK_SIZE; b++) {
-                    superChunkIndex = (0 * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE) + (0 * SUPER_CHUNK_SIZE) + (b+ 1);
-                    superChunk[offset + superChunkIndex] = block;
-                }
-            }else if(!chkn.chunkData.IsOnlyOneBlock()){
-                BlockData[,,] blocks = chkn.chunkData.GetBlocks();
-                for(int b = 0; b < Chunk.CHUNK_SIZE; b++) {
-                    superChunkIndex = (0 * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE) + (0 * SUPER_CHUNK_SIZE) + (b+ 1);
-                    superChunk[offset + superChunkIndex] = blocks[15,15,b];
-                }
+            blocks = chkn.chunkData.GetBlocks();
+            for(int b = 0; b < Chunk.CHUNK_SIZE; b++) {
+                superChunkIndex = (0 * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE) + (0 * SUPER_CHUNK_SIZE) + (b+ 1);
+                superChunk[offset + superChunkIndex] = blocks[15,15,b];
             }
+            
             //RIGHTBOTTOM 
             chkn = chunk.chunksNeighbors![(int)FaceExtended.RIGHTBOTTOM];
             Debug.Assert(chkn.chunkState >= ChunkState.BLOCKGENERATED);
-            if(chkn.chunkData.IsOnlyOneBlock() && chkn.chunkData.GetBlock().id != 0){
-                BlockData block = chkn.chunkData.GetBlock();
-                for(int b = 0; b < Chunk.CHUNK_SIZE; b++) {
-                    superChunkIndex = ((SUPER_CHUNK_SIZE - 1) * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE) + (0 * SUPER_CHUNK_SIZE) + (b+ 1);
-                    superChunk[offset + superChunkIndex] = block;
-                }
-            }else if(!chkn.chunkData.IsOnlyOneBlock()){
-                BlockData[,,] blocks = chkn.chunkData.GetBlocks();
-                for(int b = 0; b < Chunk.CHUNK_SIZE; b++) {
-                    superChunkIndex = ((SUPER_CHUNK_SIZE - 1) * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE) + (0 * SUPER_CHUNK_SIZE) + (b+ 1);
-                    superChunk[offset + superChunkIndex] = blocks[0,15,b];
-                }
+            blocks = chkn.chunkData.GetBlocks();
+            for(int b = 0; b < Chunk.CHUNK_SIZE; b++) {
+                superChunkIndex = ((SUPER_CHUNK_SIZE - 1) * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE) + (0 * SUPER_CHUNK_SIZE) + (b+ 1);
+                superChunk[offset + superChunkIndex] = blocks[0,15,b];
             }
             //BOTTOMFRONT 
             chkn = chunk.chunksNeighbors![(int)FaceExtended.BOTTOMFRONT];
             Debug.Assert(chkn.chunkState >= ChunkState.BLOCKGENERATED);
-            if(chkn.chunkData.IsOnlyOneBlock() && chkn.chunkData.GetBlock().id != 0){
-                BlockData block = chkn.chunkData.GetBlock();
-                for(int b = 0; b < Chunk.CHUNK_SIZE; b++) {
-                    superChunkIndex = ((b+1) * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE) + (0 * SUPER_CHUNK_SIZE) + (SUPER_CHUNK_SIZE - 1);
-                    superChunk[offset + superChunkIndex] = block;
-                }
-            }else if(!chkn.chunkData.IsOnlyOneBlock()){
-                BlockData[,,] blocks = chkn.chunkData.GetBlocks();
-                for(int b = 0; b < Chunk.CHUNK_SIZE; b++) {
-                    superChunkIndex = ((b+1) * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE) + (0 * SUPER_CHUNK_SIZE) + (SUPER_CHUNK_SIZE - 1);
-                    superChunk[offset + superChunkIndex] = blocks[b,15,0];
-                }
+            blocks = chkn.chunkData.GetBlocks();
+            for(int b = 0; b < Chunk.CHUNK_SIZE; b++) {
+                superChunkIndex = ((b+1) * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE) + (0 * SUPER_CHUNK_SIZE) + (SUPER_CHUNK_SIZE - 1);
+                superChunk[offset + superChunkIndex] = blocks[b,15,0];
             }
             //BOTTOMBACK 
             chkn = chunk.chunksNeighbors![(int)FaceExtended.BOTTOMBACK];
             Debug.Assert(chkn.chunkState >= ChunkState.BLOCKGENERATED);
-            if(chkn.chunkData.IsOnlyOneBlock() && chkn.chunkData.GetBlock().id != 0){
-                BlockData block = chkn.chunkData.GetBlock();
-                for(int b = 0; b < Chunk.CHUNK_SIZE; b++) {
-                    superChunkIndex = ((b+1) * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE) + (0 * SUPER_CHUNK_SIZE) + (0);
-                    superChunk[offset + superChunkIndex] = block;
-                }
-            }else if(!chkn.chunkData.IsOnlyOneBlock()){
-                BlockData[,,] blocks = chkn.chunkData.GetBlocks();
-                for(int b = 0; b < Chunk.CHUNK_SIZE; b++) {
-                    superChunkIndex = ((b+1) * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE) + (0 * SUPER_CHUNK_SIZE) + (0);
-                    superChunk[offset + superChunkIndex] = blocks[b,15,15];
-                }
+            blocks = chkn.chunkData.GetBlocks();
+            for(int b = 0; b < Chunk.CHUNK_SIZE; b++) {
+                superChunkIndex = ((b+1) * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE) + (0 * SUPER_CHUNK_SIZE) + (0);
+                superChunk[offset + superChunkIndex] = blocks[b,15,15];
             }
 
             //LEFTTOPFRONT 
             chkn = chunk.chunksNeighbors![(int)FaceExtended.LEFTTOPFRONT];
             Debug.Assert(chkn.chunkState >= ChunkState.BLOCKGENERATED);
-            if(chkn.chunkData.IsOnlyOneBlock()){
-                superChunkIndex = ((0) * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE) + ((SUPER_CHUNK_SIZE - 1) * SUPER_CHUNK_SIZE) + (SUPER_CHUNK_SIZE - 1);
-                superChunk[offset + superChunkIndex] = chkn.chunkData.GetBlock();
-            }else{
-                superChunkIndex = ((0) * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE) + ((SUPER_CHUNK_SIZE - 1) * SUPER_CHUNK_SIZE) + (SUPER_CHUNK_SIZE - 1);
-                superChunk[offset + superChunkIndex] = chkn.chunkData.GetBlock(15,0,0);
-            }
+            superChunkIndex = ((0) * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE) + ((SUPER_CHUNK_SIZE - 1) * SUPER_CHUNK_SIZE) + (SUPER_CHUNK_SIZE - 1);
+            superChunk[offset + superChunkIndex] = chkn.chunkData.GetBlock(15,0,0);
             //RIGHTTOPFRONT 
             chkn = chunk.chunksNeighbors![(int)FaceExtended.RIGHTTOPFRONT];
             Debug.Assert(chkn.chunkState >= ChunkState.BLOCKGENERATED);
-            if(chkn.chunkData.IsOnlyOneBlock()){
-                superChunkIndex = ((SUPER_CHUNK_SIZE - 1) * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE) + ((SUPER_CHUNK_SIZE - 1) * SUPER_CHUNK_SIZE) + (SUPER_CHUNK_SIZE - 1);
-                superChunk[offset + superChunkIndex] = chkn.chunkData.GetBlock();
-            }else{
-                superChunkIndex = ((SUPER_CHUNK_SIZE - 1) * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE) + ((SUPER_CHUNK_SIZE - 1) * SUPER_CHUNK_SIZE) + (SUPER_CHUNK_SIZE - 1);
-                superChunk[offset + superChunkIndex] = chkn.chunkData.GetBlock(0,0,0);
-            }
+            superChunkIndex = ((SUPER_CHUNK_SIZE - 1) * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE) + ((SUPER_CHUNK_SIZE - 1) * SUPER_CHUNK_SIZE) + (SUPER_CHUNK_SIZE - 1);
+            superChunk[offset + superChunkIndex] = chkn.chunkData.GetBlock(0,0,0);
             
             //LEFTTOPBACK 
             chkn = chunk.chunksNeighbors![(int)FaceExtended.LEFTTOPBACK];
             Debug.Assert(chkn.chunkState >= ChunkState.BLOCKGENERATED);
-            if(chkn.chunkData.IsOnlyOneBlock()){
-                superChunkIndex = ((0) * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE) + ((SUPER_CHUNK_SIZE - 1) * SUPER_CHUNK_SIZE) + (0);
-                superChunk[offset + superChunkIndex] = chkn.chunkData.GetBlock();
-            }else{
-                superChunkIndex = ((0) * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE) + ((SUPER_CHUNK_SIZE - 1) * SUPER_CHUNK_SIZE) + (0);
-                superChunk[offset + superChunkIndex] = chkn.chunkData.GetBlock(15,0,15);
-            }
+            superChunkIndex = ((0) * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE) + ((SUPER_CHUNK_SIZE - 1) * SUPER_CHUNK_SIZE) + (0);
+            superChunk[offset + superChunkIndex] = chkn.chunkData.GetBlock(15,0,15);
+            
             //RIGHTTOPBACK 
             chkn = chunk.chunksNeighbors![(int)FaceExtended.RIGHTTOPBACK];
             Debug.Assert(chkn.chunkState >= ChunkState.BLOCKGENERATED);
-            if(chkn.chunkData.IsOnlyOneBlock()){
-                superChunkIndex = ((SUPER_CHUNK_SIZE - 1) * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE) + ((SUPER_CHUNK_SIZE - 1) * SUPER_CHUNK_SIZE) + (0);
-                superChunk[offset + superChunkIndex] = chkn.chunkData.GetBlock();
-            }else{
-                superChunkIndex = ((SUPER_CHUNK_SIZE - 1) * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE) + ((SUPER_CHUNK_SIZE - 1) * SUPER_CHUNK_SIZE) + (0);
-                superChunk[offset + superChunkIndex] = chkn.chunkData.GetBlock(0,0,15);
-            }
+            superChunkIndex = ((SUPER_CHUNK_SIZE - 1) * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE) + ((SUPER_CHUNK_SIZE - 1) * SUPER_CHUNK_SIZE) + (0);
+            superChunk[offset + superChunkIndex] = chkn.chunkData.GetBlock(0,0,15);
+            
             //LEFTBOTTOMFRONT 
             chkn = chunk.chunksNeighbors![(int)FaceExtended.LEFTBOTTOMFRONT];
             Debug.Assert(chkn.chunkState >= ChunkState.BLOCKGENERATED);
-            if(chkn.chunkData.IsOnlyOneBlock()){
-                superChunkIndex = ((0) * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE) + ((0) * SUPER_CHUNK_SIZE) + (SUPER_CHUNK_SIZE - 1);
-                superChunk[offset + superChunkIndex] = chkn.chunkData.GetBlock();
-            }else{
-                superChunkIndex = ((0) * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE) + ((0) * SUPER_CHUNK_SIZE) + (SUPER_CHUNK_SIZE - 1);
-                superChunk[offset + superChunkIndex] = chkn.chunkData.GetBlock(15,15,0);
-            }
+            superChunkIndex = ((0) * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE) + ((0) * SUPER_CHUNK_SIZE) + (SUPER_CHUNK_SIZE - 1);
+            superChunk[offset + superChunkIndex] = chkn.chunkData.GetBlock(15,15,0);
+            
             //RIGHTBOTTOMFRONT 
             chkn = chunk.chunksNeighbors![(int)FaceExtended.RIGHTBOTTOMFRONT];
             Debug.Assert(chkn.chunkState >= ChunkState.BLOCKGENERATED);
-            if(chkn.chunkData.IsOnlyOneBlock()){
-                superChunkIndex = ((SUPER_CHUNK_SIZE - 1) * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE) + ((0) * SUPER_CHUNK_SIZE) + (SUPER_CHUNK_SIZE - 1);
-                superChunk[offset + superChunkIndex] = chkn.chunkData.GetBlock();
-            }else{
                 superChunkIndex = ((SUPER_CHUNK_SIZE - 1) * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE) + ((0) * SUPER_CHUNK_SIZE) + (SUPER_CHUNK_SIZE - 1);
                 superChunk[offset + superChunkIndex] = chkn.chunkData.GetBlock(0,15,0);
-            }
+                
             chkn = chunk.chunksNeighbors![(int)FaceExtended.LEFTBOTTOMBACK];
             Debug.Assert(chkn.chunkState >= ChunkState.BLOCKGENERATED);
-            if(chkn.chunkData.IsOnlyOneBlock()){
-                superChunkIndex = ((0) * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE) + ((0) * SUPER_CHUNK_SIZE) + (0);
-                superChunk[offset + superChunkIndex] = chkn.chunkData.GetBlock();
-            }else{
                 superChunkIndex = ((0) * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE) + ((0) * SUPER_CHUNK_SIZE) + (0);
                 superChunk[offset + superChunkIndex] = chkn.chunkData.GetBlock(15,15,15);
-            }
+                
             //RIGHTBOTTOMBACK
             chkn = chunk.chunksNeighbors![(int)FaceExtended.RIGHTBOTTOMBACK];
             Debug.Assert(chkn.chunkState >= ChunkState.BLOCKGENERATED);
-            if(chkn.chunkData.IsOnlyOneBlock()){
-                superChunkIndex = ((SUPER_CHUNK_SIZE - 1) * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE) + ((0) * SUPER_CHUNK_SIZE) + (0);
-                superChunk[offset + superChunkIndex] = chkn.chunkData.GetBlock();
-            }else{
-                superChunkIndex = ((SUPER_CHUNK_SIZE - 1) * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE) + ((0) * SUPER_CHUNK_SIZE) + (0);
-                superChunk[offset + superChunkIndex] = chkn.chunkData.GetBlock(0,15,15);
-            }
+            superChunkIndex = ((SUPER_CHUNK_SIZE - 1) * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE) + ((0) * SUPER_CHUNK_SIZE) + (0);
+            superChunk[offset + superChunkIndex] = chkn.chunkData.GetBlock(0,15,15);
+            
             //LEFTFRONT  
             chkn = chunk.chunksNeighbors![(int)FaceExtended.LEFTFRONT];
             Debug.Assert(chkn.chunkState >= ChunkState.BLOCKGENERATED);
-            if(chkn.chunkData.IsOnlyOneBlock() && chkn.chunkData.GetBlock().id != 0){
-                BlockData block = chkn.chunkData.GetBlock();
-                for(int b = 0; b < Chunk.CHUNK_SIZE; b++) {
-                    superChunkIndex = (0 * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE) + ((b+1) * SUPER_CHUNK_SIZE) + (SUPER_CHUNK_SIZE - 1);
-                    superChunk[offset + superChunkIndex] = block;
-                }
-            }else if(!chkn.chunkData.IsOnlyOneBlock()){
-                BlockData[,,] blocks = chkn.chunkData.GetBlocks();
-                for(int b = 0; b < Chunk.CHUNK_SIZE; b++) {
-                    superChunkIndex = (0 * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE) + ((b+1) * SUPER_CHUNK_SIZE) + (SUPER_CHUNK_SIZE - 1);
-                    superChunk[offset + superChunkIndex] = blocks[15,b,0];
-                }
+            blocks = chkn.chunkData.GetBlocks();
+            for(int b = 0; b < Chunk.CHUNK_SIZE; b++) {
+                superChunkIndex = (0 * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE) + ((b+1) * SUPER_CHUNK_SIZE) + (SUPER_CHUNK_SIZE - 1);
+                superChunk[offset + superChunkIndex] = blocks[15,b,0];
             }
             
             //RIGHTFRONT  
             chkn = chunk.chunksNeighbors![(int)FaceExtended.RIGHTFRONT];
             Debug.Assert(chkn.chunkState >= ChunkState.BLOCKGENERATED);
-            if(chkn.chunkData.IsOnlyOneBlock() && chkn.chunkData.GetBlock().id != 0){
-                BlockData block = chkn.chunkData.GetBlock();
-                for(int b = 0; b < Chunk.CHUNK_SIZE; b++) {
-                    superChunkIndex = ((SUPER_CHUNK_SIZE - 1) * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE) + ((b+1) * SUPER_CHUNK_SIZE) + (SUPER_CHUNK_SIZE - 1);
-                    superChunk[offset + superChunkIndex] = block;
-                }
-            }else if(!chkn.chunkData.IsOnlyOneBlock()){
-                BlockData[,,] blocks = chkn.chunkData.GetBlocks();
-                for(int b = 0; b < Chunk.CHUNK_SIZE; b++) {
-                    superChunkIndex = ((SUPER_CHUNK_SIZE - 1) * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE) + ((b+1) * SUPER_CHUNK_SIZE) + (SUPER_CHUNK_SIZE - 1);
-                    superChunk[offset + superChunkIndex] = blocks[0,b,0];
-                }
+            blocks = chkn.chunkData.GetBlocks();
+            for(int b = 0; b < Chunk.CHUNK_SIZE; b++) {
+                superChunkIndex = ((SUPER_CHUNK_SIZE - 1) * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE) + ((b+1) * SUPER_CHUNK_SIZE) + (SUPER_CHUNK_SIZE - 1);
+                superChunk[offset + superChunkIndex] = blocks[0,b,0];
             }
             
             //LEFTBACK  
             chkn = chunk.chunksNeighbors![(int)FaceExtended.LEFTBACK];
             Debug.Assert(chkn.chunkState >= ChunkState.BLOCKGENERATED);
-            if(chkn.chunkData.IsOnlyOneBlock() && chkn.chunkData.GetBlock().id != 0){
-                BlockData block = chkn.chunkData.GetBlock();
-                for(int b = 0; b < Chunk.CHUNK_SIZE; b++) {
-                    superChunkIndex = ((0) * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE) + ((b+1) * SUPER_CHUNK_SIZE) + (0);
-                    superChunk[offset + superChunkIndex] = block;
-                }
-            }else if(!chkn.chunkData.IsOnlyOneBlock()){
-                BlockData[,,] blocks = chkn.chunkData.GetBlocks();
-                for(int b = 0; b < Chunk.CHUNK_SIZE; b++) {
-                    superChunkIndex = ((0) * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE) + ((b+1) * SUPER_CHUNK_SIZE) + (0);
-                    superChunk[offset + superChunkIndex] = blocks[15,b,15];
-                }
+            blocks = chkn.chunkData.GetBlocks();
+            for(int b = 0; b < Chunk.CHUNK_SIZE; b++) {
+                superChunkIndex = ((0) * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE) + ((b+1) * SUPER_CHUNK_SIZE) + (0);
+                superChunk[offset + superChunkIndex] = blocks[15,b,15];
             }
             
             //RIGHTBACK  
             chkn = chunk.chunksNeighbors![(int)FaceExtended.RIGHTBACK];
             Debug.Assert(chkn.chunkState >= ChunkState.BLOCKGENERATED);
-            if(chkn.chunkData.IsOnlyOneBlock() && chkn.chunkData.GetBlock().id != 0){
-                BlockData block = chkn.chunkData.GetBlock();
-                for(int b = 0; b < Chunk.CHUNK_SIZE; b++) {
-                    superChunkIndex = ((SUPER_CHUNK_SIZE - 1) * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE) + ((b+1) * SUPER_CHUNK_SIZE) + (0);
-                    superChunk[offset + superChunkIndex] = block;
-                }
-            }else if(!chkn.chunkData.IsOnlyOneBlock()){
-                BlockData[,,] blocks = chkn.chunkData.GetBlocks();
-                for(int b = 0; b < Chunk.CHUNK_SIZE; b++) {
-                    superChunkIndex = ((SUPER_CHUNK_SIZE - 1) * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE) + ((b+1) * SUPER_CHUNK_SIZE) + (0);
-                    superChunk[offset + superChunkIndex] = blocks[0,b,15];
-                }
+            blocks = chkn.chunkData.GetBlocks();
+            for(int b = 0; b < Chunk.CHUNK_SIZE; b++) {
+                superChunkIndex = ((SUPER_CHUNK_SIZE - 1) * SUPER_CHUNK_SIZE * SUPER_CHUNK_SIZE) + ((b+1) * SUPER_CHUNK_SIZE) + (0);
+                superChunk[offset + superChunkIndex] = blocks[0,b,15];
             }
             
             

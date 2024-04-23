@@ -16,7 +16,7 @@ namespace MinecraftCloneSilk
         }
 
 
-        private static Scene GetClassicScene() {
+        private static GameParameter GetClassicScene() {
             List<InitGameData> gameObjectNames = new List<InitGameData>()
             {
                 new (typeof(Player).FullName!, new object[]{new Vector3(0.0f, 10f, 0.0f)}),
@@ -25,11 +25,11 @@ namespace MinecraftCloneSilk
                 new (typeof(GeneralInfo).FullName!),
                 new (typeof(DemoWindow).FullName!),
             };
-            Scene scene = new Scene(gameObjectNames, new OpenGlConfig(false, false));
-            return scene;
+            GameParameter gameParameter = new GameParameter(gameObjectNames, new OpenGlConfig(false, false));
+            return gameParameter;
         }
 
-        private static Scene GetTestScene() {
+        private static GameParameter GetTestScene() {
             List<InitGameData> gameObjectNames = new List<InitGameData>()
             {
                 new (typeof(Player).FullName!, new object[]{new Vector3(6f, 5f, 6f)}),
@@ -41,9 +41,10 @@ namespace MinecraftCloneSilk
                 new (typeof(ChunkRendererUi).FullName!),
                 new (typeof(ConsoleUi).FullName!),
                 new (typeof(GeneralInfo).FullName!),
+                new (typeof(BackPack).FullName!)
             };
-            Scene scene = new Scene(gameObjectNames, new OpenGlConfig(true, false));
-            return scene;
+            GameParameter gameParameter = new GameParameter(gameObjectNames, new OpenGlConfig(true, false));
+            return gameParameter;
         }
         
         

@@ -32,9 +32,7 @@ public class ChunkData : IChunkData
             }
         }
     }
-    public bool IsOnlyOneBlock() {
-        return false;
-    }
+
     public void Reset() {
         blocks = new BlockData[Chunk.CHUNK_SIZE, Chunk.CHUNK_SIZE, Chunk.CHUNK_SIZE];
     }

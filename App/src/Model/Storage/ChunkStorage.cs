@@ -90,10 +90,6 @@ public class ChunkStorage : IChunkStorage
 
     private static Dictionary<int, BlockData> GetPallette(Chunk chunk) {
         Dictionary<int, BlockData> palette = new Dictionary<int, BlockData>();
-        if (chunk.chunkData.IsOnlyOneBlock()) {
-            palette.Add(chunk.chunkData.GetBlock().id, chunk.chunkData.GetBlock());
-            return palette;
-        }
         
         BlockData[,,] blocks = chunk.chunkData.GetBlocks();
         for (int x = 0; x < Chunk.CHUNK_SIZE; x++) {

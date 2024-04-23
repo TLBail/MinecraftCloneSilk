@@ -16,13 +16,13 @@ public class PlayerTest
 
     [OneTimeSetUp]
     public  void InitGame() {
-        Scene scene = new Scene(new List<InitGameData>()
+        GameParameter gameParameter = new GameParameter(new List<InitGameData>()
             {
                 new (typeof(Player).FullName!),
                 new (typeof(World).FullName!, new object[]{WorldMode.EMPTY}),
             }, new OpenGlConfig(true)
         );
-        game = Game.GetInstance(scene, false);
+        game = Game.GetInstance(gameParameter, false);
         gameThread = new Thread(() => {
             game.Run();
         });

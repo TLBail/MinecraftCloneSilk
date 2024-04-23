@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using MinecraftCloneSilk.GameComponent;
 using MinecraftCloneSilk.Model.NChunk;
 using Silk.NET.Maths;
 
@@ -12,13 +13,6 @@ public class LightCalculator
 
     [Logger.Timer]
     public static void LightChunk(Chunk chunk) {
-        if(chunk.chunkData.IsOnlyOneBlock()) {
-            BlockData block = chunk.chunkData.GetBlock();
-            block.SetLightLevel(15);
-            block.SetSkyLightLevel(15);
-            chunk.chunkData.SetBlock(block); 
-            return;
-        }
         PropageLight(chunk);
         PropageSunLight(chunk);
     }
@@ -62,14 +56,12 @@ public class LightCalculator
         while(removalSunLightQueue.TryDequeue(out LightRemovalNode lightSource)) {
             foreach (Face face in FaceFlagUtils.FACES) {
                 Vector3D<int> posoffset = lightSource.position + FaceOffset.GetOffsetOfFace(face);
-                if (posoffset.Y < 0) {
-                    //Todo say to the bottom chunk to update light
-                    continue;
-                }
-                BlockData offsetBlock = chunk.GetBlockData(posoffset);
+                BlockData? options = GetBlockDataUntilIsNotLoaded(chunk, posoffset);
+                if(options is null) continue;
+                BlockData offsetBlock = options.Value;
                 if(!blockFactory.IsBlockTransparent(offsetBlock)) continue;
                 if(offsetBlock.GetSkyLightLevel() < 1) continue;
-                if (offsetBlock.GetSkyLightLevel() == lightSource.oldLightLevel - (face == Face.BOTTOM ? 0 : 1) ) {
+                if (offsetBlock.GetSkyLightLevel() == lightSource.oldLightLevel - (face == Face.BOTTOM && lightSource.oldLightLevel == 15 ? 0 : 1) ) {
                     removalSunLightQueue.Enqueue(new(posoffset, offsetBlock.GetSkyLightLevel()));
                     offsetBlock.SetSkyLightLevel(0);
                     SetBlockAndUpdateVertices(chunk,posoffset, offsetBlock);
@@ -78,12 +70,40 @@ public class LightCalculator
                 }
             }
         }
-        PropageSunlightSource(chunk, sunLightSource);
+
+        while (sunLightSource.TryDequeue(out LightNode lightSource)) {
+            byte lightLevel = GetBlockDataUntilIsNotLoaded(chunk, lightSource.position)!.Value.GetSkyLightLevel();
+            if(lightLevel < 1 || lightLevel > lightSource.lightLevel) continue;
+            foreach (Face face in FaceFlagUtils.FACES) {
+                Vector3D<int> posoffset = lightSource.position + FaceOffset.GetOffsetOfFace(face);
+                BlockData? options = GetBlockDataUntilIsNotLoaded(chunk, posoffset);
+                if(options is null) continue;
+                BlockData offsetBlock = options.Value;
+                byte nextLightLevel = (byte)(lightLevel - (face == Face.BOTTOM && lightLevel == 15 ? 0 : 1));
+                if (offsetBlock.GetSkyLightLevel() < nextLightLevel) {
+                    offsetBlock.SetSkyLightLevel(nextLightLevel);
+                    SetBlockAndUpdateVertices(chunk, posoffset, offsetBlock);
+                    if(nextLightLevel > 1 && blockFactory.blocks[offsetBlock.id].transparent ) sunLightSource.Enqueue(new (posoffset, nextLightLevel));
+                }
+            }
+        }
     }
 
     private static void PropageSunLight(Chunk chunk) {
-        BlockFactory blockFactory = Chunk.blockFactory!;
         BlockData[,,] blocks = chunk.chunkData.GetBlocks();
+        if ((chunk.chunkFace & ChunkFace.EMPTYCHUNK) != 0 && chunk.position.Y >= 0) {
+            for (int x = 0; x < Chunk.CHUNK_SIZE; x++) {
+                for (int y = 0; y < Chunk.CHUNK_SIZE; y++) {
+                    for (int z = 0; z < Chunk.CHUNK_SIZE; z++) {
+                        blocks[x,y,z].SetSkyLightLevel(0);
+                    }
+                }
+            }
+            return;
+        }
+        
+        
+        BlockFactory blockFactory = Chunk.blockFactory!;
         Queue<LightNode> sunLightSource = new Queue<LightNode>();
         Chunk topChunk = chunk.chunksNeighbors![(int)Face.TOP];
         
@@ -98,56 +118,72 @@ public class LightCalculator
         }
 
         Debug.Assert(topChunk.chunkData is not null);
-        if ((topChunk.chunkFace & ChunkFaceUtils.ALLTRANSPARENT) == 0) {
-            return;
-        }
         bool[,] blocked = new bool[Chunk.CHUNK_SIZE, Chunk.CHUNK_SIZE];
-        for (int x = 0; x < Chunk.CHUNK_SIZE; x++) {
-            for (int z = 0; z < Chunk.CHUNK_SIZE; z++) {
-                if (!blockFactory.blocks[blocks[x, 15, z].id].transparent) {
-                    blocked[x, z] = true;
-                    continue;
+        if ((topChunk.chunkFace & ChunkFace.BOTTOMOPAQUE) == 0) {
+            if ((topChunk.chunkFace & ChunkFace.EMPTYCHUNK) != 0 && topChunk.position.Y >= 0) {
+                for (int x = 0; x < Chunk.CHUNK_SIZE; x++) {
+                    for (int z = 0; z < Chunk.CHUNK_SIZE; z++) {
+                        if (!blockFactory.blocks[blocks[x, 15, z].id].transparent) {
+                            blocked[x, z] = true;
+                            continue;
+                        }
+                        blocks[x, 15, z].SetSkyLightLevel(15);
+                    }
                 }
-                blocks[x, 15, z].SetSkyLightLevel(15);
+            } else {
+                Debug.Assert(topChunk.chunkState >= ChunkState.LIGHTING);
+                BlockData[,,] topBlocks = topChunk.chunkData.GetBlocks();
+                for (int x = 0; x < Chunk.CHUNK_SIZE; x++) {
+                    for (int z = 0; z < Chunk.CHUNK_SIZE; z++) {
+                        BlockData topBlock = topBlocks[x, 0, z];
+                        if (topBlock.GetSkyLightLevel() > 2) {
+                            blocks[x, 15, z].SetSkyLightLevel((byte)(topBlock.GetSkyLightLevel() == 15 ? 15 : (byte)(topBlock.GetSkyLightLevel() - 1)));
+                        } else {
+                            blocked[x, z] = true;
+                        }
+                    }
+                }
             }
         }
+        
         
         for (int y = 15; y > 0; y--) {
             for (int x = 0; x < Chunk.CHUNK_SIZE; x++) {
                 for (int z = 0; z < Chunk.CHUNK_SIZE; z++) {
                     if(blocked[x,z]) continue;
-                    Debug.Assert(blockFactory.blocks[blocks[x, y, z].id].transparent);
-                    
+                    byte sunlightValue = blocks[x, y, z].GetSkyLightLevel();
+                    if(sunlightValue <= 1) continue;
+                    byte nextSunlightValue = (byte)(sunlightValue - 1);
                     
                     // check neighbors for light 
                     if (x > 0 && blockFactory.blocks[blocks[x - 1, y, z].id].transparent
-                              && blocks[x - 1, y, z].GetSkyLightLevel() < 14) {
-                        blocks[x - 1,y,z].SetSkyLightLevel(14);
-                        sunLightSource.Enqueue(new LightNode(new (x - 1,y,z), 14));
+                              && blocks[x - 1, y, z].GetSkyLightLevel() < nextSunlightValue) {
+                        blocks[x - 1,y,z].SetSkyLightLevel(nextSunlightValue);
+                        sunLightSource.Enqueue(new LightNode(new (x - 1,y,z), nextSunlightValue));
                     }
                     
                     if (x < Chunk.CHUNK_SIZE - 1 && blockFactory.blocks[blocks[x + 1, y, z].id].transparent && 
-                        blocks[x + 1, y, z].GetSkyLightLevel() < 14) {
-                        blocks[x + 1,y,z].SetSkyLightLevel(14);
-                        sunLightSource.Enqueue(new LightNode(new (x + 1,y,z), 14));
+                        blocks[x + 1, y, z].GetSkyLightLevel() < nextSunlightValue) {
+                        blocks[x + 1,y,z].SetSkyLightLevel(nextSunlightValue);
+                        sunLightSource.Enqueue(new LightNode(new (x + 1,y,z), nextSunlightValue));
                     }
                     
-                    if (z > 0 && blockFactory.blocks[blocks[x, y, z - 1].id].transparent && blocks[x, y, z - 1].GetSkyLightLevel() < 14) {
-                        blocks[x,y,z - 1].SetSkyLightLevel(14);
-                        sunLightSource.Enqueue(new LightNode(new (x,y,z - 1), 14));
+                    if (z > 0 && blockFactory.blocks[blocks[x, y, z - 1].id].transparent && blocks[x, y, z - 1].GetSkyLightLevel() < nextSunlightValue) {
+                        blocks[x,y,z - 1].SetSkyLightLevel(nextSunlightValue);
+                        sunLightSource.Enqueue(new LightNode(new (x,y,z - 1), nextSunlightValue));
                     }
                     
                     if (z < Chunk.CHUNK_SIZE - 1 && blockFactory.blocks[blocks[x, y, z + 1].id].transparent &&
-                        blocks[x, y, z + 1].GetSkyLightLevel() < 14) {
-                        blocks[x,y,z + 1].SetSkyLightLevel(14);
-                        sunLightSource.Enqueue(new LightNode(new (x,y,z + 1), 14));
+                        blocks[x, y, z + 1].GetSkyLightLevel() < nextSunlightValue) {
+                        blocks[x,y,z + 1].SetSkyLightLevel(nextSunlightValue);
+                        sunLightSource.Enqueue(new LightNode(new (x,y,z + 1), nextSunlightValue));
                     }
                     
                     if(!blockFactory.blocks[blocks[x, y - 1, z].id].transparent) {
                         blocked[x, z] = true;
                         continue;
                     }
-                    blocks[x,y - 1,z].SetSkyLightLevel(15);
+                    blocks[x,y - 1,z].SetSkyLightLevel(sunlightValue == 15 ? sunlightValue : nextSunlightValue);
                 }
             }
             
@@ -159,6 +195,14 @@ public class LightCalculator
         
     }
 
+    public static bool IsChunkOkToGenerateLightBelow(Chunk chunk) {
+        Debug.Assert(chunk.chunkState >= ChunkState.BLOCKGENERATED);
+        return (chunk.chunkState >= ChunkState.LIGHTING) || 
+               ((chunk.chunkFace & ChunkFace.BOTTOMOPAQUE) != 0) || (
+                   (chunk.chunkFace & ChunkFace.EMPTYCHUNK) != 0 &&
+                   chunk.position.Y >= 0
+               );
+    } 
     private static void PropageLight(Chunk chunk) {
         Queue<LightNode> lightSources = new Queue<LightNode>();
         GetLightSourcesOfChunk(chunk, lightSources);
@@ -195,8 +239,10 @@ public class LightCalculator
             foreach (Face face in FaceFlagUtils.FACES) {
                 Vector3D<int> posoffset = lightSource.position + FaceOffset.GetOffsetOfFace(face);
                 if(posoffset.Y < 0) continue;
-                BlockData offsetBlock = chunk.GetBlockData(posoffset);
-                byte nextLightLevel = (byte)(lightLevel - (face == Face.BOTTOM ? 0 : 1));
+                BlockData? options = GetBlockDataUntilIsNotLoaded(chunk, posoffset);
+                if(options is null) continue;
+                BlockData offsetBlock = options.Value;
+                byte nextLightLevel = (byte)(lightLevel - (face == Face.BOTTOM && lightLevel == 15 ? 0 : 1));
                 if (offsetBlock.GetSkyLightLevel() < nextLightLevel) {
                     offsetBlock.SetSkyLightLevel(nextLightLevel);
                     SetBlockAndUpdateVertices(chunk, posoffset, offsetBlock);
@@ -205,7 +251,34 @@ public class LightCalculator
             }
         }
     }
+
+    private static BlockData? GetBlockDataUntilIsNotLoaded(Chunk chunk, Vector3D<int> position) {
+        if (position.X < -16 || position.X >= 32 ||
+            position.Y < -16 || position.Y >= 32 ||
+            position.Z < -16 || position.Z >= 32) {
+            Chunk farChunk = chunk.chunkManager.GetChunk(chunk.position + World.GetChunkPosition(position));
+            if(farChunk.chunkState < ChunkState.LIGHTING) return null;
+            return farChunk.GetBlockData(World.GetLocalPosition(position));
+        } else {
+            return chunk.GetBlockData(position);
+        }
+    }
+    
+    
     private static void SetBlockAndUpdateVertices(Chunk chunk, in Vector3D<int> pos, in BlockData blockData) {
+        if (pos.X < -16 || pos.X >= 32 ||
+            pos.Y < -16 || pos.Y >= 32 ||
+            pos.Z < -16 || pos.Z >= 32) {
+            Chunk farChunk = chunk.chunkManager.GetChunk(chunk.position + World.GetChunkPosition(pos));
+            if (farChunk.chunkState < ChunkState.LIGHTING) {
+                Console.WriteLine("error lighting farChunk");
+                return;
+            }
+            Vector3D<int> localPos = World.GetLocalPosition(pos);
+            farChunk.chunkData.SetBlock(blockData, localPos.X, localPos.Y, localPos.Z);
+            return;
+        }
+
         if (BlockIsOutsideOfChunk(pos)) {
             int x = pos.X;
             int y = pos.Y;
