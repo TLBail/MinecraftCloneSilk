@@ -68,9 +68,9 @@ public class ChunkDrawableStrategy : ChunkStrategy
     }
 
     public override void Update(double deltaTime) {
-        if (!IsChunkVisible() && !chunkAddedToRegionBuffer) AddChunkToRegionBuffer();
+        if (IsChunkVisible() && !chunkAddedToRegionBuffer) AddChunkToRegionBuffer();
         if (chunkAddedToRegionBuffer && needToUpdateChunkBuffer) UpdateChunkBuffer();
-        if (IsChunkVisible() || (chunkAddedToRegionBuffer && !needToUpdateChunkBuffer)) {
+        if (!IsChunkVisible() || (chunkAddedToRegionBuffer && !needToUpdateChunkBuffer)) {
             chunk.chunkManager.RemoveChunkToUpdate(chunk);
             IsUpdating = false;
         }
@@ -94,7 +94,7 @@ public class ChunkDrawableStrategy : ChunkStrategy
 
 
     private void InitChunkFaces() {
-        if (IsChunkVisible()) {
+        if (!IsChunkVisible()) {
             return;
         }
         needToUpdateChunkBuffer = true;
@@ -160,7 +160,7 @@ public class ChunkDrawableStrategy : ChunkStrategy
     }
 
     private bool IsChunkVisible() {
-        return ((chunk.chunkFace & ChunkFace.EMPTYCHUNK) == ChunkFace.EMPTYCHUNK) ||
+        return ((chunk.chunkFace & ChunkFace.EMPTYCHUNK) == 0) ||
                (ChunkFaceUtils.IsOpaque((ChunkFace)(chunk.chunkFace)) && IsNeiborsFacesOpaque());   
     }
 
