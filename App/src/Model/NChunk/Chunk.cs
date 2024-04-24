@@ -192,7 +192,6 @@ public class Chunk
     public void LoadChunkState() => chunkStrategy.Load();
     public void FinishChunkState() => chunkStrategy.Finish();
     public BlockData GetBlockData(Vector3D<int> position) => chunkStrategy.GetBlockData(position);
-    public void SetBlockData(int x,int y, int z, BlockData blockData) => chunkStrategy.SetBlockData(x, y, z, blockData);
     public ChunkState GetMinimumChunkStateOfNeighbors() =>  chunkStrategy.MinimumChunkStateOfNeighbors();
     public Block GetBlock(Vector3D<int> blockPosition) => GetBlock(blockPosition.X, blockPosition.Y, blockPosition.Z);
     public Block GetBlock(int x, int y, int z) => chunkStrategy.GetBlock(x, y, z);

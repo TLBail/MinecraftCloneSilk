@@ -1,6 +1,5 @@
 ﻿namespace MinecraftCloneSilk.Model.NChunk;
 
-[Flags]
 public enum ChunkState
 {
     UNKNOW = 0,
@@ -17,6 +16,7 @@ public enum ChunkState
     DRAWABLE = 1024
 }
 
+// ReSharper disable BitwiseOperatorOnEnumWithoutFlags
 public static class ChunkStateTools
 {
     public const ChunkState ALLLOADED = ChunkState.STORAGELOADED | ChunkState.GENERATEDTERRAIN | ChunkState.BLOCKGENERATED | ChunkState.LIGHTING | ChunkState.DRAWABLE;
@@ -28,6 +28,6 @@ public static class ChunkStateTools
                                          ChunkState.DRAWLOADING;
     
     public static bool IsChunkIsLoading(ChunkState chunkstate) {
-        return (chunkstate & ALLLOADING) > 0;
+        return (chunkstate & ALLLOADING) != 0;
     }
 }

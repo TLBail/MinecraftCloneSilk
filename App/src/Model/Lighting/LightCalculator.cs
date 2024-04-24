@@ -95,7 +95,7 @@ public class LightCalculator
             for (int x = 0; x < Chunk.CHUNK_SIZE; x++) {
                 for (int y = 0; y < Chunk.CHUNK_SIZE; y++) {
                     for (int z = 0; z < Chunk.CHUNK_SIZE; z++) {
-                        blocks[x,y,z].SetSkyLightLevel(0);
+                        blocks[x,y,z].SetSkyLightLevel(15);
                     }
                 }
             }

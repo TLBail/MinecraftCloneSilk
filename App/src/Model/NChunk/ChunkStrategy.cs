@@ -77,23 +77,29 @@ public abstract class ChunkStrategy
 
         FaceExtended? faceExtended = FaceFlagUtils.GetFaceExtended(faceFlag);
         if (faceExtended is not null) {
-            chunk.chunksNeighbors![(int)faceExtended].chunkData.SetBlock(blockData, x, y, z);
+            Chunk neighbor = chunk.chunksNeighbors![(int)faceExtended];
+            BlockData oldBlockData = neighbor.chunkData.GetBlock(x, y, z);
+            neighbor.chunkData.SetBlock(blockData, x, y, z);
+            if (!oldBlockData.Equals(blockData)) {
+                neighbor.blockModified = true;
+                ChunkFaceUtils.OnBlockSet(ref neighbor.chunkFace, oldBlockData, blockData, x, y, z);
+            }
         } else {
             chunk.chunkData.SetBlock(blockData,x, y, z);
+            chunk.blockModified = true;
         }
     }
 
-    public virtual void UpdateChunkVertex() {
-    }
 
-    public virtual void Draw(GL gl, double deltaTime) {
-    }
+    public virtual void UpdateChunkVertex() { } // happen a lot => menfou
+
+    public virtual void Draw(GL gl, double deltaTime) => throw new Exception("try to draw a chunk that is not ready to be drawn"); 
 
     public virtual void SetBlock(int x, int y, int z, string name) {
         BlockData oldBlockData = chunk.chunkData.GetBlock(x,y,z);
         BlockData newBlockData = Chunk.blockFactory!.GetBlockData(name);
         chunk.chunkData.SetBlock(newBlockData,x, y, z);
-        UpdateChunkFaces();
+        ChunkFaceUtils.OnBlockSet(ref chunk.chunkFace, oldBlockData, newBlockData, x, y, z);
         OnBlockSet(x, y, z, oldBlockData, newBlockData);
     }
 
@@ -163,7 +169,6 @@ public abstract class ChunkStrategy
         }
     }
 
-
     public void UpdateChunkFaces() {
         chunk.chunkFace = ChunkFaceUtils.GetChunkFaceFlags(Chunk.blockFactory!, chunk.chunkData);
     }
@@ -174,6 +179,22 @@ public abstract class ChunkStrategy
     public virtual ReadOnlySpan<CubeVertex> GetVertices() {
         throw new Exception("not availabe for this chunk state : " + chunk.chunkState.ToString());
     }
+    
+    protected void SetupNeighbors() {
+        chunk.chunksNeighbors = new Chunk[26];
+        foreach (FaceExtended face in FaceExtendedConst.FACES) {
+            Vector3D<int> position = chunk.position + (FaceExtendedOffset.GetOffsetOfFace(face) * Chunk.CHUNK_SIZE);
+            System.Diagnostics.Debug.Assert(chunk.chunkManager.ContainChunk(position),
+                "chunk must be already generated");
+            Chunk newChunk = chunk.chunkManager.GetChunk(position);
+            System.Diagnostics.Debug.Assert(
+                newChunk.chunkState >= MinimumChunkStateOfNeighbors(),
+                " chunk must be at least at the same state as the minimum chunk state of neighborsh"
+            );
+            chunk.chunksNeighbors[(int)face] = newChunk;
+        }
+    }
+
 
     public virtual void Load() { }
 

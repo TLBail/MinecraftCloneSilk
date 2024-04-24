@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.IO.Compression;
+using System.Numerics;
 using System.Text;
 using MinecraftCloneSilk.Model.ChunkManagement;
 using MinecraftCloneSilk.Model.NChunk;
@@ -10,6 +11,8 @@ namespace MinecraftCloneSilk.Model.Storage;
 public class ChunkStorage : IChunkStorage
 {
     private readonly string pathToChunkFolder;
+    
+    public const int CURRENT_VERSION = 2;
 
 
     public string PathToChunk(Vector3D<int> position) =>
@@ -48,10 +51,11 @@ public class ChunkStorage : IChunkStorage
 
     public static void SaveChunk(Stream stream, Chunk chunk) {
         using BinaryWriter binaryWriter = new BinaryWriter(stream, Encoding.UTF8, true);
-        int version = 1;
+        int version = CURRENT_VERSION;
         binaryWriter.Write(version);
         Debug.Assert(!ChunkStateTools.IsChunkIsLoading(chunk.chunkState), "try to save a chunk that is loading");
-        byte chunkState = chunk.chunkState > ChunkState.BLOCKGENERATED ? (byte)ChunkState.BLOCKGENERATED : (byte)chunk.chunkState;
+        Debug.Assert(chunk.chunkState != ChunkState.EMPTY || chunk.chunkState != ChunkState.UNKNOW, "try to save a chunk that have a strange state");
+        byte chunkState = (byte)BitOperations.Log2((uint)(chunk.chunkState > ChunkState.BLOCKGENERATED ? ChunkState.BLOCKGENERATED : chunk.chunkState));
         binaryWriter.Write(chunkState);
         int tick = 0; //Todo specify tick
         binaryWriter.Write(tick);
@@ -122,8 +126,8 @@ public class ChunkStorage : IChunkStorage
     
     public static ChunkState GetChunkStateInStorage(Stream stream) {
         using BinaryReader br = new BinaryReader(stream, Encoding.UTF8, true);
-        br.ReadInt32(); //version
-        return (ChunkState) br.ReadByte();
+        if(br.ReadInt32() != CURRENT_VERSION) throw new Exception("bad version of chunk");
+        return (ChunkState) (1 << br.ReadByte());
     }
     
     
@@ -141,7 +145,7 @@ public class ChunkStorage : IChunkStorage
 
     public static void LoadBlocks(Stream stream, Chunk chunk) {
         using BinaryReader br = new BinaryReader(stream, Encoding.UTF8, true);
-        br.ReadInt32(); //version
+        if(br.ReadInt32() != CURRENT_VERSION) throw new Exception("bad version of chunk");
         br.ReadByte(); // chunkState
         br.ReadInt32(); // tick
         

@@ -79,8 +79,8 @@ public class ChunkStorageTest
         using FileStream fs = File.Open(chunkStorage.PathToChunk(chunk.position), FileMode.Open);
         using ZLibStream zs = new ZLibStream(fs, CompressionMode.Decompress, false);
         using BinaryReader br = new BinaryReader(zs);
-        Assert.That(br.ReadInt32(), Is.EqualTo(1), "version of file");
-        Assert.That(br.ReadByte(), Is.EqualTo((byte) chunk.chunkState), "chunkState");
+        Assert.That(br.ReadInt32(), Is.EqualTo(ChunkStorage.CURRENT_VERSION), "version of file");
+        Assert.That(1 << br.ReadByte(), Is.EqualTo((byte) chunk.chunkState), "chunkState");
         Assert.That(br.ReadInt32(), Is.EqualTo(0), "tick of chunk");
         int nbBlock = br.ReadInt32();
 
