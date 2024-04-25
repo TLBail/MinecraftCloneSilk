@@ -75,7 +75,7 @@ public class RegionBuffer : IDisposable
         
         
         // compute shadere 
-        computeShader = new ComputeShader(gl, "Shader/computeChunk.glsl");
+        computeShader = new ComputeShader(gl, Generated.FilePathConstants.Shader.computeChunk_glsl);
         computeShader.Use();
 
         //init bindings

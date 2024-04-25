@@ -24,11 +24,10 @@ public class ChunkBlockGeneratedStrategy : ChunkStrategy
     public override void Load() {
         GenerateStruture();
         chunk.blockModified = true;
-        UpdateChunkFaces();
     }
 
     public override void Finish() {
-
+        UpdateChunkFaces();
 #if DEBUG
         //verify block are well lighted
         for (int x = 0; x < Chunk.CHUNK_SIZE; x++) {

@@ -62,8 +62,8 @@ public class Line : IDisposable
         vao.VertexAttributePointer(1, 3, VertexAttribPointerType.Float, "color");
 
         if (rayShader == null) {
-            rayShader = new Shader(gl, "./Shader/3dPosOneColorUni/VertexShader.glsl",
-                "./Shader/3dPosOneColorUni/FragmentShader.glsl");
+            rayShader = new Shader(gl, Generated.FilePathConstants.__Shader_3dPosOneColorUni.VertexShader_glsl,
+                Generated.FilePathConstants.__Shader_3dPosOneColorUni.FragmentShader_glsl);
         }   
     }
 

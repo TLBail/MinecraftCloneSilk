@@ -126,7 +126,8 @@ public class ChunkStorage : IChunkStorage
     
     public static ChunkState GetChunkStateInStorage(Stream stream) {
         using BinaryReader br = new BinaryReader(stream, Encoding.UTF8, true);
-        if(br.ReadInt32() != CURRENT_VERSION) throw new Exception("bad version of chunk");
+        int version = br.ReadInt32();
+        if(version != CURRENT_VERSION) throw new Exception("bad version of chunk :" + version + " expected :" + CURRENT_VERSION);
         return (ChunkState) (1 << br.ReadByte());
     }
     

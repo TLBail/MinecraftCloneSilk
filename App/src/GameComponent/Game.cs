@@ -108,8 +108,8 @@ public sealed class Game
     }
 
     private void InitShaders(GL gl) {
-        Shader chunkShader = new Shader(gl, "./Shader/World/VertexShader.glsl",
-            "./Shader/World/FragmentShader.glsl");
+        Shader chunkShader = new Shader(gl, Generated.FilePathConstants.__Shader_World.VertexShader_glsl,
+            Generated.FilePathConstants.__Shader_World.FragmentShader_glsl);
         chunkShader.Use();
         chunkShader.SetUniform("texture1", 0);
         Chunk.InitStaticMembers(chunkShader, BlockFactory.GetInstance(), gl);

@@ -28,12 +28,12 @@ public class ItemBarUi : UiWindow
 
     protected override void Start() {
         var dic = BlockFactory.GetInstance().blocks;
-        texture = new Texture(game.GetGl(), "./Assets/blocks/stone.png");
+        texture = new Texture(game.GetGl(), Generated.FilePathConstants.Blocks.stone_png);
         textures = new Texture[dic.Count - 1];
         int index = 0;
         foreach (var keyValue in dic) {
             if (!keyValue.Value.name.Equals(BlockFactory.AIR_BLOCK)) {
-                textures[index] = new Texture(game.GetGl(), "./Assets/blocks/" + keyValue.Value.name + ".png");
+                textures[index] = new Texture(game.GetGl(), Generated.FilePathConstants.Blocks.DirectoryPath + "/"+ keyValue.Value.name + ".png");
                 index++;
             }
         }

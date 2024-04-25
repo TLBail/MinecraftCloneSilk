@@ -16,7 +16,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <AdditionalFiles Include="..\Assets\**\*.*" />
+    <AdditionalFiles Include="..\Assets\**">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </AdditionalFiles>
   </ItemGroup>
 
   <ItemGroup>

@@ -38,11 +38,10 @@ public class BlockFactory
 
     public const string  AIR_BLOCK = "airblock";
     public const  int AIR_BLOCK_ID = 0;
-    private const string PATH_TO_JSON = "./Assets/blocks/json/";
 
     
     private BlockFactory() {
-        string[] files = Directory.GetFiles(PATH_TO_JSON);
+        string[] files = Directory.GetFiles(Generated.FilePathConstants.__Blocks_json.DirectoryPath);
         AddBlock(new Block(Vector3D<int>.Zero));
         foreach(string filepath in files)
         {

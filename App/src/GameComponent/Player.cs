@@ -36,6 +36,8 @@ namespace MinecraftCloneSilk.GameComponent
                     "player position has been set at (" + position.X + "," + position.Y + "," + position.Z + ")");
             }
         }
+
+        public Player(Game game) : this(game, Vector3.Zero){}
         public Player(Game game, Vector3 position) : base(game)
         {
             //Start a camera at position 3 on the Z axis, looking at position -1 on the Z axis

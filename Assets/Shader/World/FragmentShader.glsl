@@ -19,7 +19,7 @@ void main()
         discard;
         
     float skyLight = (float(skyLightLevel) / 15.0) * ambientStrength;
-    float lightMultiplier = max(float(lightLevel) / 15.0, skyLight);    
+    float lightMultiplier = max(max(float(lightLevel) / 15.0, skyLight), 0.05);    
     texColor.rgb *= lightMultiplier;
     texColor.rgb *= ambiantOcclusion;
     

@@ -39,13 +39,13 @@ using System;
 
 namespace Generated
 {
-    public static class FilePathConstants
+    namespace FilePathConstants
     {
 ");
             // Générer des sous-classes pour chaque dossier
             foreach (var directoryEntry in filesByDirectory)
             {
-                var directoryName = Path.GetFileName(directoryEntry.Key);
+                var directoryName = GetRelativePath(directoryEntry.Key, "Assets");
                 var className = SanitizeIdentifier(directoryName);
                 var directoryPath = GetRelativePath(directoryEntry.Key, "Assets").Replace("\\", "\\\\"); // Échappe les backslashes pour le code généré
                 classBuilder.AppendLine($"        public static class {className}");
@@ -77,7 +77,7 @@ namespace Generated
         private string GetRelativePath(string fullPath, string afterFolder)
         {
             var segments = fullPath.Split(Path.DirectorySeparatorChar);
-            var afterFolderIndex = Array.IndexOf(segments, afterFolder);
+            var afterFolderIndex = Array.IndexOf(segments, afterFolder) + 1;
             if (afterFolderIndex >= 0 && afterFolderIndex < segments.Length - 1)
             {
                 // Construit un chemin relatif à partir des segments après le dossier spécifié
@@ -85,7 +85,7 @@ namespace Generated
                 relativeSegments.Insert(0,".\\");
                 return Path.Combine(relativeSegments.ToArray());
             }
-            return Path.GetFileNameWithoutExtension(fullPath);
+            return Path.GetFileName(fullPath);
         }
 
         private string SanitizeIdentifier(string identifier)

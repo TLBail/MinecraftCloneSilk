@@ -67,7 +67,8 @@ public class TextureRenderer : Component
 
     public override void Start() {
         GL gl = gameObject.game.GetGl();
-        shader = new Shader(gl, "./Shader/3dTextUni/VertexShader.glsl", "./Shader/3dTextUni/FragmentShader.glsl");
+        shader = new Shader(gl, Generated.FilePathConstants.__Shader_3dTextUni.VertexShader_glsl, 
+            Generated.FilePathConstants.__Shader_3dTextUni.FragmentShader_glsl);
         ebo = new BufferObject<uint>(gl, indices, BufferTargetARB.ElementArrayBuffer);
         vbo = new BufferObject<TexVertex>(gl,4, BufferTargetARB.ArrayBuffer, BufferUsageARB.StaticDraw);
         vao = new VertexArrayObject<TexVertex, uint>(gl, vbo, ebo);

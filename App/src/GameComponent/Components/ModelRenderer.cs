@@ -27,7 +27,8 @@ public class ModelRenderer : Component
         GL gl = gameObject.game.GetGl();
         
         
-        shader = new Shader(gl, "./Shader/3dPosNormColor/VertexShader.glsl", "./Shader/3dPosNormColor/FragmentShader.glsl");
+        shader = new Shader(gl, Generated.FilePathConstants.__Shader_3dPosNormColor.VertexShader_glsl,
+            Generated.FilePathConstants.__Shader_3dPosNormColor.FragmentShader_glsl);
 
         scene = Scene.Load(gl,filePath, shader)!;
     }

@@ -21,8 +21,8 @@ public class StartingWindow : UiWindow
     
     public StartingWindow(Game game, Key? key) : base(game, key) {
         windowFlags = ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoSavedSettings;
-        selectionEffect = new AudioEffect("Assets/Audio/selection.ogg");
-        hoverEffect = new AudioEffect("Assets/Audio/hover.ogg");
+        selectionEffect = new AudioEffect(Generated.FilePathConstants.Audio.selection_ogg);
+        hoverEffect = new AudioEffect(Generated.FilePathConstants.Audio.hover_ogg);
         Button.ButtonStyle buttonStyle = new(
             new Vector4(0.2f, 0.2f, 0.2f, 1.0f), // Fond foncé
             new Vector4(0.3f, 0.3f, 0.3f, 1.0f), // Plus clair au survol
