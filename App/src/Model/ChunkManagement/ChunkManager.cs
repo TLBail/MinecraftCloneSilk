@@ -57,7 +57,7 @@ public class ChunkManager : IChunkManager
         
         List<Chunk> chunksCopy = new List<Chunk>(chunks.Values);
         foreach (Chunk chunk in chunksCopy) {
-            chunkUnloader.ForceUnloadChunk(chunk);
+            chunkUnloader.ForceUnloadChunk(chunkLoader, chunk);
         }
         //Assert chunks is empty
         Debug.Assert(chunks.Count == 0);

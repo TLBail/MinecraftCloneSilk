@@ -80,8 +80,14 @@ public class ChunkUnloader
         return chunkState;
     }
 
-    internal void ForceUnloadChunk(Chunk chunkToUnload) {
-        if(chunkToUnload.IsRequiredByChunkLoader() || chunkToUnload.IsRequiredByChunkSaver()) throw new Exception("chunk required by chunkLoader or chunkSaver");
+    internal void ForceUnloadChunk(ChunkLoader chunkLoader, Chunk chunkToUnload) {
+        if (chunkToUnload.IsRequiredByChunkLoader()) {
+            chunkLoader.UpdateUntilChunkLoaded(chunkToUnload);
+        }
+        Debug.Assert(!chunkToUnload.IsRequiredByChunkLoader());
+        if (chunkToUnload.IsRequiredByChunkSaver()) {
+            throw new Exception("fuck");
+        }
         
         
         if (chunkToUnload.chunkState == ChunkState.DRAWABLE) {
@@ -95,9 +101,9 @@ public class ChunkUnloader
         
         foreach (FaceExtended face in FaceExtendedConst.FACES) {
             Vector3D<int> positionChunkToTest = chunkToUnload.position + (FaceExtendedOffset.GetOffsetOfFace(face) * Chunk.CHUNK_SIZE);
-            if (chunkManager.chunks.TryGetValue(positionChunkToTest, out Chunk chunk) &&
-                         chunk.GetMinimumChunkStateOfNeighbors() > ChunkState.EMPTY) {
-                ForceUnloadChunk(chunk);
+            if (chunkManager.chunks.TryGetValue(positionChunkToTest, out Chunk neighbor) &&
+                         neighbor.GetMinimumChunkStateOfNeighbors() > ChunkState.EMPTY) {
+                ForceUnloadChunk(chunkLoader, neighbor);
             }
         }
         

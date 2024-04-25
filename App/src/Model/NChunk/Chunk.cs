@@ -45,6 +45,9 @@ public class Chunk
     private AABBCube aabbCube;
 
     public List<ChunkLoadingTask> chunkTaskOfChunk = new();
+    
+    public event Action OnChunkFinishLoading;
+    public event Action OnChunkFinishSaving;
 
     public Chunk(Vector3D<int> position, IChunkManager chunkManager, IWorldGenerator worldGenerator, IChunkStorage chunkStorage, IChunkLightManager chunkLightManager) {
         this.chunkState = DEFAULTSTARTINGCHUNKSTATE;
@@ -207,11 +210,23 @@ public class Chunk
 
     public bool IsRequiredByChunkLoader() => chunkTaskOfChunk.Count > 0;
     public void AddRequiredByChunkLoader(ChunkLoadingTask chunkLoadingTask) => chunkTaskOfChunk.Add(chunkLoadingTask);
-    public void RemoveRequiredByChunkLoader(ChunkLoadingTask chunkLoadingTask) => chunkTaskOfChunk.Remove(chunkLoadingTask);
+
+    public void RemoveRequiredByChunkLoader(ChunkLoadingTask chunkLoadingTask) {
+        chunkTaskOfChunk.Remove(chunkLoadingTask);   
+        if(chunkTaskOfChunk.Count == 0) {
+            OnChunkFinishLoading?.Invoke();
+        }
+    }
     
     public bool IsRequiredByChunkSaver() => requiredByChunkSaver > 0;
     public void AddRequiredByChunkSaver() => Interlocked.Increment(ref requiredByChunkSaver);
-    public void RemoveRequiredByChunkSaver() => Interlocked.Decrement(ref requiredByChunkSaver);
+
+    public void RemoveRequiredByChunkSaver() {
+        Interlocked.Decrement(ref requiredByChunkSaver);
+        if(requiredByChunkSaver == 0) {
+            OnChunkFinishSaving?.Invoke();
+        }
+    }
     
     public AABBCube GetAABBCube() => aabbCube;
     

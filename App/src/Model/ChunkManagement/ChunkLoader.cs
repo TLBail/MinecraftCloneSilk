@@ -91,15 +91,32 @@ public class ChunkLoader
             oldLoader = chunkTaskLoader;
             chunkTaskLoader = new ChunkTaskLoaderSync(this);
         }
-        while(chunkTasks.Count > 0) {
-            UpdateJob();
+        while(chunkTasks.Count > 0 || chunksToFinish.Count > 0) {
+            if(chunkTasks.Count > 0) UpdateJob();
             while(chunksToFinish.Count > 0) {
                 FinishJob();
             }
         }
-        if (oldLoader is not null) {
-            chunkTaskLoader = oldLoader;
+        if (oldLoader is not null) chunkTaskLoader = oldLoader;
+    }
+
+    public void UpdateUntilChunkLoaded(Chunk chunkToLoad) {
+        bool finishLoading = false;
+        Action a = () => finishLoading = true;
+        chunkToLoad.OnChunkFinishLoading += a;
+        ChunkTaskLoader? oldLoader = null;
+        if (chunkTaskLoader is ChunkTaskLoaderAsync) {
+            oldLoader = chunkTaskLoader;
+            chunkTaskLoader = new ChunkTaskLoaderSync(this);
         }
+        while((chunkTasks.Count > 0 || chunksToFinish.Count > 0) && !finishLoading) {
+            if(chunkTasks.Count > 0) UpdateJob();
+            while(chunksToFinish.Count > 0) {
+                FinishJob();
+            }
+        }
+        if (oldLoader is not null) chunkTaskLoader = oldLoader;
+        chunkToLoad.OnChunkFinishLoading -= a;
     }
 
     private void UpdateJob() {
