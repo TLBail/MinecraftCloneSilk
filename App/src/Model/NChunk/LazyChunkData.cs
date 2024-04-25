@@ -20,7 +20,7 @@ public class LazyChunkData : IChunkData
     private BlockData[,,]? blocks;
     private BlockData block = new BlockData();
 
-    public BlockData GetBlock(in int x = 0,in int y = 0,in int z = 0) {
+    public BlockData GetBlock(int x = 0,int y = 0,int z = 0) {
         return IsOnlyOneBlock() ? block : blocks![x, y, z];
     }
     
@@ -38,7 +38,7 @@ public class LazyChunkData : IChunkData
         return MemoryMarshal.CreateSpan(ref Unsafe.As<byte, BlockData>(ref reference), blocks!.Length);
     }
    
-    public void SetBlock(in BlockData block,in int x = 0,in int y = 0,in int z = 0) {
+    public void SetBlock(BlockData block,int x = 0,int y = 0,int z = 0) {
         if(IsOnlyOneBlock() && block.id == this.block.id) return;
         if(IsOnlyOneBlock() && block.id != this.block.id) {
             InstanciateArray();

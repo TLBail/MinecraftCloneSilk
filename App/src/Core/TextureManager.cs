@@ -43,6 +43,7 @@ public class TextureManager
     
     public void Load(GL gl) {
         textures.Clear();
+        Console.WriteLine(Generated.FilePathConstants.Assets.textures_json);
         string jsonString = File.ReadAllText(Generated.FilePathConstants.Assets.textures_json);
         TexturesJson? textJson = JsonSerializer.Deserialize<TexturesJson>(jsonString);
         if (textJson == null) {

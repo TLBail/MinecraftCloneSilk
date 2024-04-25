@@ -68,13 +68,16 @@ public class ChunkBlockGeneratedStrategy : ChunkStrategy
 
     private void GenerateStruture() {
         int idGrass = Chunk.blockFactory!.GetBlockIdByName("grass");
+        int idSand = Chunk.blockFactory!.GetBlockIdByName("sand");
         BlockData[,,] blocks = chunk.chunkData.GetBlocks();
         for (int x = 0; x < Chunk.CHUNK_SIZE; x++) {
             for (int y = 0; y < Chunk.CHUNK_SIZE; y++) {
                 for (int z = 0; z < Chunk.CHUNK_SIZE; z++) {
-                    if (blocks[x, y, z].id == idGrass &&
-                        chunk.worldGenerator.HaveTreeOnThisCoord(chunk.position.X + x, chunk.position.Z + z)) {
+                    if ((blocks[x, y, z].id == idGrass ||
+                         blocks[x,y,z].id == idSand)&&
+                        chunk.worldGenerator.HaveTreeOnThisCoord(chunk.position.X + x,chunk.position.Y + y, chunk.position.Z + z)) {
                         addTreeOnThisBlock(x, y, z);
+                        
                     }
                 }
             }
@@ -84,18 +87,21 @@ public class ChunkBlockGeneratedStrategy : ChunkStrategy
    
 
     private void addTreeOnThisBlock(int x, int y, int z) {
-        //Todo remove this check
-        if (treeStructure == null) throw new InvalidOperationException("treeStructure is not initialized.");
-        if (Chunk.blockFactory == null) throw new InvalidOperationException("blockFactory is not initialized.");
-
+        StructureBlock[] structure;
+        if (chunk.worldGenerator.IsDesert(chunk.position.X + x, chunk.position.Z + z)) {
+            structure = palmTreeStructure;
+        } else {
+            structure = treeStructure;
+        }
         
-        foreach (var strucutreBlock in treeStructure) {
+        foreach (var strucutreBlock in structure) {
             SetBlockData(x + strucutreBlock.x, y + strucutreBlock.y, z + strucutreBlock.z,
                 Chunk.blockFactory!.GetBlockData(strucutreBlock.id));
         }
     }
 
     private record struct StructureBlock(short x, short y, short z, short id);
+    
 
     private static StructureBlock[] treeStructure = new StructureBlock[]
     {
@@ -145,5 +151,54 @@ public class ChunkBlockGeneratedStrategy : ChunkStrategy
         new StructureBlock(-1, 4, 2, 18),
         new StructureBlock(1, 4, -2, 18),
         new StructureBlock(-1, 4, -2, 18),
+    };
+    
+    private static StructureBlock[] palmTreeStructure = new StructureBlock[]
+    {
+        // Tronc
+        new(0, 1, 0, 6),
+        new(0, 2, 0, 6),
+        new(0, 3, 0, 6),
+        new(0, 4, 0, 6),
+        new(0, 5, 0, 6),
+        new(0, 6, 0, 6),
+        new(0, 7, 0, 6),
+        new(0, 8, 0, 6),
+        new(0, 9, 0, 6),
+        
+        //top foliage
+        new (0,10,0, 18),
+        
+        // forward foliage
+        new (0,10, 1, 18),
+        new (0,9, 1, 18),
+        new (0,9, 2, 18),
+        new (0,9, 3, 18),
+        new (0,8, 4, 18),
+        new (0,7, 4, 18),
+        
+        // Backward foliage (mirror of forward)
+        new StructureBlock(0, 10, -1, 18),
+        new StructureBlock(0, 9, -1, 18),
+        new StructureBlock(0, 9, -2, 18),
+        new StructureBlock(0, 9, -3, 18),
+        new StructureBlock(0, 8, -4, 18),
+        new StructureBlock(0, 7, -4, 18),
+
+        // Left foliage (rotate forward 90 degrees counterclockwise)
+        new StructureBlock(-1, 10, 0, 18),
+        new StructureBlock(-1, 9, 0, 18),
+        new StructureBlock(-2, 9, 0, 18),
+        new StructureBlock(-3, 9, 0, 18),
+        new StructureBlock(-4, 8, 0, 18),
+        new StructureBlock(-4, 7, 0, 18),
+
+        // Right foliage (rotate forward 90 degrees clockwise)
+        new StructureBlock(1, 10, 0, 18),
+        new StructureBlock(1, 9, 0, 18),
+        new StructureBlock(2, 9, 0, 18),
+        new StructureBlock(3, 9, 0, 18),
+        new StructureBlock(4, 8, 0, 18),
+        new StructureBlock(4, 7, 0, 18),
     };
 }

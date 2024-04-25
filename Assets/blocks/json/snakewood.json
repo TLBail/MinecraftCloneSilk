@@ -1,0 +1,32 @@
+{
+    "name": "snakewood",
+    "transparent": true,
+    "lightEmitting": 0,
+    "id": 6,
+    "texture": {
+        "TOP": [
+            2,
+            6
+        ],
+        "BOTTOM": [
+            2,
+            6
+        ],
+        "LEFT": [
+            0,
+            6
+        ],
+        "RIGHT": [
+            0,
+            6
+        ],
+        "FRONT": [
+            0,
+            6
+        ],
+        "BACK": [
+            0,
+            6
+        ]
+    }
+}

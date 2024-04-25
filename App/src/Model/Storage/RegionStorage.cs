@@ -65,7 +65,7 @@ public class RegionStorage : IChunkStorage, IDisposable
             //Todo fix this
             //Debug.Assert(GetChunkStateInStorage(tx, chunk.position) == chunk.chunkStateInStorage);
             //Debug.Assert(GetChunkStateInStorage(tx, chunk.position) <= chunk.chunkState, $"erreur : chunkState in storage:{GetChunkStateInStorage(tx, chunk.position)} is higher than chunkState:{chunk.chunkState}");
-            Debug.Assert(!ChunkStateTools.IsChunkIsLoading(chunk.chunkState), "bad chunk state in storage 💾");
+            Debug.Assert(!ChunkStateTools.IsChunkIsLoading(chunk.chunkState), $"try to save chunk with bad chunk state 💾 : {chunk.chunkState}");
             MathHelper.EncodeVector3Int(mykey, chunk.position.X, chunk.position.Y, chunk.position.Z); 
             MemoryStream stream = new MemoryStream();
             ChunkStorage.SaveChunk(stream, chunk);
