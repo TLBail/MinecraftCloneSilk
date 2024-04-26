@@ -131,7 +131,7 @@ public class LightCalculator
                     }
                 }
             } else {
-                Debug.Assert(topChunk.chunkState >= ChunkState.LIGHTING);
+                Debug.Assert(topChunk.chunkState >= ChunkState.LIGHTING); //Todo has fail
                 BlockData[,,] topBlocks = topChunk.chunkData.GetBlocks();
                 for (int x = 0; x < Chunk.CHUNK_SIZE; x++) {
                     for (int z = 0; z < Chunk.CHUNK_SIZE; z++) {

@@ -66,7 +66,7 @@ public class WorldFlatGeneration : IWorldGenerator
         return false;
     }
 
-    public bool IsDesert(int positionX, int positionZ) {
+    public bool IsDesert(int positionX,int positionY, int positionZ) {
         return false;
     }
 }

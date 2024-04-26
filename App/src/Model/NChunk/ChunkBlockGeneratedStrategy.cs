@@ -88,7 +88,7 @@ public class ChunkBlockGeneratedStrategy : ChunkStrategy
 
     private void addTreeOnThisBlock(int x, int y, int z) {
         StructureBlock[] structure;
-        if (chunk.worldGenerator.IsDesert(chunk.position.X + x, chunk.position.Z + z)) {
+        if (chunk.worldGenerator.IsDesert(chunk.position.X + x,chunk.position.Y + y, chunk.position.Z + z)) {
             structure = palmTreeStructure;
         } else {
             structure = treeStructure;

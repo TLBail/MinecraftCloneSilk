@@ -55,6 +55,7 @@ public class RegionStorage : IChunkStorage, IDisposable
     public void SaveChunkAsync(Chunk chunk) {
         chunk.AddRequiredByChunkSaver();
         chunksToSave.Add(chunk);
+        Debug.Assert(!chunk.IsRequiredByChunkLoader());
     }
 
     [Logger.Timer]

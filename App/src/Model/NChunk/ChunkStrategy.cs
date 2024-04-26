@@ -82,7 +82,17 @@ public abstract class ChunkStrategy
             neighbor.chunkData.SetBlock(blockData, x, y, z);
             if (!oldBlockData.Equals(blockData)) {
                 neighbor.blockModified = true;
+                if (!neighbor.chunkFace.HasValue && neighbor.chunkState >= ChunkState.BLOCKGENERATED) {
+                    System.Diagnostics.Debug.Fail("chunk face must be set before init chunk faces");
+                    Console.WriteLine("chunk face must be set before init chunk faces" + neighbor);
+                }
                 ChunkFaceUtils.OnBlockSet(ref neighbor.chunkFace, oldBlockData, blockData, x, y, z);
+                if (!neighbor.chunkFace.HasValue && neighbor.chunkState >= ChunkState.BLOCKGENERATED) {
+                    System.Diagnostics.Debug.Fail("ChunkFaceUtils must give a value");
+                    Console.WriteLine("ChunkFaceUtils must give a value" + neighbor);
+                }
+
+                
             }
         } else {
             chunk.chunkData.SetBlock(blockData,x, y, z);

@@ -21,6 +21,9 @@ public class WorldNaturalGeneration : IWorldGenerator
     
     
     private FastNoiseLite treeNoiseGenerator;
+
+    private FastNoiseLite caveNoiseGenerator;
+    private FastNoiseLite caveNoiseGenerator2;
     
     /**
      * humidityNoiseGenerator
@@ -33,7 +36,7 @@ public class WorldNaturalGeneration : IWorldGenerator
     private FastNoiseLite diamondNoiseGenerator;
     
 
-    public WorldNaturalGeneration(int seed = 1234) {
+    public WorldNaturalGeneration(int seed = 1534) {
         this.seed = seed;
         noiseGenerator = new FastNoiseLite(seed);
         noiseGenerator.SetNoiseType(FastNoiseLite.NoiseType.Perlin);
@@ -43,13 +46,22 @@ public class WorldNaturalGeneration : IWorldGenerator
         noiseGenerator.SetFractalGain(0.9f);
         noiseGenerator.SetFrequency(0.0015f);
         
+        caveNoiseGenerator = new FastNoiseLite(seed + 1);
+        caveNoiseGenerator.SetNoiseType(FastNoiseLite.NoiseType.OpenSimplex2);
+        caveNoiseGenerator.SetFrequency(0.015f);
+        caveNoiseGenerator2 = new FastNoiseLite(seed + 324135);
+        caveNoiseGenerator2.SetNoiseType(FastNoiseLite.NoiseType.OpenSimplex2);
+        caveNoiseGenerator2.SetFrequency(0.025f);
+
+
+        
         conantinalnessNoiseGenerator = new FastNoiseLite(seed);
         conantinalnessNoiseGenerator.SetNoiseType(FastNoiseLite.NoiseType.Perlin);
-        conantinalnessNoiseGenerator.SetFrequency(0.0002f);
+        conantinalnessNoiseGenerator.SetFrequency(0.0001f);
         
         amplitudeNoiseGenerator = new FastNoiseLite(seed * 2);
         amplitudeNoiseGenerator.SetNoiseType(FastNoiseLite.NoiseType.Perlin);
-        amplitudeNoiseGenerator.SetFrequency(0.0005f);
+        amplitudeNoiseGenerator.SetFrequency(0.0002f);
         
         treeNoiseGenerator = new FastNoiseLite(seed * 3);
         treeNoiseGenerator.SetNoiseType(FastNoiseLite.NoiseType.Perlin);
@@ -75,15 +87,16 @@ public class WorldNaturalGeneration : IWorldGenerator
         
     }
 
-    private float GetThresholdAir(int globalX, int globalY, int globalZ) {
+    private float GetThresholdAir(int globalX, int globalY, int globalZ, float amplitudeNoise) {
         float cotenitalness = conantinalnessNoiseGenerator.GetNoise(globalX, globalY, globalZ);
-        cotenitalness = Math.Abs(cotenitalness) * 500;
-        cotenitalness -= 50;
+        cotenitalness = Math.Abs(cotenitalness) * 1000;
+        cotenitalness -= 100;
         globalY -= (int)cotenitalness;
         
-        float amplitudeNoise = amplitudeNoiseGenerator.GetNoise(globalX, globalY, globalZ);
-        float amplitude = 100.0f; // define the amplitude of the noise  lower = more flat
-        amplitude += amplitudeNoise * 200;
+        // define the amplitude of the noise  lower = more flat
+        
+        float amplitude = Math.Abs(amplitudeNoise) * 1000; //amplitube must be >0 
+        
         
         float threasholdAir = -0.2f;
         threasholdAir += globalY / amplitude;
@@ -95,15 +108,33 @@ public class WorldNaturalGeneration : IWorldGenerator
             for (int y = Chunk.CHUNK_SIZE - 1; y >= 0; y--) {
                 for (int z = 0; z < Chunk.CHUNK_SIZE; z++) {
                     int globalY = y + position.Y;
-                    float noise = noiseGenerator.GetNoise(position.X + x, globalY, position.Z + z);
-                    float threasholdAir = GetThresholdAir(position.X + x, globalY, position.Z + z);
+                    int globalX = x + position.X;
+                    int globalZ = z + position.Z;
+                    float noise = noiseGenerator.GetNoise(globalX, globalY, globalZ);
+                    float amplitudeNoise = amplitudeNoiseGenerator.GetNoise(globalX, globalY, globalZ);
+                    float threasholdAir = GetThresholdAir(globalX, globalY, globalZ, amplitudeNoise);
                     
-                    if (globalY < -60) {
-                        threasholdAir = -0.2f;
-                        
-                        
-                        if (noise >= threasholdAir) {
-                            noise = diamondNoiseGenerator.GetNoise(position.X + x, globalY, position.Z + z);
+                    
+                    bool isAir = noise <= threasholdAir;   
+                    
+                    if(isAir && globalY <= 0) {
+                        chunkData.SetBlock(water, x,y,z);
+                        continue;
+                    }
+                    if(isAir) continue;
+                    
+                    
+                    float caveNoise = caveNoiseGenerator.GetNoise(globalX, globalY, globalZ);
+                    float caveNoise2 = caveNoiseGenerator2.GetNoise(globalX + 10000, globalY + 10000, globalZ + 10000);
+                    
+                    //make a hole in the surface if near a cave 
+                    if(((noise - threasholdAir < 0.11) && caveNoise >= 0.3 && caveNoise2 >= 0.8f)) continue; 
+                    
+                               
+                    if (noise - threasholdAir > 0.1) { // far from the surface => make a cave
+                        bool caveAir = (caveNoise >= 0.6f) || (caveNoise >= 0.3 && caveNoise2 >= 0.2f) ;
+                        if (!caveAir) {
+                            noise = diamondNoiseGenerator.GetNoise(globalX, globalY, globalZ);
                             float threasholdDiamond = -0.8f;
                             if (noise <= threasholdDiamond) {
                                 chunkData.SetBlock(diamond, x,y,z);
@@ -114,50 +145,30 @@ public class WorldNaturalGeneration : IWorldGenerator
                         continue;
                         
                     }
-                    
-                    bool isAir = noise <= threasholdAir;   
-                    
-                    if(isAir && globalY <= 0) {
-                        chunkData.SetBlock(water, x,y,z);
-                        continue;
-                    }
-                    
-                    if(isAir) continue;
-                    
-                    bool upperBlockIsAir = noiseGenerator.GetNoise(position.X + x, globalY + 1, position.Z + z) <= 
-                                           GetThresholdAir(position.X + x, globalY + 1, position.Z + z);
-                    
-                    
-                    if(upperBlockIsAir) { // have air upper
+              
+                    if (Math.Abs(threasholdAir - noise) < 0.02) { // near surface  =>add terrain decoration
                         if(position.Y + y < -5) {
                             chunkData.SetBlock(stone, x,y,z);
                         } else if (position.Y + y < 5) {
                             chunkData.SetBlock(sand, x,y,z);
-                        } else { 
-                            if(IsDesert(position.X + x, position.Z +z)) {
+                        } else {
+                            if(IsDesert(globalX, globalY, globalZ)) {
                                 chunkData.SetBlock(sand, x,y,z);
                             } else {
-                                chunkData.SetBlock(grass, x,y,z);
-                            }
-                        }
-                    } else {
-                        if (Math.Abs(threasholdAir - noise) < 0.02) { // near air
-                            if(position.Y + y < -5) {
-                                chunkData.SetBlock(stone, x,y,z);
-                            } else if (position.Y + y < 5) {
-                                chunkData.SetBlock(sand, x,y,z);
-                            } else {
-                                if(IsDesert(position.X + x, position.Z +z)) {
-                                    chunkData.SetBlock(sand, x,y,z);
+                                bool upperBlockIsAir = noiseGenerator.GetNoise(globalX, globalY + 1, globalZ) <= 
+                                                       GetThresholdAir(globalX, globalY + 1, globalZ, 
+                                                           amplitudeNoiseGenerator.GetNoise(globalX, globalY+ 1, globalZ));
+                                if (upperBlockIsAir) {
+                                    chunkData.SetBlock(grass, x,y,z);
                                 } else {
                                     chunkData.SetBlock(dirt, x,y,z);
                                 }
+
                             }
-                        } else { // far from air
-                            chunkData.SetBlock(stone, x, y, z);
                         }
+                    } else { // far from air
+                        chunkData.SetBlock(stone, x, y, z);
                     }
-                        
                 }
             }
         }
@@ -170,7 +181,7 @@ public class WorldNaturalGeneration : IWorldGenerator
 
         float humidity = humidityNoiseGenerator.GetNoise(positionX, positionZ);
         float threshold = 0.7f;
-        if (IsDesert(humidity)) {
+        if (IsDesert(humidity, amplitudeNoiseGenerator.GetNoise(positionX,positionY, positionZ))) {
             threshold += 0.1f;
             threshold -= humidity / 5;
         } else {
@@ -181,12 +192,14 @@ public class WorldNaturalGeneration : IWorldGenerator
         
     }
     
-    public bool IsDesert(int positionX, int positionZ) {
+    public bool IsDesert(int positionX,int positionY, int positionZ) {
         float humidity = humidityNoiseGenerator.GetNoise(positionX, positionZ);
-        return IsDesert(humidity);
+        float amplitude = amplitudeNoiseGenerator.GetNoise(positionX,positionY, positionZ);
+        return IsDesert(humidity, amplitude);
     }
-    public bool IsDesert(float humidity) {
-        return humidity < 0f;
+    
+    public bool IsDesert(float humidity, float amplitude) {
+        return humidity < 0f && Math.Abs(amplitude) < 0.5f;
     }
 
     public struct GenerationParameter

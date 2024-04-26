@@ -19,7 +19,7 @@ namespace MinecraftCloneSilk
         private static GameParameter GetClassicScene() {
             List<InitGameData> gameObjectNames = new List<InitGameData>()
             {
-                new (typeof(Player).FullName!, new object[]{new Vector3(0.0f, 10f, 0.0f)}),
+                new (typeof(Player).FullName!, new object[]{new Vector3(600.0f, 50f, 400.0f)}),
                 new (typeof(World).FullName!, new object[]{new WorldNaturalGeneration(1234), WorldMode.SIMPLE }),
                 new (typeof(StartingWindow).FullName!),
                 new (typeof(GeneralInfo).FullName!),
