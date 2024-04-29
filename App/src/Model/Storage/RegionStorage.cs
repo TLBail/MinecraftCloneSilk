@@ -39,7 +39,7 @@ public class RegionStorage : IChunkStorage, IDisposable
         }
         EnvironmentConfiguration envConf = new EnvironmentConfiguration();
         envConf.MaxDatabases = 1;
-        envConf.MapSize = 1L * 1024L * 1024L * 1024L; // 1 GiB Gb * Mb * Kb * b
+        envConf.MapSize = 1024L * 1024L * 1024L * 1024L; // 1024 GiB Gb * Mb * Kb * b
         env = new LightningEnvironment(pathToChunkFolder, envConf);
         env.Open();
         using var tx = env.BeginTransaction();

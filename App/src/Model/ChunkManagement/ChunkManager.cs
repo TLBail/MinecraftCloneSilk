@@ -53,7 +53,7 @@ public class ChunkManager : IChunkManager
     public bool ContainsKey(Vector3D<int> position) => chunks.ContainsKey(position);
 
     public void Clear() {
-        while(chunkLoader.HaveTasks()) chunkLoader.Update();
+        chunkLoader.LoadAllChunks();
         
         List<Chunk> chunksCopy = new List<Chunk>(chunks.Values);
         foreach (Chunk chunk in chunksCopy) {

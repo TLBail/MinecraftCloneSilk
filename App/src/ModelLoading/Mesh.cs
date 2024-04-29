@@ -5,7 +5,7 @@ using PrimitiveType = Silk.NET.OpenGL.PrimitiveType;
 
 namespace MinecraftCloneSilk.ModelLoading;
 
-public class Mesh
+public class Mesh : IDisposable
 {
     public Assimp.Mesh mesh;
     public VertexArrayObject<Vertex, uint> vao;
@@ -69,5 +69,10 @@ public class Mesh
             indices[iIndex++] = (uint) (f.Indices[2]);
         }
     }
-    
+
+    public void Dispose() {
+        vao.Dispose();
+        vbo.Dispose();
+        ebo.Dispose();
+    }
 }

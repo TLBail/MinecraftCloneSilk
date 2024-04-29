@@ -96,7 +96,7 @@ public class ChunkDrawableStrategy : ChunkStrategy
     private void InitChunkFaces() {
         if (!chunk.chunkFace.HasValue) {
             System.Diagnostics.Debug.Fail("chunk face must be set before init chunk faces");
-            Console.WriteLine("chunk face must be set before init chunk faces" + chunk.ToString());
+            Console.WriteLine("Drawable:  chunk face must be set before init chunk faces" + chunk.ToString());
             UpdateChunkFaces();
         }
         

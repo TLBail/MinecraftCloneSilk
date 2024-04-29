@@ -50,7 +50,10 @@ public class ModelRenderer : Component
     }
 
     public void Dispose() {
+        gameObject.game.drawables -= Draw;
+        scene.Dispose();
         shader.Dispose();
+        
     }
     
 }

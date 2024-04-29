@@ -85,9 +85,6 @@ public class StartingWindow : UiWindow
     }
 
     private void Play() {
-        
-        game.FindGameObject<DemoWindow>().Destroy();
-
         game.AddGameObject(new DebugRayManager(game));
         game.AddGameObject(new ConsoleUi(game));
         game.AddGameObject(new ChunkRendererUi(game));
@@ -95,6 +92,7 @@ public class StartingWindow : UiWindow
         game.AddGameObject(new ItemBarUi(game));
         game.AddGameObject(new GameUi(game));
         game.AddGameObject(new PauseMenu(game));
+        
 
         game.FindGameObject<World>().Reset(new WorldNaturalGeneration(1234), WorldMode.DYNAMIC, "Worlds/newWorld");
 

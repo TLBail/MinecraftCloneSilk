@@ -19,6 +19,12 @@ public class ChunkData : IChunkData
         return MemoryMarshal.CreateSpan(ref Unsafe.As<byte, BlockData>(ref reference), blocks!.Length);
     }
 
+    public static Span<BlockData> GetSpan(BlockData[,,] blocks) {
+        ref byte reference = ref MemoryMarshal.GetArrayDataReference(blocks!);
+        return MemoryMarshal.CreateSpan(ref Unsafe.As<byte, BlockData>(ref reference), blocks!.Length);
+    }
+    
+
     public void SetBlock(BlockData block,int x = 0,int y = 0,int z = 0) {
         blocks[x, y, z] = block;
     }

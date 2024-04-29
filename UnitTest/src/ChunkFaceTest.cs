@@ -20,6 +20,15 @@ public class ChunkFaceTest
         chunkFace ^= ChunkFace.TOPOPAQUE;
         Assert.That(chunkFace, Is.EqualTo(ChunkFace.BOTTOMTRANSPARENT | ChunkFace.LEFTOPAQUE | ChunkFace.RIGHTTRANSPARENT | ChunkFace.FRONTOPAQUE | ChunkFace.BACKTRANSPARENT));
     }
+
+    [Test]
+    public void testNullFlag() {
+        ChunkFace? chunkFace = ChunkFace.TOPOPAQUE;
+        chunkFace &= ~ChunkFace.TOPOPAQUE;
+        Assert.NotNull(chunkFace);
+        Assert.That(chunkFace.HasValue);
+        Console.WriteLine(chunkFace);
+    }
     
     [Test]
     public void GetChunkFaceFlagsTest_AllOpaque()

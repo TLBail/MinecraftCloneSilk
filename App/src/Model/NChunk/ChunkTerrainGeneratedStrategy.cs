@@ -4,7 +4,7 @@ public class ChunkTerrainGeneratedStrategy : ChunkStrategy
 {
 
     public ChunkTerrainGeneratedStrategy(Chunk chunk) : base(chunk) {
-        if (chunk.chunkState != ChunkState.EMPTY && chunk.chunkState != ChunkState.GENERATEDTERRAIN) {
+        if (chunk.chunkState != ChunkState.EMPTY && chunk.chunkState != ChunkState.GENERATEDTERRAIN && chunk.chunkState != ChunkState.STORAGELOADING) {
             throw new Exception("try to create a ChunkTerrainGeneratedStrategy with a chunk that is not empty");
         }
     }

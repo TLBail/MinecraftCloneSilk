@@ -12,6 +12,7 @@ using MinecraftCloneSilk.GameComponent;
 using MinecraftCloneSilk.Core;
 using MinecraftCloneSilk.Logger;
 using MinecraftCloneSilk.Model;
+using MinecraftCloneSilk.Model.ChunkManagement;
 using MinecraftCloneSilk.Model.NChunk;
 using MinecraftCloneSilk.Model.RegionDrawing;
 using MinecraftCloneSilk.UI;

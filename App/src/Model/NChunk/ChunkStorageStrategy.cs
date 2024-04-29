@@ -26,9 +26,9 @@ public class ChunkStorageStrategy : ChunkStrategy
     }
 
     public override void Finish() {
-        chunk.chunkState = chunk.chunkStateInStorage;
-        chunk.SetChunkState(chunk.chunkState);
+        chunk.SetChunkState(chunk.chunkStateInStorage);
         chunk.FinishChunkState();
+        System.Diagnostics.Debug.Assert(chunk.chunkState == chunk.chunkStateInStorage);
     }
 
 

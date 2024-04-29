@@ -46,9 +46,10 @@ public class ChunkLoader
         private ChunkLoader chunkLoader;
 
         public ChunkTaskLoaderAsync(ChunkLoader chunkLoader) { this.chunkLoader = chunkLoader;}
-        public void ThreadChunkLoading(Object chunkLoadingTask) {
-            ((ChunkLoadingTask)chunkLoadingTask).chunk.LoadChunkState();
-            chunkLoader.chunksToFinish.Add((ChunkLoadingTask)chunkLoadingTask);
+        public void ThreadChunkLoading(Object taskObject) {
+            ChunkLoadingTask chunkLoadingTask = (ChunkLoadingTask)taskObject;
+            chunkLoadingTask.chunk.LoadChunkState();
+            chunkLoader.chunksToFinish.Add(chunkLoadingTask);
         }
         public bool LoadChunkTask(ChunkLoadingTask chunkLoadingTask) {
             return ThreadPool.QueueUserWorkItem(ThreadChunkLoading, chunkLoadingTask);
@@ -61,6 +62,7 @@ public class ChunkLoader
     public LinkedList<ChunkLoadingTask> chunkTasks = new();
     public ConcurrentBag<ChunkLoadingTask> chunksToFinish = new();
     private Stopwatch stopwatch = new Stopwatch();
+    
     public ChunkLoader(ChunkLoaderMode mode) {
         switch (mode) {
             case ChunkLoaderMode.SYNC:

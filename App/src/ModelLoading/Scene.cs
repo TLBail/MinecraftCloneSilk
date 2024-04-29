@@ -5,7 +5,7 @@ using Shader = MinecraftCloneSilk.Core.Shader;
 
 namespace MinecraftCloneSilk.ModelLoading;
 
-public class Scene
+public class Scene : IDisposable
 {
     public static Scene? Load(GL gl,String filePath, Shader shader) {
         AssimpContext context = new AssimpContext();
@@ -59,7 +59,11 @@ public class Scene
             model.Draw(gl, t);
         }
     }
-    
-    
 
+
+    public void Dispose() {
+        foreach(Mesh mesh in meshes) {
+            mesh.Dispose();
+        }
+    }
 }

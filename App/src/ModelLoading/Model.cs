@@ -30,6 +30,5 @@ public class Model
         shader.SetUniform("model", transform + t);
         
         gl.DrawElements(PrimitiveType.Triangles, (uint)mesh.indices.Length, DrawElementsType.UnsignedInt, null);
-    } 
-    
+    }
 }

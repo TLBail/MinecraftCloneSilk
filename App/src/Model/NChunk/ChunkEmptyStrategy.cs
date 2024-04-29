@@ -21,4 +21,9 @@ public class ChunkEmptyStrategy : ChunkStrategy
     public override Block GetBlock(int x, int y, int z) {
         throw new Exception("try to get Block of a empty chunk");
     }
+
+
+    public override void Finish() {
+        chunk.chunkState = ChunkState.EMPTY;
+    }
 }
