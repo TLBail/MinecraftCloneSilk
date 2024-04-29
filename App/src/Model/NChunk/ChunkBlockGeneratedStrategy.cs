@@ -33,7 +33,7 @@ public class ChunkBlockGeneratedStrategy : ChunkStrategy
         for (int x = 0; x < Chunk.CHUNK_SIZE; x++) {
             for (int y = 0; y < Chunk.CHUNK_SIZE; y++) {
                 for (int z = 0; z < Chunk.CHUNK_SIZE; z++) {
-                    BlockData block = chunk.chunkData.GetBlock(x, y, z);
+                    BlockData block = chunk.blocks[x, y, z];
                     byte lightEmitting = Chunk.blockFactory!.blocks[block.id].lightEmitting;
                     byte lightLevelOfBlock = block.GetLightLevel();
                     System.Diagnostics.Debug.Assert(lightLevelOfBlock >= lightEmitting, $"block light level is not the same as the light emitting of the block {block} light emitting : {lightEmitting} light level : {block.GetLightLevel()}");
@@ -69,7 +69,7 @@ public class ChunkBlockGeneratedStrategy : ChunkStrategy
     private void GenerateStruture() {
         int idGrass = Chunk.blockFactory!.GetBlockIdByName("grass");
         int idSand = Chunk.blockFactory!.GetBlockIdByName("sand");
-        BlockData[,,] blocks = chunk.chunkData.GetBlocks();
+        BlockData[,,] blocks = chunk.blocks;
         for (int x = 0; x < Chunk.CHUNK_SIZE; x++) {
             for (int y = 0; y < Chunk.CHUNK_SIZE; y++) {
                 for (int z = 0; z < Chunk.CHUNK_SIZE; z++) {

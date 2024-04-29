@@ -90,18 +90,12 @@ public class LightCalculator
     }
 
     private static void PropageSunLight(Chunk chunk) {
-        BlockData[,,] blocks = chunk.chunkData.GetBlocks();
+        BlockData[,,] blocks = chunk.blocks;
+        Span<BlockData> span = Chunk.GetBlockSpan(blocks);
         if ((chunk.chunkFace & ChunkFace.EMPTYCHUNK) != 0 && chunk.position.Y >= 0) {
-            for (int x = 0; x < Chunk.CHUNK_SIZE; x++) {
-                for (int y = 0; y < Chunk.CHUNK_SIZE; y++) {
-                    for (int z = 0; z < Chunk.CHUNK_SIZE; z++) {
-                        blocks[x,y,z].SetSkyLightLevel(15);
-                    }
-                }
-            }
+            for (int i = 0; i < span.Length; i++) span[i].SetSkyLightLevel(15);
             return;
         }
-        
         
         BlockFactory blockFactory = Chunk.blockFactory!;
         Queue<LightNode> sunLightSource = new Queue<LightNode>();
@@ -109,15 +103,8 @@ public class LightCalculator
         
         
         //reset all skylight
-        for (int x = 0; x < Chunk.CHUNK_SIZE; x++) {
-            for (int y = 0; y < Chunk.CHUNK_SIZE; y++) {
-                for (int z = 0; z < Chunk.CHUNK_SIZE; z++) {
-                    blocks[x,y,z].SetSkyLightLevel(0);
-                }
-            }
-        }
+        for (int i = 0; i < span.Length; i++) span[i].SetSkyLightLevel(0);
 
-        Debug.Assert(topChunk.chunkData is not null);
         bool[,] blocked = new bool[Chunk.CHUNK_SIZE, Chunk.CHUNK_SIZE];
         if ((topChunk.chunkFace & ChunkFace.BOTTOMOPAQUE) == 0) {
             if ((topChunk.chunkFace & ChunkFace.EMPTYCHUNK) != 0 && topChunk.position.Y >= 0) {
@@ -132,7 +119,7 @@ public class LightCalculator
                 }
             } else {
                 Debug.Assert(topChunk.chunkState >= ChunkState.LIGHTING); //Todo has fail
-                BlockData[,,] topBlocks = topChunk.chunkData.GetBlocks();
+                BlockData[,,] topBlocks = topChunk.blocks;
                 for (int x = 0; x < Chunk.CHUNK_SIZE; x++) {
                     for (int z = 0; z < Chunk.CHUNK_SIZE; z++) {
                         BlockData topBlock = topBlocks[x, 0, z];
@@ -275,7 +262,7 @@ public class LightCalculator
                 return;
             }
             Vector3D<int> localPos = World.GetLocalPosition(pos);
-            farChunk.chunkData.SetBlock(blockData, localPos.X, localPos.Y, localPos.Z);
+            farChunk.blocks[localPos.X, localPos.Y, localPos.Z] = blockData;
             return;
         }
 
@@ -306,11 +293,11 @@ public class LightCalculator
                 z -= (int)Chunk.CHUNK_SIZE;
             }
             FaceExtended faceExtended = (FaceExtended)FaceFlagUtils.GetFaceExtended(faceFlag)!;
-            chunk.chunksNeighbors![(int)faceExtended].chunkData.SetBlock(blockData, x, y, z);
+            chunk.chunksNeighbors![(int)faceExtended].blocks[ x, y, z] = blockData;
             chunk.chunksNeighbors![(int)faceExtended].chunkStrategy.UpdateChunkVertex();
             
         } else {
-            chunk.chunkData.SetBlock(blockData,pos.X, pos.Y, pos.Z);
+            chunk.blocks[pos.X, pos.Y, pos.Z] = blockData;
             FaceFlag faceFlag = FaceFlag.EMPTY;
             if (pos.Y == 0) {
                 faceFlag |= FaceFlag.BOTTOM;
@@ -334,7 +321,7 @@ public class LightCalculator
 
     private static void GetLightSourcesOfChunk(Chunk chunk, Queue<LightNode> lightSources) {
         BlockFactory blockFactory = Chunk.blockFactory!;
-        BlockData[,,] blocks = chunk.chunkData.GetBlocks();
+        BlockData[,,] blocks = chunk.blocks;
         for (int x = 0; x < Chunk.CHUNK_SIZE; x++) {
             for (int y = 0; y < Chunk.CHUNK_SIZE; y++) {
                 for (int z = 0; z < Chunk.CHUNK_SIZE; z++) {
@@ -352,57 +339,57 @@ public class LightCalculator
         for (int i = 0; i < Chunk.CHUNK_SIZE; i++) {
             for (int j = 0; j < Chunk.CHUNK_SIZE; j++) {
                 //Top
-                byte lightLevelSource = chunk.chunksNeighbors![(int)Face.TOP].chunkData.GetBlock(i, 0, j).GetLightLevel();
+                byte lightLevelSource = chunk.chunksNeighbors![(int)Face.TOP].blocks[i, 0, j].GetLightLevel();
                 BlockData block = chunk.GetBlockData(new(i, 15, j));
                 if (lightLevelSource > 1 && block.GetLightLevel() < lightLevelSource - 1){
                     block.SetLightLevel((byte)(lightLevelSource - 1));
-                    chunk.chunkData.SetBlock(block,i,15,j);
+                    chunk.blocks[i,15,j] = block;
                     lightSources.Enqueue(new(new Vector3D<int>(i, 15, j), lightLevelSource));
                 }
                 
                 //Bottom
-                lightLevelSource = chunk.chunksNeighbors![(int)Face.BOTTOM].chunkData.GetBlock(i, 15, j).GetLightLevel();
+                lightLevelSource = chunk.chunksNeighbors![(int)Face.BOTTOM].blocks[i, 15, j].GetLightLevel();
                 block = chunk.GetBlockData(new(i, 0, j));
                 if (lightLevelSource > 1 && block.GetLightLevel() < lightLevelSource - 1){
                     block.SetLightLevel((byte)(lightLevelSource - 1));
-                    chunk.chunkData.SetBlock(block,i,0,j);
+                    chunk.blocks[i,0,j] = block;
                     lightSources.Enqueue(new(new Vector3D<int>(i, 0, j), lightLevelSource));
                 }
                 
                 //Left
-                lightLevelSource = chunk.chunksNeighbors![(int)Face.LEFT].chunkData.GetBlock(15, i, j).GetLightLevel();
+                lightLevelSource = chunk.chunksNeighbors![(int)Face.LEFT].blocks[15, i, j].GetLightLevel();
                 block = chunk.GetBlockData(new(0, i, j));
                 if (lightLevelSource > 1 && block.GetLightLevel() < lightLevelSource - 1){
                     block.SetLightLevel((byte)(lightLevelSource - 1));
-                    chunk.chunkData.SetBlock(block,0,i,j);
+                    chunk.blocks[0,i,j] = block;
                     lightSources.Enqueue(new(new Vector3D<int>(0, i, j), lightLevelSource));
                 }
                 
                 
                 //Right
-                lightLevelSource = chunk.chunksNeighbors![(int)Face.RIGHT].chunkData.GetBlock(0, i, j).GetLightLevel();
+                lightLevelSource = chunk.chunksNeighbors![(int)Face.RIGHT].blocks[0, i, j].GetLightLevel();
                 block = chunk.GetBlockData(new(15, i, j));
                 if (lightLevelSource > 1 && block.GetLightLevel() < lightLevelSource - 1){
                     block.SetLightLevel((byte)(lightLevelSource - 1));
-                    chunk.chunkData.SetBlock(block,15,i,j);
+                    chunk.blocks[15,i,j] = block;
                     lightSources.Enqueue(new(new Vector3D<int>(15, i, j), lightLevelSource));
                 }
                 
                 //Front
-                lightLevelSource = chunk.chunksNeighbors![(int)Face.FRONT].chunkData.GetBlock(i, j, 0).GetLightLevel();
+                lightLevelSource = chunk.chunksNeighbors![(int)Face.FRONT].blocks[i, j, 0].GetLightLevel();
                 block = chunk.GetBlockData(new(i, j, 15));
                 if (lightLevelSource > 1 && block.GetLightLevel() < lightLevelSource - 1){
                     block.SetLightLevel((byte)(lightLevelSource - 1));
-                    chunk.chunkData.SetBlock(block,i,j,15);
+                    chunk.blocks[i,j,15] = block;
                     lightSources.Enqueue(new(new Vector3D<int>(i, j, 15), lightLevelSource));
                 }
                 
                 //Back
-                lightLevelSource = chunk.chunksNeighbors![(int)Face.BACK].chunkData.GetBlock(i, j, 15).GetLightLevel();
+                lightLevelSource = chunk.chunksNeighbors![(int)Face.BACK].blocks[i, j, 15].GetLightLevel();
                 block = chunk.GetBlockData(new(i, j, 0));
                 if (lightLevelSource > 1 && block.GetLightLevel() < lightLevelSource - 1){
                     block.SetLightLevel((byte)(lightLevelSource - 1));
-                    chunk.chunkData.SetBlock(block,i,j,0);
+                    chunk.blocks[i,j,0] = block;
                     lightSources.Enqueue(new(new Vector3D<int>(i, j, 0), lightLevelSource));
                 }
             }

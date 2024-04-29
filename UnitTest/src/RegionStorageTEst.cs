@@ -69,8 +69,7 @@ public class RegionStorageTEst
         regionStorage.LoadChunk(chunkEmpty);
         
         FieldInfo fi = typeof(Chunk).GetField("chunkData",    BindingFlags.NonPublic | BindingFlags.Instance)!;
-        IChunkData chunkData = (IChunkData)fi.GetValue(chunkEmpty)!;
-        BlockData[,,] blocks = chunkData.GetBlocks();
+        BlockData[,,] blocks = (BlockData[,,]) fi.GetValue(chunkEmpty)!;
         Block block =BlockFactory.GetInstance().BuildFromBlockData(new Vector3D<int>(0, 0, 0), blocks[0, 0, 0]);
         Assert.That(block.name, Is.EqualTo("metal"));
     }
@@ -91,8 +90,7 @@ public class RegionStorageTEst
         regionStorage.LoadChunk(chunkEmpty);
         
         FieldInfo fi = typeof(Chunk).GetField("chunkData",    BindingFlags.NonPublic | BindingFlags.Instance)!;
-        IChunkData chunkData = (IChunkData)fi.GetValue(chunkEmpty)!;
-        BlockData[,,] blocks = chunkData.GetBlocks();
+        BlockData[,,] blocks = (BlockData[,,]) fi.GetValue(chunkEmpty)!;
         Block block =BlockFactory.GetInstance().BuildFromBlockData(new Vector3D<int>(0, 0, 0), blocks[0, 0, 0]);
         Assert.That(block.name, Is.EqualTo("metal"));
     }
@@ -157,8 +155,7 @@ public class RegionStorageTEst
         FieldInfo fi = typeof(Chunk).GetField("chunkData",    BindingFlags.NonPublic | BindingFlags.Instance)!;
         index = 0;
         foreach (Chunk chunk in newChunks) {
-            IChunkData chunkData = (IChunkData)fi.GetValue(chunk)!;
-            BlockData[,,] blocks = chunkData.GetBlocks();
+            BlockData[,,] blocks = (BlockData[,,]) fi.GetValue(chunk)!;
             Block block =BlockFactory.GetInstance().BuildFromBlockData(new Vector3D<int>(0, 0, 0), blocks[0, 0, 0]);
             Assert.That(block.name, Is.EqualTo(blocksToSet[index++]));  
         }
@@ -188,8 +185,7 @@ public class RegionStorageTEst
         regionStorage.LoadChunk(chunk);
         
         FieldInfo fi = typeof(Chunk).GetField("chunkData",    BindingFlags.NonPublic | BindingFlags.Instance)!;
-        IChunkData chunkData = (IChunkData)fi.GetValue(chunk)!;
-        BlockData[,,] blocks = chunkData.GetBlocks();
+        BlockData[,,] blocks = (BlockData[,,]) fi.GetValue(chunk)!;
         Block block =BlockFactory.GetInstance().BuildFromBlockData(new Vector3D<int>(0, 0, 0), blocks[0, 0, 0]);
         Assert.That(block.name, Is.EqualTo("metal"));  
         
@@ -198,9 +194,7 @@ public class RegionStorageTEst
         chunk = new Chunk(positions[1], chunkManagerEmpty, new WorldFlatGeneration(), this.regionStorage, chunkLightManager);
         regionStorage.LoadChunk(chunk);
         
-
-        chunkData = (IChunkData)fi.GetValue(chunk)!;
-        blocks = chunkData.GetBlocks();
+        blocks = (BlockData[,,]) fi.GetValue(chunk)!;
         block =BlockFactory.GetInstance().BuildFromBlockData(new Vector3D<int>(14, 0, 3), blocks[14, 0, 3]);
         Assert.That(block.name, Is.EqualTo("oak"));  
     }
@@ -327,16 +321,14 @@ public class RegionStorageTEst
         Chunk chunk = new Chunk(positions[0], chunkManagerEmpty, new WorldFlatGeneration(), this.regionStorage, chunkLightManager);
         regionStorage.LoadChunk(chunk);
         FieldInfo fi = typeof(Chunk).GetField("chunkData",    BindingFlags.NonPublic | BindingFlags.Instance)!;
-        IChunkData chunkData = (IChunkData)fi.GetValue(chunk)!;
-        BlockData[,,] blocks = chunkData.GetBlocks();
+        BlockData[,,] blocks = (BlockData[,,]) fi.GetValue(chunk)!;
         Block block =BlockFactory.GetInstance().BuildFromBlockData(new Vector3D<int>(0,0,3), blocks[0,0,3]);
         Assert.That(block.name, Is.EqualTo("metal"));  
         
         
         Chunk chunk2 = new Chunk(positions[1], chunkManagerEmpty, new WorldFlatGeneration(), this.regionStorage, chunkLightManager);
         regionStorage.LoadChunk(chunk2);
-        chunkData = (IChunkData)fi.GetValue(chunk2)!;
-        blocks = chunkData.GetBlocks();
+        blocks = (BlockData[,,]) fi.GetValue(chunk2)!;
         Block block2 =BlockFactory.GetInstance().BuildFromBlockData(new Vector3D<int>(14,0,3), blocks[14,0,3]); 
         Assert.That(block2.name, Is.EqualTo("oak"));
         
@@ -371,16 +363,14 @@ public class RegionStorageTEst
         Chunk chunk = new Chunk(positions[0], chunkManagerEmpty, new WorldFlatGeneration(), this.regionStorage, chunkLightManager);
         regionStorage.LoadChunk(chunk);
         FieldInfo fi = typeof(Chunk).GetField("chunkData",    BindingFlags.NonPublic | BindingFlags.Instance)!;
-        IChunkData chunkData = (IChunkData)fi.GetValue(chunk)!;
-        BlockData[,,] blocks = chunkData.GetBlocks();
+        BlockData[,,] blocks = (BlockData[,,]) fi.GetValue(chunk)!;
         Block block =BlockFactory.GetInstance().BuildFromBlockData(new Vector3D<int>(0,0,3), blocks[0,0,3]);
         Assert.That(block.name, Is.EqualTo("metal"));  
         
         
         Chunk chunk2 = new Chunk(positions[1], chunkManagerEmpty, new WorldFlatGeneration(), this.regionStorage, chunkLightManager);
         regionStorage.LoadChunk(chunk2);
-        chunkData = (IChunkData)fi.GetValue(chunk2)!;
-        blocks = chunkData.GetBlocks();
+        blocks = (BlockData[,,]) fi.GetValue(chunk2)!;
         Block block2 =BlockFactory.GetInstance().BuildFromBlockData(new Vector3D<int>(14,0,3), blocks[14,0,3]); 
         Assert.That(block2.name, Is.EqualTo("oak"));
         

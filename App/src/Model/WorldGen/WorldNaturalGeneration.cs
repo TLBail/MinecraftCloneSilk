@@ -103,7 +103,7 @@ public class WorldNaturalGeneration : IWorldGenerator
         return threasholdAir;
     }
     
-    public void GenerateTerrain(Vector3D<int> position, IChunkData chunkData) {
+    public void GenerateTerrain(Vector3D<int> position, BlockData[,,] blocks) {
         for (int x = 0; x < Chunk.CHUNK_SIZE; x++) {
             for (int y = Chunk.CHUNK_SIZE - 1; y >= 0; y--) {
                 for (int z = 0; z < Chunk.CHUNK_SIZE; z++) {
@@ -118,7 +118,7 @@ public class WorldNaturalGeneration : IWorldGenerator
                     bool isAir = noise <= threasholdAir;   
                     
                     if(isAir && globalY <= 0) {
-                        chunkData.SetBlock(water, x,y,z);
+                        blocks[ x,y,z] = water;
                         continue;
                     }
                     if(isAir) continue;
@@ -137,9 +137,9 @@ public class WorldNaturalGeneration : IWorldGenerator
                             noise = diamondNoiseGenerator.GetNoise(globalX, globalY, globalZ);
                             float threasholdDiamond = -0.8f;
                             if (noise <= threasholdDiamond) {
-                                chunkData.SetBlock(diamond, x,y,z);
+                                blocks[ x,y,z] = diamond;
                             } else {
-                                chunkData.SetBlock(stone, x,y,z);
+                                blocks[ x,y,z] = stone;
                             }
                         }
                         continue;
@@ -148,26 +148,26 @@ public class WorldNaturalGeneration : IWorldGenerator
               
                     if (Math.Abs(threasholdAir - noise) < 0.02) { // near surface  =>add terrain decoration
                         if(position.Y + y < -5) {
-                            chunkData.SetBlock(stone, x,y,z);
+                            blocks[ x,y,z] = stone;
                         } else if (position.Y + y < 5) {
-                            chunkData.SetBlock(sand, x,y,z);
+                            blocks[ x,y,z] = sand;
                         } else {
                             if(IsDesert(globalX, globalY, globalZ)) {
-                                chunkData.SetBlock(sand, x,y,z);
+                                blocks[ x,y,z] = sand;
                             } else {
                                 bool upperBlockIsAir = noiseGenerator.GetNoise(globalX, globalY + 1, globalZ) <= 
                                                        GetThresholdAir(globalX, globalY + 1, globalZ, 
                                                            amplitudeNoiseGenerator.GetNoise(globalX, globalY+ 1, globalZ));
                                 if (upperBlockIsAir) {
-                                    chunkData.SetBlock(grass, x,y,z);
+                                    blocks[ x,y,z] = grass;
                                 } else {
-                                    chunkData.SetBlock(dirt, x,y,z);
+                                    blocks[ x,y,z] = dirt;
                                 }
 
                             }
                         }
                     } else { // far from air
-                        chunkData.SetBlock(stone, x, y, z);
+                        blocks[ x, y, z] = stone;
                     }
                 }
             }

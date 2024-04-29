@@ -36,11 +36,6 @@ public static class ChunkFaceUtils
 		return (face & ALLTRANSPARENT) == ALLTRANSPARENT;
 	}
 
-
-    public static ChunkFace GetChunkFaceFlags(BlockFactory blockFactory, IChunkData chunkData) {
-        return GetChunkFaceFlags(blockFactory, chunkData.GetBlocks());
-    }
-
     public static string toString(ChunkFace chunkFace) {
         //get all the flags of the chunkFace
         StringBuilder stringBuilder = new StringBuilder();
@@ -57,7 +52,7 @@ public static class ChunkFaceUtils
     public static ChunkFace GetChunkFaceFlags(BlockFactory blockFactory, BlockData[,,] blocks) {
         ChunkFace faceFlag = ChunkFaceUtils.ALL;
 
-        Span<BlockData> blocksSpan = ChunkData.GetSpan(blocks);
+        Span<BlockData> blocksSpan = Chunk.GetBlockSpan(blocks);
 
         for (int i = 0; i < blocksSpan.Length; i++) {
             if (blocksSpan[i].id != 0) {

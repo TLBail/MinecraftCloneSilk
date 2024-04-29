@@ -12,7 +12,7 @@ public static class ChunkMesheur
         for (int x = 0; x < Chunk.CHUNK_SIZE; x++) {
             for (int y = 0; y < Chunk.CHUNK_SIZE; y++) {
                 for (int z = 0; z < Chunk.CHUNK_SIZE; z++) {
-                    BlockData block = chunk.chunkData.GetBlocks()[x, y, z];
+                    BlockData block = chunk.blocks[x, y, z];
                     if (block.id == 0) continue;
                     FaceFlag faces = GetFaces(chunk,x, y, z);
                     count += FaceFlagUtils.GetFaces(faces).Count() * 6;
@@ -75,7 +75,7 @@ public static class ChunkMesheur
             blockData = chunk.chunksNeighbors![(int)Face.FRONT]
                 .GetBlockData(new Vector3D<int>(x, y, z - (int)Chunk.CHUNK_SIZE));
         } else {
-            blockData = chunk.chunkData.GetBlock(x, y, z);
+            blockData = chunk.blocks[x, y, z];
         }
 
         return blockData.id == 0 || Chunk.blockFactory!.IsBlockTransparent(blockData);

@@ -1,4 +1,6 @@
 ﻿using System.Numerics;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using MinecraftCloneSilk.Collision;
 using MinecraftCloneSilk.Core;
 using MinecraftCloneSilk.GameComponent;
@@ -16,7 +18,7 @@ namespace MinecraftCloneSilk.Model.NChunk;
 public class Chunk
 {
     public Vector3D<int> position;
-    internal IChunkData chunkData = new ChunkData();
+    internal BlockData[,,] blocks;
 
     public const int CHUNK_SIZE = 16;
 
@@ -50,6 +52,7 @@ public class Chunk
     public event Action OnChunkFinishSaving;
 
     public Chunk(Vector3D<int> position, IChunkManager chunkManager, IWorldGenerator worldGenerator, IChunkStorage chunkStorage, IChunkLightManager chunkLightManager) {
+        blocks = new BlockData[CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE];
         this.chunkState = DEFAULTSTARTINGCHUNKSTATE;
         this.chunkStrategy = new ChunkEmptyStrategy(this);
         this.chunkManager = chunkManager;
@@ -132,6 +135,11 @@ public class Chunk
                 throw new ArgumentException("ChunkState not found");
         }
     }
+    public static Span<BlockData> GetBlockSpan(BlockData[,,] blocks) {
+        ref byte reference = ref MemoryMarshal.GetArrayDataReference(blocks);
+        return MemoryMarshal.CreateSpan(ref Unsafe.As<byte, BlockData>(ref reference), blocks.Length);
+    }
+
 
 
     private bool AddTask(ChunkLoader chunkLoader, ChunkLoadingTask chunkLoadingTask, ChunkState chunkStateGoalNeighboor, ChunkState chunkStateGoal) {   
@@ -251,7 +259,7 @@ public class Chunk
         this.chunkStrategy = new ChunkEmptyStrategy(this);
         blockModified = false;
         chunkFace = null;
-        chunkData.Reset();
+        blocks = new BlockData[CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE];
     }
     
 

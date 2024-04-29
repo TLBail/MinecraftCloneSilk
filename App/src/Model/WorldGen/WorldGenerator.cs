@@ -5,7 +5,7 @@ namespace MinecraftCloneSilk.Model.WorldGen;
 
 public interface IWorldGenerator
 {
-    public void GenerateTerrain(Vector3D<int> chunkPosition, IChunkData chunkData);
+    public void GenerateTerrain(Vector3D<int> chunkPosition, BlockData[,,] chunkData);
     bool HaveTreeOnThisCoord(int positionX,int positionY, int positionZ);
     
     bool IsDesert(int positionX,int positionY, int positionZ);

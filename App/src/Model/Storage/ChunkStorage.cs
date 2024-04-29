@@ -95,7 +95,7 @@ public class ChunkStorage : IChunkStorage
     private static Dictionary<int, BlockData> GetPallette(Chunk chunk) {
         Dictionary<int, BlockData> palette = new Dictionary<int, BlockData>();
         
-        BlockData[,,] blocks = chunk.chunkData.GetBlocks();
+        BlockData[,,] blocks = chunk.blocks;
         for (int x = 0; x < Chunk.CHUNK_SIZE; x++) {
             for (int y = 0; y < Chunk.CHUNK_SIZE; y++) {
                 for (int z = 0; z < Chunk.CHUNK_SIZE; z++) {
@@ -159,7 +159,7 @@ public class ChunkStorage : IChunkStorage
         }
 
         if (nbBlockInPalette > 1) {
-            BlockData[,,] blocks = chunk.chunkData.GetBlocks();
+            BlockData[,,] blocks = chunk.blocks;
             int nbBytePerBlock = Log8Ceil(nbBlockInPalette);
             for (int x = 0; x < Chunk.CHUNK_SIZE; x++) {
                 for (int y = 0; y < Chunk.CHUNK_SIZE; y++) {
@@ -173,7 +173,10 @@ public class ChunkStorage : IChunkStorage
                 }
             }   
         } else if(nbBlockInPalette == 1) {
-            chunk.chunkData.SetBlocks(blocksData[0]);
+            Span<BlockData> span = Chunk.GetBlockSpan(chunk.blocks);
+            for (int i = 0; i < span.Length; i++) {
+                span[i] = blocksData[0];
+            }
         }
     }
     

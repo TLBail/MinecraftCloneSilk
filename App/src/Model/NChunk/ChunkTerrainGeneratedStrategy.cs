@@ -31,6 +31,6 @@ public class ChunkTerrainGeneratedStrategy : ChunkStrategy
 
     private void GenerateTerrain()
     {
-        chunk.worldGenerator.GenerateTerrain(chunk.position, chunk.chunkData);
+        chunk.worldGenerator.GenerateTerrain(chunk.position, chunk.blocks);
     }
 }

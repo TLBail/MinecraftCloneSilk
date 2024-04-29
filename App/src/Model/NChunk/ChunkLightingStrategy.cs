@@ -32,6 +32,8 @@ public class ChunkLightingStrategy : ChunkStrategy
         }
     }
 
+    protected override Vector3D<float> ChunkStrategyColor() => new Vector3D<float>(0.5f, 0.5f, 0.5f);
+
     public override void Load() {
         // chunk.chunkLightManager.FullLightChunk(chunk).Wait();
         LightCalculator.LightChunk(chunk);

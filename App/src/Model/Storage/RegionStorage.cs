@@ -17,6 +17,10 @@ public class RegionStorage : IChunkStorage, IDisposable
 {
     public void ChunkUnloaderProcessor() {
         foreach (Chunk chunk in chunksToSave.GetConsumingEnumerable()) {
+            if (ChunkStateTools.IsChunkIsLoading(chunk.chunkState)) {
+                chunk.RemoveRequiredByChunkSaver();
+                continue;
+            }
             SaveChunk(chunk);
             chunk.RemoveRequiredByChunkSaver();
         }
@@ -55,7 +59,6 @@ public class RegionStorage : IChunkStorage, IDisposable
     public void SaveChunkAsync(Chunk chunk) {
         chunk.AddRequiredByChunkSaver();
         chunksToSave.Add(chunk);
-        Debug.Assert(!chunk.IsRequiredByChunkLoader());
     }
 
     [Logger.Timer]

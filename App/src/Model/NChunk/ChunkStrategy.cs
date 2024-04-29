@@ -47,7 +47,7 @@ public abstract class ChunkStrategy
         if (faceExtended is not null) {
             return chunk.chunksNeighbors![(int)faceExtended].GetBlockData(position);
         } else {
-            return chunk.chunkData.GetBlock(position.X, position.Y, position.Z);
+            return chunk.blocks[position.X, position.Y, position.Z];
         }
     }
     public void SetBlockData(int x, int y, int z, BlockData blockData) {
@@ -78,8 +78,8 @@ public abstract class ChunkStrategy
         FaceExtended? faceExtended = FaceFlagUtils.GetFaceExtended(faceFlag);
         if (faceExtended is not null) {
             Chunk neighbor = chunk.chunksNeighbors![(int)faceExtended];
-            BlockData oldBlockData = neighbor.chunkData.GetBlock(x, y, z);
-            neighbor.chunkData.SetBlock(blockData, x, y, z);
+            BlockData oldBlockData = neighbor.blocks[x, y, z];
+            neighbor.blocks[x, y, z] = blockData;
             if (!oldBlockData.Equals(blockData)) {
                 neighbor.blockModified = true;
                 if (!neighbor.chunkFace.HasValue && neighbor.chunkState >= ChunkState.BLOCKGENERATED) {
@@ -95,7 +95,7 @@ public abstract class ChunkStrategy
                 
             }
         } else {
-            chunk.chunkData.SetBlock(blockData,x, y, z);
+            chunk.blocks[x,y, z]= blockData;
             chunk.blockModified = true;
         }
     }
@@ -106,9 +106,9 @@ public abstract class ChunkStrategy
     public virtual void Draw(GL gl, double deltaTime) => throw new Exception("try to draw a chunk that is not ready to be drawn"); 
 
     public virtual void SetBlock(int x, int y, int z, string name) {
-        BlockData oldBlockData = chunk.chunkData.GetBlock(x,y,z);
+        BlockData oldBlockData = chunk.blocks[x,y,z];
         BlockData newBlockData = Chunk.blockFactory!.GetBlockData(name);
-        chunk.chunkData.SetBlock(newBlockData,x, y, z);
+        chunk.blocks[x,y, z]= newBlockData;
         ChunkFaceUtils.OnBlockSet(ref chunk.chunkFace, oldBlockData, newBlockData, x, y, z);
         OnBlockSet(x, y, z, oldBlockData, newBlockData);
     }
@@ -180,7 +180,7 @@ public abstract class ChunkStrategy
     }
 
     public void UpdateChunkFaces() {
-        chunk.chunkFace = ChunkFaceUtils.GetChunkFaceFlags(Chunk.blockFactory!, chunk.chunkData);
+        chunk.chunkFace = ChunkFaceUtils.GetChunkFaceFlags(Chunk.blockFactory!, chunk.blocks);
     }
 
     public virtual void Init() {
