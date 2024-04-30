@@ -23,7 +23,7 @@ public enum WorldMode
 public class World : GameObject
 {
     private Player player = null!;
-    public int radius { get; set; } = 8;
+    public int radius = 8;
     private readonly WorldUi worldUi;
     public IWorldGenerator worldGeneration;
     public WorldMode worldMode { get; set; }
@@ -346,6 +346,16 @@ public class World : GameObject
             }
         });
         
+        commandKeys.Add("/seed");
+        console.AddCommand("/seed", (commandParams) =>
+        {
+            if (worldGeneration is WorldNaturalGeneration worldNaturalGeneration) {
+                console.Log("seed : " + worldNaturalGeneration.seed);
+            } else {
+                console.Log("no seed");
+            }
+        });
+
       
     }
 

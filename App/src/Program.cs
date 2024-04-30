@@ -3,6 +3,7 @@ using MinecraftCloneSilk.Core;
 using MinecraftCloneSilk.GameComponent;
 using MinecraftCloneSilk.Model.WorldGen;
 using MinecraftCloneSilk.UI;
+using MinecraftCloneSilk.UI.Start;
 using Console = MinecraftCloneSilk.UI.Console;
 
 namespace MinecraftCloneSilk
@@ -19,10 +20,11 @@ namespace MinecraftCloneSilk
         private static GameParameter GetClassicScene() {
             List<InitGameData> gameObjectNames = new List<InitGameData>()
             {
-                new (typeof(Player).FullName!, new object[]{new Vector3(600.0f, 50f, 400.0f)}),
+                new (typeof(Player).FullName!),
                 new (typeof(World).FullName!, new object[]{new WorldNaturalGeneration(1234), WorldMode.SIMPLE }),
                 new (typeof(StartingWindow).FullName!),
                 new (typeof(GeneralInfo).FullName!),
+                new (typeof(DemoWindow).FullName!),
             };
             GameParameter gameParameter = new GameParameter(gameObjectNames, new OpenGlConfig(false, false));
             return gameParameter;

@@ -91,7 +91,7 @@ public class ChunkUnloader
         }
         
         
-        if (chunkToUnload.chunkState == ChunkState.DRAWABLE) {
+        if (chunkToUnload.chunkState > ChunkState.BLOCKGENERATED) {
             chunkToUnload.SetChunkState(ChunkState.BLOCKGENERATED);
             chunkToUnload.FinishChunkState();
         }

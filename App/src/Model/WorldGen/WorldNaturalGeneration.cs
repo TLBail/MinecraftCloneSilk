@@ -55,9 +55,9 @@ public class WorldNaturalGeneration : IWorldGenerator
 
 
         
-        conantinalnessNoiseGenerator = new FastNoiseLite(seed);
+        conantinalnessNoiseGenerator = new FastNoiseLite(seed - 1);
         conantinalnessNoiseGenerator.SetNoiseType(FastNoiseLite.NoiseType.Perlin);
-        conantinalnessNoiseGenerator.SetFrequency(0.0001f);
+        conantinalnessNoiseGenerator.SetFrequency(0.0002f);
         
         amplitudeNoiseGenerator = new FastNoiseLite(seed * 2);
         amplitudeNoiseGenerator.SetNoiseType(FastNoiseLite.NoiseType.Perlin);
@@ -88,14 +88,14 @@ public class WorldNaturalGeneration : IWorldGenerator
     }
 
     private float GetThresholdAir(int globalX, int globalY, int globalZ, float amplitudeNoise) {
-        float cotenitalness = conantinalnessNoiseGenerator.GetNoise(globalX, globalY, globalZ);
+        float cotenitalness = conantinalnessNoiseGenerator.GetNoise(globalX, globalZ - 200);
         cotenitalness = Math.Abs(cotenitalness) * 1000;
-        cotenitalness -= 100;
+        cotenitalness -= 80;
         globalY -= (int)cotenitalness;
         
         // define the amplitude of the noise  lower = more flat
         
-        float amplitude = Math.Abs(amplitudeNoise) * 1000; //amplitube must be >0 
+        float amplitude = (Math.Abs(amplitudeNoise) * 800) + 50; //amplitube must be >0 
         
         
         float threasholdAir = -0.2f;

@@ -16,8 +16,6 @@ public class WorldUi
     {
         this.world = world;
         this.lightCalculator = lightCalculator;
-        chunkRenderDistance = this.world.radius;
-        worldMode = world.worldMode.ToString();
         blockNames = new string[BlockFactory.GetInstance().blocks.Count];
         int index = 0;
         foreach (short id in BlockFactory.GetInstance().blocks.Keys) {
@@ -32,16 +30,11 @@ public class WorldUi
     private static int newBlockZ;
 
     private static string newBlockName = "metal";
-    private static string worldMode = "EMPTY";
-
     private static WorldNaturalGeneration.GenerationParameter parameter;
-    private static int chunkRenderDistance;
     
     
     public void DrawUi() {
-        if (ImGui.DragInt("chunk render distance", ref chunkRenderDistance, 1, 1, 30)) {
-            world.radius = chunkRenderDistance;
-        }
+        ImGui.DragInt("chunk render distance", ref world.radius, 1, 1, 30);
         ImGui.Separator();
         BlockManagementUi();
         ImGui.Separator();
@@ -85,13 +78,12 @@ public class WorldUi
         }
 
         WorldMode[] worldModes = (WorldMode[])Enum.GetValues(typeof(WorldMode));
-        if(ImGui.BeginCombo("worldMode",worldMode )) {
+        if(ImGui.BeginCombo("worldMode",world.worldMode.ToString() )) {
             for (int n = 0; n < worldModes.Length; n++)
             {
-                bool isSelected = (worldMode == worldModes[n].ToString());
+                bool isSelected = (world.worldMode.ToString() == worldModes[n].ToString());
                 if (ImGui.Selectable(worldModes[n].ToString(), isSelected)) {
-                    worldMode = worldModes[n].ToString();
-                    world.SetWorldMode(Enum.Parse<WorldMode>(worldMode));                    
+                    world.SetWorldMode(Enum.Parse<WorldMode>(worldModes[n].ToString()));                    
                 }
                 if (isSelected)
                     ImGui.SetItemDefaultFocus();   // Set the initial focus when opening the combo (scrolling + for keyboard navigation support in the upcoming navigation branch)
