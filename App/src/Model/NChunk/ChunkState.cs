@@ -2,8 +2,8 @@
 
 public enum ChunkState
 {
-    UNKNOW = 0,
-    EMPTY = 1,
+    UNKNOW = 0, // used for chunkStateInStorage when we don't have check the state in the storage
+    EMPTY = 1, // == chunkstate = DEFAULT_CHUNKSTATE  and used for chunkStateInStorage when the chunk is not in the storage
     STORAGELOADING = 2,
     STORAGELOADED = 4,
     TERRAINLOADING = 8,

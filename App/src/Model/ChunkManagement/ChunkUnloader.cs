@@ -44,16 +44,10 @@ public class ChunkUnloader
         Chunk chunkToUnload = chunkManager.chunks[position];
         if(chunkToUnload.IsRequiredByChunkLoader() || chunkToUnload.IsRequiredByChunkSaver()) return false;
         ChunkState minimumChunkStateOfChunk = GetMinimumChunkStateOfChunk(position, minimumChunkStateOfNeighborsCache);
-        if (chunkToUnload.chunkState == ChunkState.DRAWABLE) { // Todo change by chunkState > BlockGenerated ?
+        if (chunkToUnload.chunkState > ChunkState.BLOCKGENERATED) { 
             chunkToUnload.SetChunkState(ChunkState.BLOCKGENERATED);
             chunkToUnload.FinishChunkState();
         }
-
-        if (chunkToUnload.chunkState == ChunkState.LIGHTING) {
-            chunkToUnload.SetChunkState(ChunkState.BLOCKGENERATED);
-            chunkToUnload.FinishChunkState();
-        }
-        
         
         if(minimumChunkStateOfChunk > ChunkState.EMPTY) return false;
         

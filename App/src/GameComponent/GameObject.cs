@@ -21,8 +21,7 @@ public abstract class GameObject
     }
 
     public virtual void Destroy() {
-        //Todo find a way to remove the gameobject faster like storing the key in the gameobject
-        var key= game.gameObjects.First((obj) => obj.Value == this).Key;
+        var key = GetType().FullName!;
         game.gameObjects.Remove(key);
         lock (haveStartedLock) {
             if (!haveStarted) return;

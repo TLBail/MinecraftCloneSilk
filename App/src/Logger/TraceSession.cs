@@ -7,9 +7,6 @@ namespace MinecraftCloneSilk.Logger;
 /// </summary>
 public class TraceSession : IDisposable
 {
-    // TODO implement interface to allow profiling single-tick events and nested sessions
-
-
     private readonly string name;
     private readonly long start;
         

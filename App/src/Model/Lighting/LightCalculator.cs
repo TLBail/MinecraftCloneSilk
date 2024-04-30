@@ -118,7 +118,7 @@ public class LightCalculator
                     }
                 }
             } else {
-                Debug.Assert(topChunk.chunkState >= ChunkState.LIGHTING); //Todo has fail
+                Debug.Assert(topChunk.chunkState >= ChunkState.LIGHTING); //Todo has fail surement parce le chunkFace à changé et est passé à Bottom transparent
                 BlockData[,,] topBlocks = topChunk.blocks;
                 for (int x = 0; x < Chunk.CHUNK_SIZE; x++) {
                     for (int z = 0; z < Chunk.CHUNK_SIZE; z++) {

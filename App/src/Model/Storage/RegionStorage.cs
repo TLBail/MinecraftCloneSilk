@@ -66,9 +66,8 @@ public class RegionStorage : IChunkStorage, IDisposable
         using var tx = env.BeginTransaction();
         Span<byte> mykey = stackalloc byte[12];
         foreach (Chunk chunk in chunks) {
-            //Todo fix this
-            //Debug.Assert(GetChunkStateInStorage(tx, chunk.position) == chunk.chunkStateInStorage);
-            //Debug.Assert(GetChunkStateInStorage(tx, chunk.position) <= chunk.chunkState, $"erreur : chunkState in storage:{GetChunkStateInStorage(tx, chunk.position)} is higher than chunkState:{chunk.chunkState}");
+            Debug.Assert(chunk.chunkStateInStorage == ChunkState.EMPTY || GetChunkStateInStorage(tx, chunk.position) == chunk.chunkStateInStorage, $"erreur: chunkState in storage{GetChunkStateInStorage(tx, chunk.position)} is different than {chunk.chunkStateInStorage}");
+            Debug.Assert(GetChunkStateInStorage(tx, chunk.position) <= chunk.chunkState, $"erreur : chunkState in storage:{GetChunkStateInStorage(tx, chunk.position)} is higher than chunkState:{chunk.chunkState}");
             Debug.Assert(!ChunkStateTools.IsChunkIsLoading(chunk.chunkState), $"try to save chunk with bad chunk state 💾 : {chunk.chunkState}");
             MathHelper.EncodeVector3Int(mykey, chunk.position.X, chunk.position.Y, chunk.position.Z); 
             MemoryStream stream = new MemoryStream();

@@ -54,7 +54,7 @@ public class ChunkStorage : IChunkStorage
         int version = CURRENT_VERSION;
         binaryWriter.Write(version);
         Debug.Assert(!ChunkStateTools.IsChunkIsLoading(chunk.chunkState), "try to save a chunk that is loading");
-        Debug.Assert(chunk.chunkState != ChunkState.EMPTY || chunk.chunkState != ChunkState.UNKNOW, "try to save a chunk that have a strange state");
+        Debug.Assert(chunk.chunkState != ChunkState.EMPTY && chunk.chunkState != ChunkState.UNKNOW, "try to save a chunk that have a strange state");
         byte chunkState = (byte)BitOperations.Log2((uint)(chunk.chunkState > ChunkState.BLOCKGENERATED ? ChunkState.BLOCKGENERATED : chunk.chunkState));
         binaryWriter.Write(chunkState);
         int tick = 0; //Todo specify tick
@@ -128,7 +128,9 @@ public class ChunkStorage : IChunkStorage
         using BinaryReader br = new BinaryReader(stream, Encoding.UTF8, true);
         int version = br.ReadInt32();
         if(version != CURRENT_VERSION) throw new Exception("bad version of chunk :" + version + " expected :" + CURRENT_VERSION);
-        return (ChunkState) (1 << br.ReadByte());
+        ChunkState chunkState = (ChunkState)(1 << br.ReadByte());
+        Debug.Assert(chunkState!= ChunkState.UNKNOW && chunkState != ChunkState.EMPTY, $"strange chunkstate {chunkState}");
+        return chunkState;
     }
     
     

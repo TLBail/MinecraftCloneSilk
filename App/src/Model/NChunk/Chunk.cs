@@ -35,7 +35,7 @@ public class Chunk
     internal ChunkFace? chunkFace;
 
     public ChunkState chunkState { get; internal set; }
-    public ChunkState chunkStateInStorage { get; internal set; } = ChunkState.EMPTY;
+    public ChunkState chunkStateInStorage { get; internal set; }
     public const ChunkState DEFAULTSTARTINGCHUNKSTATE = ChunkState.EMPTY;
 
     internal ChunkStrategy chunkStrategy;
