@@ -6,8 +6,19 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <LangVersion>12</LangVersion>
+
+        <IsPackable>false</IsPackable>
+        <IsPublishable>false</IsPublishable>
+        <SatelliteResourceLanguages>en;fr</SatelliteResourceLanguages>
+        
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
+
+    <ItemGroup>
+        <AdditionalFiles Include="..\Assets\**">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </AdditionalFiles>
+    </ItemGroup>
 
     <ItemGroup>
       <PackageReference Include="App.Metrics" Version="4.4.0-preview.0.4" />

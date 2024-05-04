@@ -8,19 +8,8 @@ Ce projet vise à recréer le célèbre jeu Minecraft en utilisant Silk.Net, une
 # Build 
 Pour compiler le projet utilisez la commande suivantes :
 ```bash
-dotnet publish -r win-x64 /p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true
+dotnet publish -r win-x64 /p:PublishSingleFile=true --self-contained -c release /p:trim=true
 ```
-vous aurez le dossier "publish" qui contient le l'executable.
-vous pouvez supprimer tous les fichiers sauf "MinecraftCloneSilk.exe" 
-vous avez besoin de rajouter les fichiers et dossiers suivants :
-- le Dossier Assets
-- le Dossier Shader
-- glfw3.dll ou SDL2.dll (fichiers trouvables dans les dossier de l'export)
-- il faut aussi d'autres .dll qui sont dans le dossier de l'export
-- deux dossier Worlds/newWorld
-
-
-
 
 ## Architecture 
 

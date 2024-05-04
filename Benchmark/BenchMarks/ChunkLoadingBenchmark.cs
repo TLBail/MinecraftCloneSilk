@@ -16,7 +16,6 @@ public class ChunkLoadingBenchmark
     private ChunkLoader chunkLoader = null!;
     [IterationSetup]
     public void GlobalSetup() {
-        Directory.SetCurrentDirectory("./../../../../../../../../");
         Chunk.InitStaticMembers(null, BlockFactory.GetInstance());
         chunkManagerEmpty = new ChunkManagerEmpty(new WorldFlatGeneration(), new NullChunkStorage());
         chunkLoader = new ChunkLoader(ChunkLoader.ChunkLoaderMode.SYNC);

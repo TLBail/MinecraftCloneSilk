@@ -29,7 +29,7 @@ internal class Options : Screen, IDisposable
          selectionEffect
       );
       
-      returnButton = new Button("Retour", buttonSound);
+      returnButton = new Button("OK", buttonSound);
    }
 
    public unsafe void DrawUi() {

@@ -19,7 +19,6 @@ public class ChunkIOBenchmark
     
     [GlobalSetup]
     public void GlobalSetup() {
-        Directory.SetCurrentDirectory("./../../../../../../../../");
         Chunk.InitStaticMembers(null, BlockFactory.GetInstance());
         regionStorage = new RegionStorage("./Worlds/newWorld");
         chunkManagerEmpty = new ChunkManagerEmpty(new WorldFlatGeneration(), regionStorage);

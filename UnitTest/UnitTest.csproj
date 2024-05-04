@@ -6,17 +6,21 @@
         <Nullable>enable</Nullable>
 
         <IsPackable>false</IsPackable>
-
+        <IsPublishable>false</IsPublishable>
+        
         <LangVersion>12</LangVersion>
 
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <ChromeTracing>false</ChromeTracing>
     </PropertyGroup>
 
-    <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-        <Exec Command="xcopy /E /I /Y &quot;$(ProjectDir)\..\Assets&quot; &quot;$(OutDir)Assets&quot;" />
-    </Target>
 
+
+    <ItemGroup>
+        <AdditionalFiles Include="..\Assets\**">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </AdditionalFiles>
+    </ItemGroup>
 
     <ItemGroup>
         <PackageReference Include="BenchmarkDotNet" Version="0.13.2" />

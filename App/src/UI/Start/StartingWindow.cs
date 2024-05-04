@@ -1,8 +1,10 @@
 ﻿using System.Numerics;
 using ImGuiNET;
 using MinecraftCloneSilk.Audio;
+using MinecraftCloneSilk.Core;
 using MinecraftCloneSilk.GameComponent;
 using MinecraftCloneSilk.Model.WorldGen;
+using Silk.NET.GLFW;
 using Silk.NET.Input;
 using Button = MinecraftCloneSilk.UI.UiComponent.Button;
 namespace MinecraftCloneSilk.UI.Start;
@@ -62,6 +64,8 @@ public class StartingWindow : UiWindow
     }
 
     internal void Play() {
+        game.openGl.SetCursorMode(CursorModeValue.CursorDisabled);
+        
         game.AddGameObject(new DebugRayManager(game));
         game.AddGameObject(new ConsoleUi(game));
         game.AddGameObject(new ChunkRendererUi(game));
