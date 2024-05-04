@@ -26,6 +26,8 @@ public class Button
 
     public string label;
     private bool wasHovered;
+    
+    public Button(string label, ButtonSound? sound = null) : this(label, null, sound) { }
 
     public Button(string label, ButtonStyle? style = null, ButtonSound? sound = null)  {    
         this.label = label;

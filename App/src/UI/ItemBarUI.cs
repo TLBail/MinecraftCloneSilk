@@ -55,7 +55,7 @@ public class ItemBarUi : UiWindow
         Vector2 workPos = viewport.WorkPos; // Use work area to avoid menu-bar/task-bar, if any!
         Vector2 workSize = viewport.WorkSize;
         Vector2 windowPos, windowPosPivot;
-        windowPos.X = (workPos.X + workSize.X) * 0.75f ;
+        windowPos.X = (workPos.X + workSize.X) * 0.80f ;
         windowPos.Y = (workPos.Y + workSize.Y - pad);
         windowPosPivot.X = 1.0f;// : 0.0f;
         windowPosPivot.Y = 1.0f; // : 0.0f;

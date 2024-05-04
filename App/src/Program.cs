@@ -24,7 +24,6 @@ namespace MinecraftCloneSilk
                 new (typeof(World).FullName!, new object[]{new WorldNaturalGeneration(1234), WorldMode.SIMPLE }),
                 new (typeof(StartingWindow).FullName!),
                 new (typeof(GeneralInfo).FullName!),
-                new (typeof(DemoWindow).FullName!),
             };
             GameParameter gameParameter = new GameParameter(gameObjectNames, new OpenGlConfig(false, false));
             return gameParameter;

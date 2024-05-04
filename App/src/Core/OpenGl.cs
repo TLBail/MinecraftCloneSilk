@@ -2,6 +2,7 @@
 using System.Runtime.InteropServices;
 using System.Text;
 using MinecraftCloneSilk.GameComponent;
+using MinecraftCloneSilk.UI;
 using Silk.NET.Core;
 using Silk.NET.GLFW;
 using Silk.NET.Input;
@@ -14,6 +15,7 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats;
 using SixLabors.ImageSharp.PixelFormats;
 using Color = System.Drawing.Color;
+using Console = System.Console;
 using Glfw = Silk.NET.GLFW.Glfw;
 using Image = SixLabors.ImageSharp.Image;
 using Monitor = Silk.NET.Windowing.Monitor;
@@ -124,6 +126,8 @@ namespace MinecraftCloneSilk.Core
             LoadIcon();
             
             imGuiController = new ImGuiController(Gl, window, input, Fonts.DEFAULT_FONT_CONFIG, () => Fonts.LoadFonts());
+            ImGuiPlus.SetupStyle();
+            
             
             primaryKeyboard = input.Keyboards.FirstOrDefault()!;
             primaryMouse = input.Mice.FirstOrDefault()!;

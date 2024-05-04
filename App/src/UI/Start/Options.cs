@@ -24,18 +24,12 @@ internal class Options : Screen, IDisposable
       windowFlags = ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoSavedSettings;
       selectionEffect = new AudioEffect(Generated.FilePathConstants.Audio.selection_ogg);
       hoverEffect = new AudioEffect(Generated.FilePathConstants.Audio.hover_ogg);
-      Button.ButtonStyle buttonStyle = new(
-         new Vector4(0.2f, 0.2f, 0.2f, 1.0f), // Fond foncé
-         new Vector4(0.3f, 0.3f, 0.3f, 1.0f), // Plus clair au survol
-         new Vector4(0.1f, 0.1f, 0.1f, 1.0f), // Encore plus foncé lors du clic
-         new Vector4(1.0f, 1.0f, 1.0f, 1.0f) // Texte blanc
-      );
       Button.ButtonSound buttonSound = new(
          hoverEffect,
          selectionEffect
       );
       
-      returnButton = new Button("Retour", buttonStyle, buttonSound);
+      returnButton = new Button("Retour", buttonSound);
    }
 
    public unsafe void DrawUi() {
