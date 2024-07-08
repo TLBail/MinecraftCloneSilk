@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Text.Json;
 using MinecraftCloneSilk.GameComponent;
 using Silk.NET.Maths;
@@ -13,7 +14,7 @@ public class BlockFactory
     
     public Dictionary<int, Block> blocks = new Dictionary<int, Block>();
 
-    private List<int> transparentBlockId = new List<int>();
+    private BitVector32 bitVectorTransparentBlock = new();
 
     public string GetBlockNameById(int id) => blocks.TryGetValue(id, out Block? value) ? value.name : AIR_BLOCK;
 
@@ -86,10 +87,7 @@ public class BlockFactory
     }
 
     public bool IsBlockTransparent(BlockData blockData) {
-        for (var i = 0; i < transparentBlockId.Count; i++) {
-            if (transparentBlockId[i].Equals(blockData.id)) return true;
-        }
-        return false;
+        return bitVectorTransparentBlock[blockData.id];
     }
 
     private void AddBlock(Block block)
@@ -97,7 +95,8 @@ public class BlockFactory
         blocks.Add(block.blockData.id, block);
         blockNameToBlockDictionary.Add(block.name, block);
         if (block.transparent) {
-            transparentBlockId.Add(block.blockData.id);
+            if(block.blockData.id >= 32) throw new Exception("id of transparent block is too high");
+            bitVectorTransparentBlock[block.blockData.id] = true;
         }
     }
 

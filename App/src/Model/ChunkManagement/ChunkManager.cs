@@ -40,7 +40,6 @@ public class ChunkManager : IChunkManager
         lock (lockChunksToUpdate) {
             chunksToUpdateCopy = new List<Chunk>(this.chunksToUpdate);
         }
-        Debug.Assert(!chunksToUpdateCopy.Any((chunk) => chunk is null));
         foreach (Chunk chunk in chunksToUpdateCopy) {
             Debug.Assert(chunk is not null, "chunk must be not null");
             Debug.Assert(chunk.chunkState >= ChunkState.DRAWABLE, $"try to update a chunk:{chunk} with a lower state than the minimum");

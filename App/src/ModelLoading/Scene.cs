@@ -27,13 +27,10 @@ public class Scene : IDisposable
         this.assimpScene = assimpScene;
         this.shader = shader;
         this.models = new();
-        
 
         foreach (EmbeddedTexture assimpTexture in this.assimpScene.Textures) {
             //Todo load textures
         }
-
-
 
         meshes = new Mesh[this.assimpScene.MeshCount];
         for (int i = 0; i < assimpScene.MeshCount; i++) {
@@ -41,7 +38,6 @@ public class Scene : IDisposable
         }
        
         LoadNode(this.assimpScene.RootNode);
-        
     }
 
     private void LoadNode(Node node) {
